@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Árbol genealógico · Genética a las Aulas</title>
+<style>
+  :root{
+    --bg:#0F3D3E; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B;
+    --accent:#E1A73B; --accent-deep:#B9822B; --ok:#2E7D5B; --mal:#B1473F;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:#F2EEE2;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:#CFE3DF; font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--accent); }
+  h1{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:1.6rem; margin:0.6rem 0 0.2rem;
+  }
+  .marcador{ color:#CFE3DF; font-size:0.9rem; margin-bottom:1rem; }
+  .tablero{
+    background:var(--card); color:var(--ink); border-radius:6px;
+    padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem;
+  }
+  .enunciado{ font-size:0.98rem; margin:0 0 1rem; line-height:1.5; }
+  .enunciado b{ color:var(--accent-deep); }
+  svg.arbol{ width:100%; height:auto; display:block; margin:0 auto 1.2rem; }
+  .opciones{ display:grid; grid-template-columns:repeat(2,1fr); gap:0.6rem; }
+  .opciones button{
+    padding:0.7rem 0.5rem; border-radius:4px; border:1.5px solid var(--accent-deep);
+    background:#fff; color:var(--ink); font-size:0.95rem; cursor:pointer;
+  }
+  .opciones button:hover{ background:#FBF1DD; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
+  .feedback{ min-height:1.4rem; margin-top:0.9rem; font-size:0.92rem; }
+  .siguiente{
+    margin-top:0.6rem; align-self:flex-end; background:var(--accent);
+    color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px;
+    font-weight:600; cursor:pointer; display:none;
+  }
+  .final{ text-align:center; }
+  .final button{
+    margin-top:1rem; background:var(--accent); color:#2C1D02; border:none;
+    padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>Árbol genealógico</h1>
+<p class="marcador" id="marcador">Ronda 1 de 6 · Aciertos: 0</p>
+<div class="tablero" id="tablero"></div>
+
+<script>
+const rondas = [
+  { patron:"autosómica recesiva", padreA:"Aa", padreB:"Aa",
+    texto:"Los dos progenitores son <b>portadores</b> (Aa) de una enfermedad autosómica recesiva. Ninguno está afectado.",
+    correcta:"25%" },
+  { patron:"autosómica recesiva", padreA:"Aa", padreB:"aa",
+    texto:"Un progenitor es <b>portador</b> (Aa) y el otro está <b>afectado</b> (aa) por una enfermedad autosómica recesiva.",
+    correcta:"50%" },
+  { patron:"autosómica dominante", padreA:"Aa", padreB:"aa",
+    texto:"Un progenitor está <b>afectado</b> (Aa) por una enfermedad autosómica dominante; el otro no porta el alelo (aa).",
+    correcta:"50%" },
+  { patron:"autosómica dominante", padreA:"Aa", padreB:"Aa",
+    texto:"Los dos progenitores están <b>afectados</b> (Aa) por una enfermedad autosómica dominante.",
+    correcta:"75%" },
+  { patron:"autosómica recesiva", padreA:"aa", padreB:"aa",
+    texto:"Los dos progenitores están <b>afectados</b> (aa) por una enfermedad autosómica recesiva.",
+    correcta:"100%" },
+  { patron:"ligada al X recesiva", padreA:"XAXa", padreB:"XAY",
+    texto:"La madre es <b>portadora</b> (X<sup>A</sup>X<sup>a</sup>) de una enfermedad ligada al X recesiva; el padre no está afectado.",
+    correcta:"25% de los hijos varones", esVariasHijas:true }
+];
+
+let ronda = 0, aciertos = 0;
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+
+function opcionesPara(r){
+  if(r.esVariasHijas){
+    return ["Ninguno","25% de los hijos varones","50% de los hijos varones","100%"];
+  }
+  return ["0%","25%","50%","75%","100%"].filter(o => o !== r.correcta).slice(0,3).concat(r.correcta).sort(()=>Math.random()-0.5);
+}
+
+function dibujar(){
+  const r = rondas[ronda];
+  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
+
+  const opciones = opcionesPara(r);
+  tablero.innerHTML = `
+    <svg class="arbol" viewBox="0 0 300 140">
+      <line x1="90" y1="35" x2="210" y2="35" stroke="#16211F" stroke-width="2"/>
+      <line x1="150" y1="35" x2="150" y2="80" stroke="#16211F" stroke-width="2"/>
+      <line x1="100" y1="80" x2="200" y2="80" stroke="#16211F" stroke-width="2"/>
+      <line x1="100" y1="80" x2="100" y2="115" stroke="#16211F" stroke-width="2"/>
+      <line x1="150" y1="80" x2="150" y2="115" stroke="#16211F" stroke-width="2"/>
+      <line x1="200" y1="80" x2="200" y2="115" stroke="#16211F" stroke-width="2"/>
+      <rect x="75" y="20" width="24" height="24" fill="#E1A73B"/>
+      <text x="87" y="60" text-anchor="middle" font-size="11">${r.padreA}</text>
+      <circle cx="213" cy="32" r="12" fill="#E1A73B"/>
+      <text x="213" y="60" text-anchor="middle" font-size="11">${r.padreB}</text>
+      <rect x="88" y="115" width="24" height="24" fill="#ddd" stroke="#16211F"/>
+      <circle cx="150" cy="127" r="12" fill="#ddd" stroke="#16211F"/>
+      <rect x="188" y="115" width="24" height="24" fill="#ddd" stroke="#16211F"/>
+      <text x="150" y="10" text-anchor="middle" font-size="10" fill="#5B6E6B">? = por determinar</text>
+    </svg>
+    <p class="enunciado">${r.texto}<br>¿Qué fracción de los hijos esperás que esté <b>afectada</b>?</p>
+    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
+    <p class="feedback" id="feedback"></p>
+    <button class="siguiente" id="siguiente">Siguiente &rarr;</button>
+  `;
+
+  tablero.querySelectorAll('.opciones button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const acierto = btn.dataset.o === r.correcta;
+      tablero.querySelectorAll('.opciones button').forEach(b=>{
+        b.disabled = true;
+        if(b.dataset.o === r.correcta) b.classList.add('ok');
+        else if(b === btn) b.classList.add('mal');
+      });
+      document.getElementById('feedback').textContent = acierto
+        ? "¡Correcto! " + explicacion(r)
+        : `La respuesta correcta era ${r.correcta}. ` + explicacion(r);
+      if(acierto) aciertos++;
+      marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
+      const sig = document.getElementById('siguiente');
+      sig.style.display = 'inline-block';
+      sig.onclick = () => { ronda++; ronda < rondas.length ? dibujar() : final(); };
+    });
+  });
+}
+
+function explicacion(r){
+  const notas = {
+    "autosómica recesiva": "En herencia autosómica recesiva, dos portadores tienen 1/4 de hijos afectados; un portador con un afectado, 1/2.",
+    "autosómica dominante": "En herencia autosómica dominante, basta un alelo para estar afectado — las proporciones se calculan igual que en la recesiva, pero el fenotipo dominante es el 'afectado'.",
+    "ligada al X recesiva": "En herencia ligada al X recesiva, los varones (XY) se afectan con un solo alelo recesivo heredado de la madre; las mujeres necesitan dos copias."
+  };
+  return notas[r.patron] || "";
+}
+
+function final(){
+  tablero.innerHTML = `
+    <div class="final">
+      <h2 style="font-family:'Iowan Old Style',Georgia,serif;">Terminaste el juego</h2>
+      <p>Acertaste ${aciertos} de ${rondas.length} cruzas.</p>
+      <button onclick="location.reload()">Jugar de nuevo</button>
+    </div>`;
+}
+
+dibujar();
+</script>
+</body>
+</html>

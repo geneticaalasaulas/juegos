@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Punnett rápido · Genética a las Aulas</title>
+<style>
+  :root{
+    --bg:#0F3D3E; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B;
+    --accent:#E1A73B; --accent-deep:#B9822B; --ok:#2E7D5B; --mal:#B1473F;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:#F2EEE2;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:#CFE3DF; font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--accent); }
+  h1{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:1.6rem; margin:0.6rem 0 0.2rem;
+  }
+  .franja{ display:flex; gap:1.4rem; color:#CFE3DF; font-size:0.92rem; margin-bottom:1rem; }
+  .franja b{ color:var(--accent); }
+  .tablero{
+    background:var(--card); color:var(--ink); border-radius:6px;
+    padding:1.6rem; width:min(520px,92vw); margin-bottom:1.4rem; text-align:center;
+  }
+  .gen{ font-size:1.3rem; font-weight:700; margin-bottom:0.3rem; }
+  .rasgo{ color:var(--muted); font-size:0.92rem; margin-bottom:1.1rem; }
+  .opciones{ display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; }
+  .opciones button{
+    padding:0.75rem 0.5rem; border-radius:4px; border:1.5px solid var(--accent-deep);
+    background:#fff; color:var(--ink); font-size:0.98rem; cursor:pointer;
+  }
+  .opciones button:hover{ background:#FBF1DD; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
+  .inicio, .final{ text-align:center; }
+  .inicio button, .final button{
+    margin-top:0.8rem; background:var(--accent); color:#2C1D02; border:none;
+    padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>Punnett rápido</h1>
+<div class="franja" id="franja"></div>
+<div class="tablero" id="tablero"></div>
+
+<script>
+const rasgos = [
+  {nombre:"lóbulo de la oreja", dominante:"libre", recesivo:"pegado"},
+  {nombre:"capacidad de sentir el sabor de la PTC", dominante:"siente el sabor amargo", recesivo:"no lo siente"},
+  {nombre:"pico de viuda en la frente", dominante:"tiene pico de viuda", recesivo:"línea recta"},
+  {nombre:"pulgar autopista", dominante:"pulgar recto", recesivo:"pulgar flexible ('de autoestopista')"},
+  {nombre:"pecas", dominante:"tiene pecas", recesivo:"sin pecas"}
+];
+
+const TIEMPO_TOTAL = 60;
+let tiempo, timer, puntaje = 0, racha = 0, jugando = false;
+
+const tablero = document.getElementById('tablero');
+const franja = document.getElementById('franja');
+
+function genotipoAleatorio(){
+  const opciones = ["AA","Aa","aa"];
+  return opciones[Math.floor(Math.random()*3)];
+}
+
+function proporcion(g1,g2){
+  const alelos1 = g1.split(""), alelos2 = g2.split("");
+  const combinaciones = [];
+  alelos1.forEach(a=> alelos2.forEach(b=> combinaciones.push([a,b].sort().join(""))));
+  const afectados = combinaciones.filter(c => c === "aa").length;
+  const total = combinaciones.length;
+  if(afectados === 0) return "0 afectados";
+  if(afectados === total) return "todos afectados";
+  if(afectados*4 === total) return "1 de cada 4 afectados";
+  if(afectados*2 === total) return "1 de cada 2 afectados";
+  if(afectados*4 === total*3) return "3 de cada 4 afectados";
+  return afectados+"/"+total+" afectados";
+}
+
+function nuevaPregunta(){
+  let g1, g2;
+  do { g1 = genotipoAleatorio(); g2 = genotipoAleatorio(); } while(g1==="aa" && g2==="aa");
+  const rasgo = rasgos[Math.floor(Math.random()*rasgos.length)];
+  const correcta = proporcion(g1,g2);
+  const todas = ["0 afectados","1 de cada 4 afectados","1 de cada 2 afectados","3 de cada 4 afectados","todos afectados"];
+  const opciones = [correcta, ...todas.filter(o=>o!==correcta).sort(()=>Math.random()-0.5).slice(0,3)]
+    .sort(()=>Math.random()-0.5);
+
+  tablero.innerHTML = `
+    <p class="gen">${g1} &times; ${g2}</p>
+    <p class="rasgo">Rasgo: <b>${rasgo.nombre}</b> — el alelo <b>A</b> es dominante (${rasgo.dominante}), <b>a</b> es recesivo (${rasgo.recesivo}).</p>
+    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
+  `;
+
+  tablero.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(!jugando) return;
+      const acierto = btn.dataset.o === correcta;
+      tablero.querySelectorAll('button').forEach(b=>{
+        b.disabled = true;
+        if(b.dataset.o === correcta) b.classList.add('ok');
+        else if(b === btn) b.classList.add('mal');
+      });
+      if(acierto){ racha++; puntaje += 10 + (racha>=3 ? 5 : 0); }
+      else { racha = 0; }
+      actualizarFranja();
+      setTimeout(nuevaPregunta, 550);
+    });
+  });
+}
+
+function actualizarFranja(){
+  franja.innerHTML = `<span>Tiempo: <b>${tiempo}s</b></span><span>Puntaje: <b>${puntaje}</b></span><span>Racha: <b>${racha}</b></span>`;
+}
+
+function iniciar(){
+  puntaje = 0; racha = 0; tiempo = TIEMPO_TOTAL; jugando = true;
+  actualizarFranja();
+  nuevaPregunta();
+  timer = setInterval(()=>{
+    tiempo--;
+    actualizarFranja();
+    if(tiempo <= 0){ clearInterval(timer); jugando=false; final(); }
+  },1000);
+}
+
+function final(){
+  const mejor = Math.max(puntaje, parseInt(localStorage.getItem('punnett-mejor')||"0"));
+  localStorage.setItem('punnett-mejor', mejor);
+  tablero.innerHTML = `
+    <div class="final">
+      <h2 style="font-family:'Iowan Old Style',Georgia,serif;margin-top:0;">¡Se acabó el tiempo!</h2>
+      <p>Puntaje: ${puntaje}<br>Mejor puntaje en este dispositivo: ${mejor}</p>
+      <button onclick="iniciar()">Jugar de nuevo</button>
+    </div>`;
+}
+
+tablero.innerHTML = `
+  <div class="inicio">
+    <p>Resolvé cruzas monohíbridas antes de que se acabe el tiempo. Sumás puntos extra si encadenás 3 aciertos seguidos.</p>
+    <button onclick="iniciar()">Empezar (60s)</button>
+  </div>`;
+actualizarFranja.call(null);
+franja.innerHTML = `<span>Tiempo: <b>${TIEMPO_TOTAL}s</b></span><span>Puntaje: <b>0</b></span><span>Racha: <b>0</b></span>`;
+</script>
+</body>
+</html>
