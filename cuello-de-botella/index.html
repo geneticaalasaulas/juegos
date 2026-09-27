@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuello de botella · Genética a las Aulas</title>
+<style>
+  :root{ --bg:#0F3D3E; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#E1A73B; --accent-deep:#B9822B; --ok:#2E7D5B; --mal:#B1473F; }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:#F2EEE2; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:#CFE3DF; font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--accent); }
+  h1{ font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; font-size:1.6rem; margin:0.6rem 0 0.2rem; }
+  .marcador{ color:#CFE3DF; font-size:0.9rem; margin-bottom:1rem; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:6px; padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem; }
+  .enunciado{ font-size:0.98rem; margin:0 0 1rem; line-height:1.5; }
+  .poblacion{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:1rem; min-height:50px; }
+  .poblacion span{ width:14px; height:14px; border-radius:50%; display:inline-block; }
+  .antes-despues{ display:flex; gap:1.5rem; margin-bottom:1rem; }
+  .antes-despues > div{ flex:1; }
+  .antes-despues h4{ margin:0 0 0.4rem; font-size:0.85rem; color:var(--muted); }
+  .opciones{ display:grid; grid-template-columns:1fr; gap:0.6rem; }
+  .opciones button{ padding:0.7rem 0.8rem; border-radius:4px; border:1.5px solid var(--accent-deep); background:#fff; color:var(--ink); font-size:0.9rem; cursor:pointer; text-align:left; }
+  .opciones button:hover{ background:#FBF1DD; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
+  .feedback{ min-height:2.6rem; margin-top:0.9rem; font-size:0.92rem; }
+  .siguiente{ margin-top:0.6rem; align-self:flex-end; background:var(--accent); color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px; font-weight:600; cursor:pointer; display:none; }
+  .final{ text-align:center; }
+  .final button{ margin-top:1rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>Cuello de botella</h1>
+<p class="marcador" id="marcador">Ronda 1 de 5 · Aciertos: 0</p>
+<div class="tablero" id="tablero"></div>
+
+<script>
+function colores(n, prop){
+  const colores = ["#2E7D5B","#E1A73B","#3B6BB0","#B1473F","#7A5BB0"];
+  const usados = colores.slice(0, prop.length);
+  let arr = [];
+  prop.forEach((p,i)=>{ for(let k=0;k<Math.round(p*n);k++) arr.push(usados[i]); });
+  while(arr.length < n) arr.push(usados[0]);
+  return arr.slice(0,n);
+}
+
+const rondas = [
+  { escenario:"Una isla con 100 tortugas tiene 3 colores de caparazón: 50% marrón, 30% gris, 20% moteado. Una tormenta destruye el hábitat y solo sobreviven 6 tortugas, elegidas al azar.",
+    n:100, prop:[0.5,0.3,0.2],
+    sobreviven:6,
+    correcta:"Es probable que se pierda el color moteado y las frecuencias cambien mucho",
+    distractores:[
+      "Las tres variantes van a mantener aproximadamente las mismas proporciones que antes",
+      "Van a sobrevivir sobre todo las marrones, porque el marrón es el color más ventajoso"
+    ],
+    explicacion:"Con una muestra tan chica (6 de 100), es muy probable que algún alelo/color minoritario desaparezca por azar, y que las frecuencias del resto ya no se parezcan a las originales. Esto es un cuello de botella." },
+  { escenario:"Un grupo de 20 personas funda una colonia aislada. En la población de origen, 1 de cada 50 personas porta una mutación recesiva rara.",
+    // 0.02 = frecuencia de PORTADORES (1 de cada 50), no frecuencia del alelo.
+    n:100, prop:[0.98,0.02],
+    sobreviven:20,
+    correcta:"La frecuencia de esa mutación en la colonia puede terminar siendo mucho más alta o directamente cero",
+    distractores:[
+      "La frecuencia va a seguir siendo de 1 en 50, porque los fundadores vienen de esa misma población",
+      "La mutación va a desaparecer con seguridad, porque 20 personas son muy pocas"
+    ],
+    explicacion:"Esto es efecto fundador: si por azar alguno de los 20 fundadores porta la mutación, su frecuencia de portadores en la nueva población puede dispararse muy por encima del 2% original — o desaparecer del todo." },
+  { escenario:"Una plaga elimina al 95% de una población de zorros de 500 individuos. Sobreviven 25, elegidos al azar.",
+    n:100, prop:[0.4,0.35,0.25],
+    sobreviven:25,
+    correcta:"La variación genética de la población sobreviviente va a ser menor que la original",
+    distractores:[
+      "La variación genética se mantiene igual, porque el ambiente no cambió",
+      "La población va a quedar mejor adaptada, porque sobrevivieron los más aptos"
+    ],
+    explicacion:"Aunque 25 no es una muestra extremadamente chica, sigue siendo mucho menor que 500 — se pierde variación genética simplemente porque no todos los alelos originales quedan representados." },
+  { escenario:"Los guepardos actuales tienen muy poca variación genética, al punto de aceptar injertos de piel entre individuos no emparentados. Se cree que hace miles de años la especie pasó por una casi extinción.",
+    n:100, prop:[0.9,0.1],
+    sobreviven:8,
+    correcta:"Es un ejemplo real de cuello de botella histórico",
+    distractores:[
+      "Es un caso de efecto fundador: un grupo chico colonizó un territorio nuevo",
+      "La poca variación genética es la causa de la casi extinción, no su consecuencia"
+    ],
+    explicacion:"La baja variación genética actual de los guepardos es la evidencia clásica de un cuello de botella poblacional en su pasado evolutivo." },
+  { escenario:"Una empresa de pesca captura selectivamente los peces más grandes de un lago durante 30 años, dejando reproducirse solo a los más chicos.",
+    n:100, prop:[0.6,0.4],
+    sobreviven:60,
+    correcta:"Esto no es un cuello de botella clásico — es selección dirigida por el humano",
+    distractores:[
+      "Es un cuello de botella, porque el tamaño de la población se redujo mucho",
+      "No va a cambiar nada genéticamente: el tamaño de los peces depende solo de la alimentación"
+    ],
+    explicacion:"Un cuello de botella reduce el tamaño poblacional al azar (catástrofe). Acá el humano elige activamente qué peces sobreviven — es selección artificial, un mecanismo distinto aunque también cambia las frecuencias alélicas." }
+];
+
+let ronda = 0, aciertos = 0;
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+
+function dibujar(){
+  const r = rondas[ronda];
+  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
+
+  const antes = colores(30, r.prop);
+  const despues = antes.slice().sort(()=>Math.random()-0.5).slice(0, Math.max(3, Math.round(r.sobreviven/ r.n * 30)));
+
+  // Distractores propios de cada ronda: antes se reciclaban las respuestas
+  // correctas de las otras, y eso permitia acertar por eliminacion.
+  const opciones = [r.correcta, ...r.distractores].sort(()=>Math.random()-0.5);
+
+  tablero.innerHTML = `
+    <p class="enunciado">${r.escenario}</p>
+    <div class="antes-despues">
+      <div><h4>Antes (muestra)</h4><div class="poblacion">${antes.map(c=>`<span style="background:${c}"></span>`).join('')}</div></div>
+      <div><h4>Después</h4><div class="poblacion">${despues.map(c=>`<span style="background:${c}"></span>`).join('')}</div></div>
+    </div>
+    <p class="enunciado">¿Qué es lo más probable que ocurra?</p>
+    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
+    <p class="feedback" id="feedback"></p>
+    <button class="siguiente" id="siguiente">Siguiente &rarr;</button>
+  `;
+
+  tablero.querySelectorAll('.opciones button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const acierto = btn.dataset.o === r.correcta;
+      tablero.querySelectorAll('.opciones button').forEach(b=>{
+        b.disabled = true;
+        if(b.dataset.o === r.correcta) b.classList.add('ok');
+        else if(b === btn) b.classList.add('mal');
+      });
+      document.getElementById('feedback').textContent = (acierto ? "¡Correcto! " : "No exactamente. ") + r.explicacion;
+      if(acierto) aciertos++;
+      marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
+      const sig = document.getElementById('siguiente');
+      sig.style.display = 'inline-block';
+      sig.onclick = () => { ronda++; ronda < rondas.length ? dibujar() : final(); };
+    });
+  });
+}
+
+function final(){
+  tablero.innerHTML = `
+    <div class="final">
+      <h2 style="font-family:'Iowan Old Style',Georgia,serif;">Terminaste el juego</h2>
+      <p>Acertaste ${aciertos} de ${rondas.length} escenarios.</p>
+      <button onclick="location.reload()">Jugar de nuevo</button>
+    </div>`;
+}
+
+dibujar();
+</script>
+
+<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:#5B6E6B;line-height:1.55;text-align:left;">
+  <summary style="cursor:pointer;font-weight:700;color:#16211F;font-size:0.95rem;">Para el/la docente</summary>
+  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Secundaria</p>
+  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Deriva genética; cuello de botella poblacional; efecto fundador; pérdida de variación genética; diferencia entre deriva y selección.</p>
+  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> ¿En qué se parecen y en qué se diferencian un cuello de botella y la selección natural? Los dos cambian las frecuencias alélicas, pero uno es azar y el otro no. La última ronda (la pesca selectiva) sirve justo para separar los dos mecanismos.</p>
+</details>
+
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resistencia a antibióticos · Genética a las Aulas</title>
+<style>
+  :root{ --bg:#0F3D3E; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#E1A73B; --accent-deep:#B9822B; --ok:#2E7D5B; --mal:#B1473F; }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:#F2EEE2; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:#CFE3DF; font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--accent); }
+  h1{ font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; font-size:1.6rem; margin:0.6rem 0 0.2rem; }
+  .marcador{ color:#CFE3DF; font-size:0.9rem; margin-bottom:1rem; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:6px; padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem; }
+  .enunciado{ font-size:0.98rem; margin:0 0 1rem; line-height:1.5; }
+  .barra{ height:26px; border-radius:4px; overflow:hidden; display:flex; margin-bottom:0.3rem; }
+  .barra div{ height:100%; }
+  .etiqueta{ font-size:0.8rem; color:var(--muted); margin-bottom:1rem; }
+  .opciones{ display:grid; grid-template-columns:repeat(2,1fr); gap:0.6rem; }
+  .opciones button{ padding:0.7rem 0.5rem; border-radius:4px; border:1.5px solid var(--accent-deep); background:#fff; color:var(--ink); font-size:0.92rem; cursor:pointer; }
+  .opciones button:hover{ background:#FBF1DD; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
+  .feedback{ min-height:2.6rem; margin-top:0.9rem; font-size:0.92rem; }
+  .siguiente{ margin-top:0.6rem; align-self:flex-end; background:var(--accent); color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px; font-weight:600; cursor:pointer; display:none; }
+  .final{ text-align:center; }
+  .final button{ margin-top:1rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>Resistencia a antibióticos</h1>
+<p class="marcador" id="marcador">Ronda 1 de 5 · Aciertos: 0</p>
+<div class="tablero" id="tablero"></div>
+
+<script>
+// Cada ronda: % inicial de resistentes + N generaciones con antibiótico -> el usuario predice el % final.
+// w = eficacia biologica relativa de las resistentes frente a las sensibles.
+// Ej.: w = 2 significa que, bajo antibiotico, cada resistente deja el doble
+// de descendencia que una sensible.
+const rondas = [
+  { inicial:1,   generaciones:3,  w:1.5 },
+  { inicial:10,  generaciones:2,  w:1.8 },
+  { inicial:5,   generaciones:4,  w:2.0 },
+  { inicial:0.5, generaciones:6,  w:2.5 },
+  { inicial:2,   generaciones:10, w:2.0 }
+];
+
+let ronda = 0, aciertos = 0;
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+
+// Modelo estandar de seleccion en un locus:  p' = p*w / (p*w + (1-p))
+// Se trabaja con frecuencias (0 a 1), no con porcentajes: a medida que las
+// resistentes se vuelven mayoria, quedan menos sensibles a las que desplazar
+// y el crecimiento se frena solo (curva logistica).
+function calcularFinal(inicial, generaciones, w){
+  let p = inicial / 100;
+  for(let i=0;i<generaciones;i++){ p = (p*w) / (p*w + (1-p)); }
+  return Math.round(p*100);
+}
+
+function bucket(valor){
+  if(valor < 15) return "Menos del 15%";
+  if(valor < 40) return "Entre 15% y 40%";
+  if(valor < 70) return "Entre 40% y 70%";
+  return "Más del 70%";
+}
+
+function dibujar(){
+  const r = rondas[ronda];
+  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
+
+  const final = calcularFinal(r.inicial, r.generaciones, r.w);
+  const correcta = bucket(final);
+  const todas = ["Menos del 15%","Entre 15% y 40%","Entre 40% y 70%","Más del 70%"];
+
+  tablero.innerHTML = `
+    <p class="enunciado">Una población de bacterias empieza con <b>${r.inicial}%</b> de individuos resistentes a un antibiótico. Se aplica el mismo antibiótico durante <b>${r.generaciones} generaciones</b> seguidas, sin cambiar de tratamiento.</p>
+    <div class="barra"><div style="width:${r.inicial}%;background:#E1A73B"></div><div style="width:${100-r.inicial}%;background:#2E7D5B"></div></div>
+    <p class="etiqueta">Población inicial — <span style="color:#B9822B">■</span> resistentes &nbsp; <span style="color:#2E7D5B">■</span> sensibles</p>
+    <p class="enunciado">¿Qué porcentaje de resistentes esperás encontrar después de esas ${r.generaciones} generaciones?</p>
+    <div class="opciones">${todas.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
+    <p class="feedback" id="feedback"></p>
+    <button class="siguiente" id="siguiente">Siguiente &rarr;</button>
+  `;
+
+  tablero.querySelectorAll('.opciones button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const acierto = btn.dataset.o === correcta;
+      tablero.querySelectorAll('.opciones button').forEach(b=>{
+        b.disabled = true;
+        if(b.dataset.o === correcta) b.classList.add('ok');
+        else if(b === btn) b.classList.add('mal');
+      });
+      document.getElementById('feedback').textContent = (acierto ? "¡Correcto! " : "No exactamente. ")
+        + `El valor final calculado fue ${final}% de resistentes. Cada generación, las bacterias resistentes dejan más descendencia que las sensibles, y su proporción crece. Algo importante: el antibiótico no crea la resistencia — la mutación ya estaba en unas pocas bacterias, y el antibiótico elimina a las demás. Por eso conviene usar antibióticos solo cuando un médico los indica, completar el tratamiento y no automedicarse: cada uso innecesario le da otra oportunidad a las resistentes.`;
+      if(acierto) aciertos++;
+      marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
+      const sig = document.getElementById('siguiente');
+      sig.style.display = 'inline-block';
+      sig.onclick = () => { ronda++; ronda < rondas.length ? dibujar() : final2(); };
+    });
+  });
+}
+
+function final2(){
+  tablero.innerHTML = `
+    <div class="final">
+      <h2 style="font-family:'Iowan Old Style',Georgia,serif;">Terminaste el juego</h2>
+      <p>Acertaste ${aciertos} de ${rondas.length} rondas.</p>
+      <button onclick="location.reload()">Jugar de nuevo</button>
+    </div>`;
+}
+
+dibujar();
+</script>
+
+<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:#5B6E6B;line-height:1.55;text-align:left;">
+  <summary style="cursor:pointer;font-weight:700;color:#16211F;font-size:0.95rem;">Para el/la docente</summary>
+  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Secundaria</p>
+  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Evolución de la resistencia bacteriana; la mutación existe antes del antibiótico; presión de selección por fármacos; crecimiento de la frecuencia del alelo ventajoso; uso responsable de antibióticos.</p>
+  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> ¿El antibiótico genera bacterias resistentes, o selecciona las que ya estaban? De la respuesta se desprende todo lo demás: por qué no hay que automedicarse, por qué conviene completar el tratamiento indicado y por qué los antibióticos no sirven para una infección viral.</p>
+</details>
+
+</body>
+</html>

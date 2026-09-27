@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Selección natural simulada · Genética a las Aulas</title>
+<style>
+  :root{ --bg:#0F3D3E; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#E1A73B; --accent-deep:#B9822B; --ok:#2E7D5B; --mal:#B1473F; }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:#F2EEE2; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:#CFE3DF; font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--accent); }
+  h1{ font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; font-size:1.6rem; margin:0.6rem 0 0.2rem; }
+  .marcador{ color:#CFE3DF; font-size:0.9rem; margin-bottom:1rem; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:6px; padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem; }
+  .enunciado{ font-size:0.98rem; margin:0 0 1rem; line-height:1.5; }
+  .poblacion{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:1rem; min-height:70px; align-items:center; justify-content:center; }
+  .poblacion span{ width:16px; height:16px; border-radius:50%; display:inline-block; }
+  .opciones{ display:grid; grid-template-columns:repeat(1,1fr); gap:0.6rem; }
+  .opciones button{ padding:0.7rem 0.8rem; border-radius:4px; border:1.5px solid var(--accent-deep); background:#fff; color:var(--ink); font-size:0.92rem; cursor:pointer; text-align:left; }
+  .opciones button:hover{ background:#FBF1DD; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
+  .feedback{ min-height:2.6rem; margin-top:0.9rem; font-size:0.92rem; }
+  .siguiente{ margin-top:0.6rem; align-self:flex-end; background:var(--accent); color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px; font-weight:600; cursor:pointer; display:none; }
+  .final{ text-align:center; }
+  .final button{ margin-top:1rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>Selección natural simulada</h1>
+<p class="marcador" id="marcador">Ronda 1 de 5 · Aciertos: 0</p>
+<div class="tablero" id="tablero"></div>
+
+<script>
+const rondas = [
+  { texto:"En un bosque con troncos oscuros vive una población de escarabajos: 70% verdes y 30% marrones. Un pájaro los caza a simple vista.",
+    poblacion:{verdes:70, verde:"70% verdes", otro:"30% marrones"}, correcta:"Van a aumentar los marrones (se camuflan mejor)",
+    distractores:[
+      "Los escarabajos verdes van a cambiar de color para camuflarse mejor",
+      "No va a cambiar nada: el pájaro caza al azar"
+    ],
+    explicacion:"Los escarabajos marrones se confunden con la corteza oscura y son cazados con menos frecuencia: sobreviven más y dejan más descendencia." },
+  { texto:"Una población de bacterias se expone repetidamente a un antibiótico. Al inicio, el 5% de las bacterias tiene una mutación que la hace resistente.",
+    poblacion:{verdes:95, verde:"95% sensibles al antibiótico", otro:"5% resistentes"}, correcta:"Va a aumentar la proporción de resistentes",
+    distractores:[
+      "El antibiótico va a provocar que las bacterias sensibles se vuelvan resistentes",
+      "La proporción de resistentes se va a mantener en 5%"
+    ],
+    explicacion:"El antibiótico mata a las bacterias sensibles; las resistentes sobreviven y se multiplican, aumentando su proporción generación tras generación." },
+  { texto:"En una especie de aves, los machos con cola más larga son elegidos más veces por las hembras para aparearse, aunque vuelan un poco peor.",
+    poblacion:null, correcta:"Va a aumentar la proporción de colas largas",
+    distractores:[
+      "Van a aumentar las colas cortas, porque volar mejor ayuda a sobrevivir",
+      "No va a cambiar nada, porque las dos cosas se compensan"
+    ],
+    explicacion:"Esto es selección sexual: un rasgo puede favorecerse por atraer pareja, incluso si no mejora (o perjudica levemente) la supervivencia." },
+  { texto:"En estudios históricos de poblaciones humanas — antes de los cuidados neonatales modernos — los bebés con peso al nacer muy bajo o muy alto tenían mayor mortalidad, y el peso intermedio era el que sobrevivía más.",
+    poblacion:null, correcta:"El peso promedio se mantiene estable (selección estabilizadora)",
+    distractores:[
+      "El peso promedio va a aumentar generación tras generación",
+      "La variación de peso en la población va a aumentar"
+    ],
+    explicacion:"Cuando los extremos son desfavorecidos, la variación se reduce y el valor intermedio se mantiene — no hay un desplazamiento hacia un extremo. Hoy, con la atención neonatal, esa presión es mucho menor: la selección natural también cambia cuando cambia el ambiente." },
+  { texto:"Un hongo agrícola se vuelve resistente a un fungicida que se usa todos los años sin cambiar de producto.",
+    poblacion:{verdes:98, verde:"98% sensibles al fungicida", otro:"2% resistentes"}, correcta:"Va a aumentar la proporción de resistentes",
+    distractores:[
+      "El fungicida va a dejar de funcionar porque se degrada con los años",
+      "El hongo va a desaparecer del cultivo"
+    ],
+    explicacion:"El uso repetido del mismo fungicida actúa como presión de selección constante, igual que con los antibióticos." }
+];
+
+let ronda = 0, aciertos = 0;
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+
+// La barra se dibuja solo en las rondas donde los colores representan de verdad
+// la proporcion de dos variantes en la poblacion. En las otras (cola de las aves,
+// peso al nacer) el rasgo no es una variable de dos categorias, asi que mostrar
+// cuadraditos de color daba a entender que el rasgo en juego era un color.
+function poblacionHTML(r){
+  if(!r.poblacion) return "";
+  const p = r.poblacion;
+  let html = "";
+  for(let i=0;i<20;i++){
+    const esVerde = i < Math.round(p.verdes/5);
+    html += `<span style="background:${esVerde ? '#2E7D5B' : '#B9822B'}"></span>`;
+  }
+  return `<div class="poblacion">${html}</div>
+    <p style="font-size:0.82rem;color:#5B6E6B;text-align:center;margin:0.4rem 0 0;">
+      <span style="color:#2E7D5B">&#9632;</span> ${p.verde} &nbsp;·&nbsp;
+      <span style="color:#B9822B">&#9632;</span> ${p.otro}</p>`;
+}
+
+function dibujar(){
+  const r = rondas[ronda];
+  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
+
+  // Distractores propios de cada ronda: antes se reciclaban las respuestas
+  // correctas de las otras, y eso permitia acertar por eliminacion.
+  const opciones = [r.correcta, ...r.distractores].sort(()=>Math.random()-0.5);
+
+  tablero.innerHTML = `
+    <p class="enunciado">${r.texto}</p>
+    ${poblacionHTML(r)}
+    <p class="enunciado">¿Qué esperás que pase después de varias generaciones?</p>
+    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
+    <p class="feedback" id="feedback"></p>
+    <button class="siguiente" id="siguiente">Siguiente &rarr;</button>
+  `;
+
+  tablero.querySelectorAll('.opciones button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const acierto = btn.dataset.o === r.correcta;
+      tablero.querySelectorAll('.opciones button').forEach(b=>{
+        b.disabled = true;
+        if(b.dataset.o === r.correcta) b.classList.add('ok');
+        else if(b === btn) b.classList.add('mal');
+      });
+      document.getElementById('feedback').textContent = (acierto ? "¡Correcto! " : "No exactamente. ") + r.explicacion;
+      if(acierto) aciertos++;
+      marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
+      const sig = document.getElementById('siguiente');
+      sig.style.display = 'inline-block';
+      sig.onclick = () => { ronda++; ronda < rondas.length ? dibujar() : final(); };
+    });
+  });
+}
+
+function final(){
+  tablero.innerHTML = `
+    <div class="final">
+      <h2 style="font-family:'Iowan Old Style',Georgia,serif;">Terminaste el juego</h2>
+      <p>Acertaste ${aciertos} de ${rondas.length} escenarios.</p>
+      <button onclick="location.reload()">Jugar de nuevo</button>
+    </div>`;
+}
+
+dibujar();
+</script>
+
+<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:#5B6E6B;line-height:1.55;text-align:left;">
+  <summary style="cursor:pointer;font-weight:700;color:#16211F;font-size:0.95rem;">Para el/la docente</summary>
+  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Secundaria</p>
+  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Selección natural; la variación tiene que existir antes de que actúe la selección; presión de selección; selección sexual; selección estabilizadora.</p>
+  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> En la ronda de los escarabajos: ¿cambia de color un escarabajo, o cambia la composición de la población? Los individuos no evolucionan; las poblaciones sí. Es la distinción que más cuesta y la que sostiene todo el resto del tema.</p>
+</details>
+
+</body>
+</html>

@@ -51,16 +51,25 @@
 <div class="tablero" id="tablero"></div>
 
 <script>
+// Rasgos con herencia monogénica y dominancia completa bien establecida, para que
+// el cuadro de Punnett se corresponda con la genética real del carácter.
+// (Se dejaron de lado lóbulo de la oreja, pico de viuda, pulgar y pecas: son
+// poligénicos, aunque muchos libros de texto los presenten como mendelianos.)
 const rasgos = [
-  {nombre:"lóbulo de la oreja", dominante:"libre", recesivo:"pegado"},
-  {nombre:"capacidad de sentir el sabor de la PTC", dominante:"siente el sabor amargo", recesivo:"no lo siente"},
-  {nombre:"pico de viuda en la frente", dominante:"tiene pico de viuda", recesivo:"línea recta"},
-  {nombre:"pulgar autopista", dominante:"pulgar recto", recesivo:"pulgar flexible ('de autoestopista')"},
-  {nombre:"pecas", dominante:"tiene pecas", recesivo:"sin pecas"}
+  {nombre:"tipo de cera del oído (gen ABCC11)",
+   dominante:"cera húmeda", recesivo:"cera seca"},
+  {nombre:"factor Rh (gen RHD)",
+   dominante:"Rh positivo", recesivo:"Rh negativo"},
+  {nombre:"persistencia de lactasa (regulador del gen LCT)",
+   dominante:"sigue produciendo lactasa de adulto", recesivo:"deja de producir lactasa de adulto"},
+  {nombre:"forma de la semilla de arveja (uno de los caracteres de Mendel)",
+   dominante:"lisa", recesivo:"rugosa"},
+  {nombre:"color de la semilla de arveja (uno de los caracteres de Mendel)",
+   dominante:"amarilla", recesivo:"verde"}
 ];
 
 const TIEMPO_TOTAL = 60;
-let tiempo, timer, puntaje = 0, racha = 0, jugando = false;
+let tiempo, timer, puntaje = 0, racha = 0, jugando = false, errores = [];
 
 const tablero = document.getElementById('tablero');
 const franja = document.getElementById('franja');
@@ -70,40 +79,63 @@ function genotipoAleatorio(){
   return opciones[Math.floor(Math.random()*3)];
 }
 
-function proporcion(g1,g2){
-  const alelos1 = g1.split(""), alelos2 = g2.split("");
-  const combinaciones = [];
-  alelos1.forEach(a=> alelos2.forEach(b=> combinaciones.push([a,b].sort().join(""))));
-  const afectados = combinaciones.filter(c => c === "aa").length;
-  const total = combinaciones.length;
-  if(afectados === 0) return "0 afectados";
-  if(afectados === total) return "todos afectados";
-  if(afectados*4 === total) return "1 de cada 4 afectados";
-  if(afectados*2 === total) return "1 de cada 2 afectados";
-  if(afectados*4 === total*3) return "3 de cada 4 afectados";
-  return afectados+"/"+total+" afectados";
+// Las cuatro casillas del cuadro de Punnett de una cruza monohíbrida.
+function casillas(g1,g2){
+  const out = [];
+  g1.split("").forEach(a => g2.split("").forEach(b => out.push([a,b].sort().join(""))));
+  return out;
+}
+
+function etiqueta(n, total){
+  if(n === 0) return "ninguno";
+  if(n === total) return "todos";
+  if(n*4 === total) return "1 de cada 4";
+  if(n*2 === total) return "1 de cada 2";
+  if(n*4 === total*3) return "3 de cada 4";
+  return n+"/"+total;
+}
+
+// Se pregunta por el fenotipo recesivo o por el dominante, y se permite la cruza
+// aa × aa. Con las dos variantes, las cinco etiquetas de respuesta son alcanzables
+// (antes "3 de cada 4" y "todos" nunca podían ser correctas).
+function proporcion(g1, g2, pide){
+  const c = casillas(g1,g2);
+  const rec = c.filter(x => x === "aa").length;
+  return etiqueta(pide === "recesivo" ? rec : c.length - rec, c.length);
+}
+
+function explicacionCruza(g1, g2, rasgo){
+  const c = casillas(g1,g2);
+  const rec = c.filter(x => x === "aa").length;
+  const dom = c.length - rec;
+  return `El cuadro de ${g1} × ${g2} da ${c.join(", ")}. De las ${c.length} casillas, `
+       + `${rec} ${rec === 1 ? "es" : "son"} aa (${rasgo.recesivo}) y ${dom} `
+       + `${dom === 1 ? "tiene" : "tienen"} al menos una A (${rasgo.dominante}).`;
 }
 
 function nuevaPregunta(){
-  let g1, g2;
-  do { g1 = genotipoAleatorio(); g2 = genotipoAleatorio(); } while(g1==="aa" && g2==="aa");
+  const g1 = genotipoAleatorio(), g2 = genotipoAleatorio();
   const rasgo = rasgos[Math.floor(Math.random()*rasgos.length)];
-  const correcta = proporcion(g1,g2);
-  const todas = ["0 afectados","1 de cada 4 afectados","1 de cada 2 afectados","3 de cada 4 afectados","todos afectados"];
+  const pide = Math.random() < 0.5 ? "recesivo" : "dominante";
+  const correcta = proporcion(g1, g2, pide);
+  const fenotipo = pide === "recesivo" ? rasgo.recesivo : rasgo.dominante;
+  const todas = ["ninguno","1 de cada 4","1 de cada 2","3 de cada 4","todos"];
   const opciones = [correcta, ...todas.filter(o=>o!==correcta).sort(()=>Math.random()-0.5).slice(0,3)]
     .sort(()=>Math.random()-0.5);
 
   tablero.innerHTML = `
     <p class="gen">${g1} &times; ${g2}</p>
-    <p class="rasgo">Rasgo: <b>${rasgo.nombre}</b> — el alelo <b>A</b> es dominante (${rasgo.dominante}), <b>a</b> es recesivo (${rasgo.recesivo}).</p>
+    <p class="rasgo">Rasgo: <b>${rasgo.nombre}</b> — el alelo <b>A</b> es dominante (${rasgo.dominante}), <b>a</b> es recesivo (${rasgo.recesivo}).<br>¿Qué proporción de la descendencia esperás que muestre el rasgo <b>${pide}</b> (<b>${fenotipo}</b>)?</p>
     <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
+    <p id="explica" style="font-size:0.92rem;line-height:1.55;color:#16211F;background:#F4F6F5;border-left:3px solid #E1A73B;padding:0.7rem 0.9rem;margin-top:1rem;text-align:left;display:none;"></p>
+    <button id="seguir" style="display:none;margin-top:1rem;padding:0.55rem 1.4rem;border:1px solid #16211F;background:#16211F;color:#fff;border-radius:6px;font-size:0.95rem;cursor:pointer;">Seguir &rarr;</button>
   `;
 
-  tablero.querySelectorAll('button').forEach(btn=>{
+  tablero.querySelectorAll('.opciones button').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       if(!jugando) return;
       const acierto = btn.dataset.o === correcta;
-      tablero.querySelectorAll('button').forEach(b=>{
+      tablero.querySelectorAll('.opciones button').forEach(b=>{
         b.disabled = true;
         if(b.dataset.o === correcta) b.classList.add('ok');
         else if(b === btn) b.classList.add('mal');
@@ -111,7 +143,22 @@ function nuevaPregunta(){
       if(acierto){ racha++; puntaje += 10 + (racha>=3 ? 5 : 0); }
       else { racha = 0; }
       actualizarFranja();
-      setTimeout(nuevaPregunta, 550);
+
+      const exp = explicacionCruza(g1, g2, rasgo);
+      if(acierto){
+        // Acierto: se sigue rápido para no cortar el ritmo del contrarreloj.
+        setTimeout(()=>{ if(jugando) nuevaPregunta(); }, 600);
+      } else {
+        // Error: se muestra la explicación y se avanza al hacer clic. El reloj
+        // sigue corriendo, así que la pausa la decide quien juega.
+        errores.push({cruza:`${g1} × ${g2}`, pide, fenotipo, correcta, elegida:btn.dataset.o, exp});
+        const e = document.getElementById('explica');
+        e.style.display = 'block';
+        e.innerHTML = `La respuesta correcta era <b>${correcta}</b>. ${exp}`;
+        const sig = document.getElementById('seguir');
+        sig.style.display = 'inline-block';
+        sig.onclick = () => { if(jugando) nuevaPregunta(); };
+      }
     });
   });
 }
@@ -121,7 +168,7 @@ function actualizarFranja(){
 }
 
 function iniciar(){
-  puntaje = 0; racha = 0; tiempo = TIEMPO_TOTAL; jugando = true;
+  puntaje = 0; racha = 0; errores = []; tiempo = TIEMPO_TOTAL; jugando = true;
   actualizarFranja();
   nuevaPregunta();
   timer = setInterval(()=>{
@@ -131,6 +178,14 @@ function iniciar(){
   },1000);
 }
 
+function repaso(){
+  if(errores.length === 0) return `<div style="font-size:0.88rem;color:#5B6E6B;max-width:36em;margin:1.4rem auto;line-height:1.55;text-align:left;border-top:1px solid #E6E9E8;padding-top:1rem;"><b>No erraste ninguna.</b></div>`;
+  const filas = errores.map(e =>
+    `<li style="margin-bottom:0.6rem;"><b>${e.cruza}</b> — rasgo ${e.pide} (${e.fenotipo}).
+      Respondiste <i>${e.elegida}</i>; era <b>${e.correcta}</b>.<br>${e.exp}</li>`).join('');
+  return `<div style="font-size:0.88rem;color:#5B6E6B;max-width:36em;margin:1.4rem auto;line-height:1.55;text-align:left;border-top:1px solid #E6E9E8;padding-top:1rem;"><b>Para repasar — las que erraste:</b><ul style="margin:0.7rem 0 0;padding-left:1.2rem;">${filas}</ul></div>`;
+}
+
 function final(){
   const mejor = Math.max(puntaje, parseInt(localStorage.getItem('punnett-mejor')||"0"));
   localStorage.setItem('punnett-mejor', mejor);
@@ -138,17 +193,25 @@ function final(){
     <div class="final">
       <h2 style="font-family:'Iowan Old Style',Georgia,serif;margin-top:0;">¡Se acabó el tiempo!</h2>
       <p>Puntaje: ${puntaje}<br>Mejor puntaje en este dispositivo: ${mejor}</p>
+      ${repaso()}
       <button onclick="iniciar()">Jugar de nuevo</button>
     </div>`;
 }
 
 tablero.innerHTML = `
   <div class="inicio">
-    <p>Resolvé cruzas monohíbridas antes de que se acabe el tiempo. Sumás puntos extra si encadenás 3 aciertos seguidos.</p>
+    <p>Resolvé cruzamientos monohíbridos antes de que se acabe el tiempo. Sumás puntos extra si encadenás 3 aciertos seguidos. Atención: unas veces se pregunta por el rasgo recesivo y otras por el dominante.</p>
     <button onclick="iniciar()">Empezar (60s)</button>
   </div>`;
-actualizarFranja.call(null);
 franja.innerHTML = `<span>Tiempo: <b>${TIEMPO_TOTAL}s</b></span><span>Puntaje: <b>0</b></span><span>Racha: <b>0</b></span>`;
 </script>
+
+<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:#5B6E6B;line-height:1.55;text-align:left;">
+  <summary style="cursor:pointer;font-weight:700;color:#16211F;font-size:0.95rem;">Para el/la docente</summary>
+  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Secundaria</p>
+  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Cruza monohíbrida y cuadro de Punnett; genotipo y fenotipo; dominancia completa; proporciones 1:2:1 (genotipos) y 3:1 (fenotipos).</p>
+  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> Los cinco rasgos de este juego son monogénicos de verdad. Varios de los que aparecen en los libros de texto — lóbulo de la oreja, pico de viuda, pulgar de autoestopista, pecas — resultaron ser poligénicos cuando se los estudió con datos genómicos. ¿Cómo se podría averiguar si un rasgo se hereda de forma mendeliana simple?</p>
+</details>
+
 </body>
 </html>

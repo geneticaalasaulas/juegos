@@ -57,36 +57,90 @@
 <div class="tablero" id="tablero"></div>
 
 <script>
+// Notación: A/a para autosómica recesiva (a = alelo de la enfermedad),
+// D/d para autosómica dominante (D = alelo de la enfermedad). Se usan letras
+// distintas a propósito: así "Aa" significa siempre portador/a sano/a, y no
+// cambia de significado entre una ronda y la siguiente.
+// estado: "afectado" | "portador" | "sano" — define el relleno del símbolo,
+// siguiendo la convención de genealogías (relleno = afectado, punto = portador).
 const rondas = [
-  { patron:"autosómica recesiva", padreA:"Aa", padreB:"Aa",
-    texto:"Los dos progenitores son <b>portadores</b> (Aa) de una enfermedad autosómica recesiva. Ninguno está afectado.",
-    correcta:"25%" },
-  { patron:"autosómica recesiva", padreA:"Aa", padreB:"aa",
-    texto:"Un progenitor es <b>portador</b> (Aa) y el otro está <b>afectado</b> (aa) por una enfermedad autosómica recesiva.",
-    correcta:"50%" },
-  { patron:"autosómica dominante", padreA:"Aa", padreB:"aa",
-    texto:"Un progenitor está <b>afectado</b> (Aa) por una enfermedad autosómica dominante; el otro no porta el alelo (aa).",
-    correcta:"50%" },
-  { patron:"autosómica dominante", padreA:"Aa", padreB:"Aa",
-    texto:"Los dos progenitores están <b>afectados</b> (Aa) por una enfermedad autosómica dominante.",
-    correcta:"75%" },
-  { patron:"autosómica recesiva", padreA:"aa", padreB:"aa",
-    texto:"Los dos progenitores están <b>afectados</b> (aa) por una enfermedad autosómica recesiva.",
-    correcta:"100%" },
-  { patron:"ligada al X recesiva", padreA:"XAXa", padreB:"XAY",
-    texto:"La madre es <b>portadora</b> (X<sup>A</sup>X<sup>a</sup>) de una enfermedad ligada al X recesiva; el padre no está afectado.",
-    correcta:"25% de los hijos varones", esVariasHijas:true }
+  { patron:"autosómica recesiva", pregunta:"hijos e hijas", correcta:"25%",
+    varon:{g:"Aa", estado:"portador"}, mujer:{g:"Aa", estado:"portador"},
+    texto:"Los dos progenitores son <b>portadores</b> (Aa) de una enfermedad autosómica recesiva. Ninguno de los dos está afectado." },
+  { patron:"autosómica recesiva", pregunta:"hijos e hijas", correcta:"50%",
+    varon:{g:"Aa", estado:"portador"}, mujer:{g:"aa", estado:"afectado"},
+    texto:"El padre es <b>portador</b> (Aa) y la madre está <b>afectada</b> (aa) por una enfermedad autosómica recesiva." },
+  { patron:"autosómica dominante", pregunta:"hijos e hijas", correcta:"50%",
+    varon:{g:"Dd", estado:"afectado"}, mujer:{g:"dd", estado:"sano"},
+    texto:"El padre está <b>afectado</b> (Dd) por una enfermedad autosómica dominante; la madre no tiene el alelo D (dd)." },
+  { patron:"autosómica dominante", pregunta:"hijos e hijas", correcta:"75%",
+    varon:{g:"Dd", estado:"afectado"}, mujer:{g:"Dd", estado:"afectado"},
+    texto:"Los dos progenitores están <b>afectados</b> (Dd) por una enfermedad autosómica dominante." },
+  { patron:"autosómica recesiva", pregunta:"hijos e hijas", correcta:"100%",
+    varon:{g:"aa", estado:"afectado"}, mujer:{g:"aa", estado:"afectado"},
+    texto:"Los dos progenitores están <b>afectados</b> (aa) por una enfermedad autosómica recesiva." },
+  { patron:"ligada al X recesiva", pregunta:"varones", correcta:"50% de los varones",
+    varon:{g:"XAY", estado:"sano"}, mujer:{g:"XAXa", estado:"portador"},
+    texto:"La madre es <b>portadora</b> (X<sup>A</sup>X<sup>a</sup>) de una enfermedad recesiva ligada al cromosoma X. El padre no está afectado (X<sup>A</sup>Y)." }
 ];
 
 let ronda = 0, aciertos = 0;
 const tablero = document.getElementById('tablero');
 const marcador = document.getElementById('marcador');
 
-function opcionesPara(r){
-  if(r.esVariasHijas){
-    return ["Ninguno","25% de los hijos varones","50% de los hijos varones","100%"];
+function svgGenotipo(g){
+  // Notación ligada al X (ej. "XAXa", "XAY"): la letra de alelo va como superíndice.
+  if(!g.includes('X') && !g.includes('Y')) return g;
+  let out = '';
+  for(let i=0;i<g.length;i++){
+    const ch = g[i];
+    out += (ch === 'X' || ch === 'Y') ? ch : `<tspan baseline-shift="super" font-size="65%">${ch}</tspan>`;
   }
-  return ["0%","25%","50%","75%","100%"].filter(o => o !== r.correcta).slice(0,3).concat(r.correcta).sort(()=>Math.random()-0.5);
+  return out;
+}
+
+function relleno(estado){ return estado === "afectado" ? "#E1A73B" : "#ffffff"; }
+function punto(estado, cx, cy){
+  return estado === "portador" ? `<circle cx="${cx}" cy="${cy}" r="3.4" fill="#16211F"/>` : '';
+}
+
+function hijosSVG(r){
+  if(r.pregunta === "varones"){
+    // En las rondas ligadas al X el sexo importa, así que se dibuja un varón y una niña.
+    return `
+      <line x1="120" y1="72" x2="180" y2="72" stroke="#16211F" stroke-width="2"/>
+      <line x1="120" y1="72" x2="120" y2="104" stroke="#16211F" stroke-width="2"/>
+      <line x1="180" y1="72" x2="180" y2="104" stroke="#16211F" stroke-width="2"/>
+      <rect x="108" y="104" width="24" height="24" fill="#ffffff" stroke="#16211F" stroke-width="1.5"/>
+      <text x="120" y="121" text-anchor="middle" font-size="12" fill="#5B6E6B">?</text>
+      <text x="120" y="141" text-anchor="middle" font-size="8" fill="#5B6E6B">varón</text>
+      <circle cx="180" cy="116" r="12" fill="#ffffff" stroke="#16211F" stroke-width="1.5"/>
+      <text x="180" y="120" text-anchor="middle" font-size="12" fill="#5B6E6B">?</text>
+      <text x="180" y="141" text-anchor="middle" font-size="8" fill="#5B6E6B">niña</text>`;
+  }
+  // Rombo = sexo sin especificar (convención de genealogías).
+  const rombos = [100,150,200].map(x => `
+      <line x1="${x}" y1="72" x2="${x}" y2="104" stroke="#16211F" stroke-width="2"/>
+      <polygon points="${x},104 ${x+13},117 ${x},130 ${x-13},117" fill="#ffffff" stroke="#16211F" stroke-width="1.5"/>
+      <text x="${x}" y="121" text-anchor="middle" font-size="11" fill="#5B6E6B">?</text>`).join('');
+  return `<line x1="100" y1="72" x2="200" y2="72" stroke="#16211F" stroke-width="2"/>` + rombos;
+}
+
+const leyendaSVG = `
+  <rect x="44" y="156" width="9" height="9" fill="#E1A73B" stroke="#16211F" stroke-width="1"/>
+  <text x="58" y="164" font-size="8" fill="#5B6E6B">afectado/a</text>
+  <rect x="112" y="156" width="9" height="9" fill="#ffffff" stroke="#16211F" stroke-width="1"/>
+  <text x="126" y="164" font-size="8" fill="#5B6E6B">no afectado/a</text>
+  <rect x="202" y="156" width="9" height="9" fill="#ffffff" stroke="#16211F" stroke-width="1"/>
+  <circle cx="206.5" cy="160.5" r="1.8" fill="#16211F"/>
+  <text x="216" y="164" font-size="8" fill="#5B6E6B">portador/a</text>
+  <text x="150" y="150" text-anchor="middle" font-size="8" fill="#5B6E6B">? = por determinar</text>`;
+
+function opcionesPara(r){
+  const lista = r.pregunta === "varones"
+    ? ["Ninguno","25% de los varones","50% de los varones","100% de los varones"]
+    : ["0%","25%","50%","75%","100%"].filter(o => o !== r.correcta).slice(0,3).concat(r.correcta);
+  return lista.sort(() => Math.random() - 0.5);
 }
 
 function dibujar(){
@@ -94,24 +148,24 @@ function dibujar(){
   marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
 
   const opciones = opcionesPara(r);
+  const quien = r.pregunta === "varones" ? "los <b>varones</b>" : "los <b>hijos e hijas</b>";
+
   tablero.innerHTML = `
-    <svg class="arbol" viewBox="0 0 300 140">
-      <line x1="90" y1="35" x2="210" y2="35" stroke="#16211F" stroke-width="2"/>
-      <line x1="150" y1="35" x2="150" y2="80" stroke="#16211F" stroke-width="2"/>
-      <line x1="100" y1="80" x2="200" y2="80" stroke="#16211F" stroke-width="2"/>
-      <line x1="100" y1="80" x2="100" y2="115" stroke="#16211F" stroke-width="2"/>
-      <line x1="150" y1="80" x2="150" y2="115" stroke="#16211F" stroke-width="2"/>
-      <line x1="200" y1="80" x2="200" y2="115" stroke="#16211F" stroke-width="2"/>
-      <rect x="75" y="20" width="24" height="24" fill="#E1A73B"/>
-      <text x="87" y="60" text-anchor="middle" font-size="11">${r.padreA}</text>
-      <circle cx="213" cy="32" r="12" fill="#E1A73B"/>
-      <text x="213" y="60" text-anchor="middle" font-size="11">${r.padreB}</text>
-      <rect x="88" y="115" width="24" height="24" fill="#ddd" stroke="#16211F"/>
-      <circle cx="150" cy="127" r="12" fill="#ddd" stroke="#16211F"/>
-      <rect x="188" y="115" width="24" height="24" fill="#ddd" stroke="#16211F"/>
-      <text x="150" y="10" text-anchor="middle" font-size="10" fill="#5B6E6B">? = por determinar</text>
+    <svg class="arbol" viewBox="0 0 300 172">
+      <text x="87" y="12" text-anchor="middle" font-size="8" fill="#5B6E6B">padre</text>
+      <text x="213" y="12" text-anchor="middle" font-size="8" fill="#5B6E6B">madre</text>
+      <rect x="75" y="20" width="24" height="24" fill="${relleno(r.varon.estado)}" stroke="#16211F" stroke-width="1.5"/>
+      ${punto(r.varon.estado, 87, 32)}
+      <text x="87" y="58" text-anchor="middle" font-size="11">${svgGenotipo(r.varon.g)}</text>
+      <circle cx="213" cy="32" r="12" fill="${relleno(r.mujer.estado)}" stroke="#16211F" stroke-width="1.5"/>
+      ${punto(r.mujer.estado, 213, 32)}
+      <text x="213" y="58" text-anchor="middle" font-size="11">${svgGenotipo(r.mujer.g)}</text>
+      <line x1="99" y1="32" x2="201" y2="32" stroke="#16211F" stroke-width="2"/>
+      <line x1="150" y1="32" x2="150" y2="72" stroke="#16211F" stroke-width="2"/>
+      ${hijosSVG(r)}
+      ${leyendaSVG}
     </svg>
-    <p class="enunciado">${r.texto}<br>¿Qué fracción de los hijos esperás que esté <b>afectada</b>?</p>
+    <p class="enunciado">${r.texto}<br>¿Qué fracción de ${quien} esperás que esté <b>afectada</b>?</p>
     <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
     <p class="feedback" id="feedback"></p>
     <button class="siguiente" id="siguiente">Siguiente &rarr;</button>
@@ -139,9 +193,9 @@ function dibujar(){
 
 function explicacion(r){
   const notas = {
-    "autosómica recesiva": "En herencia autosómica recesiva, dos portadores tienen 1/4 de hijos afectados; un portador con un afectado, 1/2.",
-    "autosómica dominante": "En herencia autosómica dominante, basta un alelo para estar afectado — las proporciones se calculan igual que en la recesiva, pero el fenotipo dominante es el 'afectado'.",
-    "ligada al X recesiva": "En herencia ligada al X recesiva, los varones (XY) se afectan con un solo alelo recesivo heredado de la madre; las mujeres necesitan dos copias."
+    "autosómica recesiva": "En herencia autosómica recesiva hacen falta dos copias del alelo a para estar afectado: dos portadores (Aa × Aa) tienen 1 de cada 4 hijos o hijas afectados; un portador con una persona afectada (Aa × aa), 1 de cada 2.",
+    "autosómica dominante": "En herencia autosómica dominante alcanza una sola copia del alelo D para estar afectado. Las proporciones de genotipos son las mismas que en la recesiva, pero cambia qué genotipos quedan afectados: Dd × dd da 1 de cada 2, y Dd × Dd da 3 de cada 4 (los DD y los Dd).",
+    "ligada al X recesiva": "La madre portadora le pasa el X con la variante a la mitad de su descendencia. Los varones que lo reciben están afectados, porque tienen un solo X; las niñas que lo reciben quedan portadoras, como la madre. Por eso: la mitad de los varones — que es una cuarta parte del total de hijos e hijas."
   };
   return notas[r.patron] || "";
 }
@@ -157,5 +211,13 @@ function final(){
 
 dibujar();
 </script>
+
+<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:#5B6E6B;line-height:1.55;text-align:left;">
+  <summary style="cursor:pointer;font-weight:700;color:#16211F;font-size:0.95rem;">Para el/la docente</summary>
+  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Secundaria</p>
+  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Herencia autosómica dominante y recesiva; herencia recesiva ligada al cromosoma X; lectura de genealogías (cuadrado = varón, círculo = mujer, relleno = afectado, punto = portador); cálculo de proporciones de la descendencia.</p>
+  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> ¿Por qué en la herencia recesiva ligada al X se afectan sobre todo los varones? En la última ronda, "la mitad de los varones" y "una cuarta parte del total de hijos e hijas" son el mismo resultado expresado sobre denominadores distintos: conviene detenerse ahí, porque es donde más se confunde.</p>
+</details>
+
 </body>
 </html>

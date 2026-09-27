@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cariotipo express · Genética a las Aulas</title>
+<style>
+  :root{ --bg:#0F3D3E; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#E1A73B; --accent-deep:#B9822B; --ok:#2E7D5B; --mal:#B1473F; }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:#F2EEE2; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:#CFE3DF; font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--accent); }
+  h1{ font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; font-size:1.6rem; margin:0.6rem 0 0.2rem; }
+  .marcador{ color:#CFE3DF; font-size:0.9rem; margin-bottom:1rem; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:6px; padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem; }
+  .enunciado{ font-size:0.98rem; margin:0 0 1rem; line-height:1.5; }
+  .foto-wrap{ text-align:center; margin-bottom:0.5rem; }
+  img.cario{ max-width:100%; max-height:320px; border-radius:4px; border:1px solid #eee; background:#fafafa; }
+  .credito{ font-size:0.72rem; color:var(--muted); margin:0.4rem 0 1.1rem; text-align:center; }
+  .credito a{ color:var(--muted); }
+  .opciones{ display:grid; grid-template-columns:repeat(2,1fr); gap:0.6rem; }
+  .opciones button{ padding:0.7rem 0.5rem; border-radius:4px; border:1.5px solid var(--accent-deep); background:#fff; color:var(--ink); font-size:0.9rem; cursor:pointer; }
+  .opciones button:hover{ background:#FBF1DD; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
+  .feedback{ min-height:2.6rem; margin-top:0.9rem; font-size:0.92rem; }
+  .siguiente{ margin-top:0.6rem; align-self:flex-end; background:var(--accent); color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px; font-weight:600; cursor:pointer; display:none; }
+  .final{ text-align:center; }
+  .final button{ margin-top:1rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>Cariotipo express</h1>
+<p class="marcador" id="marcador">Ronda 1 de 5 · Aciertos: 0</p>
+<div class="tablero" id="tablero"></div>
+
+<script>
+// Fotos reales de cariotipos, de fuentes de uso libre:
+// - CDC Public Health Image Library (dominio público, EE.UU.)
+// - Wikimedia Commons (CC BY-SA 3.0, autor indicado)
+const rondas = [
+  { img:"https://wwwn.cdc.gov/phil///PHIL_Images/28669/28669_lores.jpg",
+    credito:'CDC/ Allan J. Ebbin, MD — dominio público', creditoUrl:"https://wwwn.cdc.gov/phil/details.aspx?pid=28669",
+    correcta:"Cariotipo típico (46 cromosomas)",
+    explicacion:"46 cromosomas en 23 pares — el complemento cromosómico humano habitual." },
+  { img:"https://wwwn.cdc.gov/phil///PHIL_Images/12502/12502_lores.jpg",
+    credito:'Cortesía: National Human Genome Research Institute — dominio público', creditoUrl:"https://wwwn.cdc.gov/phil/details.aspx?pid=12502",
+    correcta:"Trisomía 21 — síndrome de Down (47 cromosomas)",
+    explicacion:"Hay tres copias del cromosoma 21 en vez de dos (señalado con la flecha) — de ahí el nombre trisomía 21." },
+  { img:"https://upload.wikimedia.org/wikipedia/commons/1/1b/45%2CX.jpg",
+    credito:'The cat~commonswiki, Wikimedia Commons — CC BY-SA 3.0', creditoUrl:"https://commons.wikimedia.org/wiki/File:45,X.jpg",
+    correcta:"Síndrome de Turner — monosomía X (45 cromosomas)",
+    explicacion:"Solo hay un cromosoma sexual (X), sin su par — por eso el total es 45 en vez de 46." },
+  { img:"https://wwwn.cdc.gov/phil///PHIL_Images/12508/12508_lores.jpg",
+    credito:'CDC/ Allan J. Ebbin, MD, MPH — dominio público', creditoUrl:"https://wwwn.cdc.gov/phil/details.aspx?pid=12508",
+    correcta:"Trisomía 18 — síndrome de Edwards (47 cromosomas)",
+    explicacion:"Hay tres copias del cromosoma 18 en vez de dos — el segundo síndrome de trisomía autosómica más frecuente después de la trisomía 21." },
+  { img:"https://wwwn.cdc.gov/phil///PHIL_Images/12507/12507_lores.jpg",
+    credito:'CDC/ Allan J. Ebbin, MD, MPH — dominio público', creditoUrl:"https://wwwn.cdc.gov/phil/details.aspx?pid=12507",
+    correcta:"Trisomía 13 — síndrome de Patau (47 cromosomas)",
+    explicacion:"Hay tres copias del cromosoma 13 en vez de dos." }
+];
+
+const todasOpciones = [
+  "Cariotipo típico (46 cromosomas)",
+  "Trisomía 21 — síndrome de Down (47 cromosomas)",
+  "Trisomía 18 — síndrome de Edwards (47 cromosomas)",
+  "Trisomía 13 — síndrome de Patau (47 cromosomas)",
+  "Síndrome de Turner — monosomía X (45 cromosomas)"
+];
+
+let ronda = 0, aciertos = 0;
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+
+function dibujar(){
+  const r = rondas[ronda];
+  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
+
+  const opciones = [r.correcta, ...todasOpciones.filter(o=>o!==r.correcta).sort(()=>Math.random()-0.5).slice(0,3)]
+    .sort(()=>Math.random()-0.5);
+
+  tablero.innerHTML = `
+    <div class="foto-wrap"><img class="cario" src="${r.img}" alt="Fotografía de un cariotipo"></div>
+    <p class="credito">Fuente: <a href="${r.creditoUrl}" target="_blank" rel="noopener">${r.credito}</a></p>
+    <p class="enunciado">Esta es una fotografía real de un cariotipo. ¿Cuál corresponde?</p>
+    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
+    <p class="feedback" id="feedback"></p>
+    <button class="siguiente" id="siguiente">Siguiente &rarr;</button>
+    <p class="credito" style="margin-top:1.4rem;">Un cariotipo muestra cuántos cromosomas tiene una persona y cómo son. No dice nada sobre quién es, qué puede aprender ni cómo va a ser su vida.</p>
+  `;
+
+  tablero.querySelectorAll('.opciones button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const acierto = btn.dataset.o === r.correcta;
+      tablero.querySelectorAll('.opciones button').forEach(b=>{
+        b.disabled = true;
+        if(b.dataset.o === r.correcta) b.classList.add('ok');
+        else if(b === btn) b.classList.add('mal');
+      });
+      document.getElementById('feedback').textContent = (acierto ? "¡Correcto! " : "No. ") + r.explicacion;
+      if(acierto) aciertos++;
+      marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
+      const sig = document.getElementById('siguiente');
+      sig.style.display = 'inline-block';
+      sig.onclick = () => { ronda++; ronda < rondas.length ? dibujar() : final(); };
+    });
+  });
+}
+
+function final(){
+  tablero.innerHTML = `
+    <div class="final">
+      <h2 style="font-family:'Iowan Old Style',Georgia,serif;">Terminaste el juego</h2>
+      <p>Identificaste correctamente ${aciertos} de ${rondas.length} cariotipos.</p>
+      <button onclick="location.reload()">Jugar de nuevo</button>
+    </div>`;
+}
+
+dibujar();
+</script>
+
+<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:#5B6E6B;line-height:1.55;text-align:left;">
+  <summary style="cursor:pointer;font-weight:700;color:#16211F;font-size:0.95rem;">Para el/la docente</summary>
+  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Primaria</p>
+  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Qué es un cariotipo; cromosomas homólogos y pares; cromosomas sexuales; trisomías y monosomías; la no disyunción como origen de las aneuploidías.</p>
+  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> ¿Qué información da un cariotipo y qué información no da? Un cariotipo dice cuántos cromosomas hay y cómo son; no dice nada sobre la personalidad, las capacidades ni el futuro de una persona.</p>
+</details>
+
+</body>
+</html>

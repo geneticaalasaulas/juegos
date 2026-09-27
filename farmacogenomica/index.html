@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Farmacogenómica exprés · Genética a las Aulas</title>
+<style>
+  :root{ --bg:#0F3D3E; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#E1A73B; --accent-deep:#B9822B; --ok:#2E7D5B; --mal:#B1473F; }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:#F2EEE2; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:#CFE3DF; font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--accent); }
+  h1{ font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; font-size:1.6rem; margin:0.6rem 0 0.2rem; }
+  .franja{ display:flex; gap:1.4rem; color:#CFE3DF; font-size:0.92rem; margin-bottom:1rem; }
+  .franja b{ color:var(--accent); }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:6px; padding:1.6rem; width:min(520px,92vw); margin-bottom:1.4rem; text-align:center; }
+  .gen{ font-size:1.1rem; font-weight:700; margin-bottom:0.3rem; }
+  .rasgo{ color:var(--muted); font-size:0.92rem; margin-bottom:1.1rem; }
+  .opciones{ display:grid; grid-template-columns:1fr; gap:0.6rem; }
+  .opciones button{ padding:0.75rem 0.5rem; border-radius:4px; border:1.5px solid var(--accent-deep); background:#fff; color:var(--ink); font-size:0.95rem; cursor:pointer; }
+  .opciones button:hover{ background:#FBF1DD; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
+  .inicio, .final{ text-align:center; }
+  .inicio button, .final button{ margin-top:0.8rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>Farmacogenómica exprés</h1>
+<div class="franja" id="franja"></div>
+<div class="tablero" id="tablero"></div>
+
+<script>
+// Fármaco ficticio "Genoprilol": un fármaco ACTIVO que la enzima INACTIVA.
+// Ese detalle es el que hace deducible la respuesta (ver la nota final del juego).
+const perfiles = [
+  { genotipo:"metabolizador lento", correcta:"Dosis baja", explicacion:"Metaboliza el fármaco despacio: con una dosis normal se acumula en sangre y puede volverse tóxico." },
+  { genotipo:"metabolizador normal", correcta:"Dosis estándar", explicacion:"Procesa el fármaco al ritmo esperado — la dosis de referencia funciona bien." },
+  { genotipo:"metabolizador rápido", correcta:"Dosis alta", explicacion:"Metaboliza el fármaco muy rápido: con la dosis estándar el nivel en sangre puede quedar por debajo del efecto buscado." },
+  { genotipo:"metabolizador ultrarrápido", correcta:"Dosis alta o cambiar de fármaco", explicacion:"Metaboliza tan rápido que incluso una dosis alta puede no alcanzar niveles terapéuticos — a veces conviene otro fármaco." }
+];
+
+const TIEMPO_TOTAL = 60;
+let tiempo, timer, puntaje = 0, racha = 0, jugando = false, errores = [];
+
+const tablero = document.getElementById('tablero');
+const franja = document.getElementById('franja');
+
+function nuevaPregunta(){
+  const perfil = perfiles[Math.floor(Math.random()*perfiles.length)];
+  const todas = ["Dosis baja","Dosis estándar","Dosis alta","Dosis alta o cambiar de fármaco"];
+  const opciones = [perfil.correcta, ...todas.filter(o=>o!==perfil.correcta).sort(()=>Math.random()-0.5).slice(0,2)]
+    .sort(()=>Math.random()-0.5);
+
+  tablero.innerHTML = `
+    <p class="gen">Paciente: ${perfil.genotipo}</p>
+    <p class="rasgo">Fármaco: <b>Genoprilol</b> — un fármaco <b>activo</b> que esta enzima <b>inactiva</b>: cuanto más rápido lo metaboliza el paciente, menos efecto tiene.</p>
+    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
+    <p id="explica" style="font-size:0.92rem;line-height:1.55;color:#16211F;background:#F4F6F5;border-left:3px solid #E1A73B;padding:0.7rem 0.9rem;margin-top:1rem;text-align:left;display:none;"></p>
+    <button id="seguir" style="display:none;margin-top:1rem;padding:0.55rem 1.4rem;border:1px solid #16211F;background:#16211F;color:#fff;border-radius:6px;font-size:0.95rem;cursor:pointer;">Seguir &rarr;</button>
+    <p style="font-size:0.82rem;color:#5B6E6B;margin-top:1.4rem;">Fármaco ficticio, con fines educativos. Las decisiones de dosis reales las toma un profesional de la salud.</p>
+  `;
+
+  tablero.querySelectorAll('.opciones button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(!jugando) return;
+      const acierto = btn.dataset.o === perfil.correcta;
+      tablero.querySelectorAll('.opciones button').forEach(b=>{
+        b.disabled = true;
+        if(b.dataset.o === perfil.correcta) b.classList.add('ok');
+        else if(b === btn) b.classList.add('mal');
+      });
+      if(acierto){ racha++; puntaje += 10 + (racha>=3 ? 5 : 0); }
+      else { racha = 0; }
+      actualizarFranja();
+
+      if(acierto){
+        setTimeout(()=>{ if(jugando) nuevaPregunta(); }, 700);
+      } else {
+        // El reloj sigue corriendo: la pausa para leer la decide quien juega.
+        errores.push({genotipo:perfil.genotipo, correcta:perfil.correcta,
+                      elegida:btn.dataset.o, exp:perfil.explicacion});
+        const e = document.getElementById('explica');
+        e.style.display = 'block';
+        e.innerHTML = `Era <b>${perfil.correcta}</b>. ${perfil.explicacion}`;
+        const sig = document.getElementById('seguir');
+        sig.style.display = 'inline-block';
+        sig.onclick = () => { if(jugando) nuevaPregunta(); };
+      }
+    });
+  });
+}
+
+function actualizarFranja(){
+  franja.innerHTML = `<span>Tiempo: <b>${tiempo}s</b></span><span>Puntaje: <b>${puntaje}</b></span><span>Racha: <b>${racha}</b></span>`;
+}
+
+function iniciar(){
+  puntaje = 0; racha = 0; errores = []; tiempo = TIEMPO_TOTAL; jugando = true;
+  actualizarFranja();
+  nuevaPregunta();
+  timer = setInterval(()=>{
+    tiempo--;
+    actualizarFranja();
+    if(tiempo <= 0){ clearInterval(timer); jugando=false; final(); }
+  },1000);
+}
+
+function repaso(){
+  if(errores.length === 0) return "";
+  const filas = errores.map(e =>
+    `<li style="margin-bottom:0.6rem;"><b>${e.genotipo}</b> — respondiste <i>${e.elegida}</i>; era <b>${e.correcta}</b>.<br>${e.exp}</li>`).join('');
+  return `<div style="font-size:0.88rem;color:#5B6E6B;max-width:36em;margin:1.4rem auto;line-height:1.55;text-align:left;border-top:1px solid #E6E9E8;padding-top:1rem;"><b>Para repasar — las que erraste:</b><ul style="margin:0.7rem 0 0;padding-left:1.2rem;">${filas}</ul></div>`;
+}
+
+function final(){
+  const mejor = Math.max(puntaje, parseInt(localStorage.getItem('farmaco-mejor')||"0"));
+  localStorage.setItem('farmaco-mejor', mejor);
+  tablero.innerHTML = `
+    <div class="final">
+      <h2 style="font-family:'Iowan Old Style',Georgia,serif;margin-top:0;">¡Se acabó el tiempo!</h2>
+      <p>Puntaje: ${puntaje}<br>Mejor puntaje en este dispositivo: ${mejor}</p>
+      ${repaso()}
+      <div style="font-size:0.88rem;color:#5B6E6B;max-width:36em;margin:1.4rem auto;line-height:1.55;text-align:left;border-top:1px solid #E6E9E8;padding-top:1rem;">
+        <b>Para el/la docente:</b> la lógica de este juego (metaboliza rápido &rarr; hace falta más dosis)
+        vale porque el Genoprilol es un fármaco activo que la enzima <i>inactiva</i>. Con los
+        <b>profármacos</b> pasa lo contrario: la codeína, por ejemplo, necesita que la enzima CYP2D6
+        la convierta en morfina, así que un metabolizador ultrarrápido genera demasiada morfina y
+        tiene riesgo de toxicidad, mientras que un metabolizador lento casi no siente el efecto
+        analgésico. Antes de ajustar una dosis por genotipo hay que saber si la enzima
+        <i>activa</i> o <i>inactiva</i> al fármaco.
+      </div>
+      <button onclick="iniciar()">Jugar de nuevo</button>
+    </div>`;
+}
+
+tablero.innerHTML = `
+  <div class="inicio">
+    <p>Un fármaco ficticio, cuatro perfiles de metabolización posibles. Elegí la dosis correcta antes de que se acabe el tiempo.</p>
+    <button onclick="iniciar()">Empezar (60s)</button>
+  </div>`;
+franja.innerHTML = `<span>Tiempo: <b>${TIEMPO_TOTAL}s</b></span><span>Puntaje: <b>0</b></span><span>Racha: <b>0</b></span>`;
+</script>
+
+<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:#5B6E6B;line-height:1.55;text-align:left;">
+  <summary style="cursor:pointer;font-weight:700;color:#16211F;font-size:0.95rem;">Para el/la docente</summary>
+  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Docentes</p>
+  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Variantes en enzimas que metabolizan fármacos; fenotipos de metabolización (lento, normal, rápido, ultrarrápido); fármaco activo frente a profármaco; medicina de precisión.</p>
+  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> Si el genotipo permite anticipar qué dosis va a funcionar, ¿por qué no se estudia de rutina antes de cada tratamiento? Conviene poner sobre la mesa el costo, el tiempo de respuesta y para qué fármacos hay evidencia suficiente.</p>
+</details>
+
+</body>
+</html>
