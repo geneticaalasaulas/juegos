@@ -5,32 +5,80 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CRISPR simplificado · Genética a las Aulas</title>
 <style>
-  :root{ --bg:#0F3D3E; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#E1A73B; --accent-deep:#B9822B; --ok:#2E7D5B; --mal:#B1473F; }
+  :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
+    /* Una sola paleta de texto: --ink y --muted sirven tanto sobre la
+       pagina como sobre el tablero, porque los dos son claros. */
+    --enfasis:#0462B7;        /* enfasis del texto, en el color del juego */
+    --juego:#0462B7;          /* azul del logo — ver capas/crispr.svg */
+    --juego-texto:#0462B7;    /* misma familia, oscurecido hasta 4.5:1 sobre blanco */
+    --juego-tinte:#E3EEF7;    /* fondo del boton al pasar el mouse */
+    --pista:#E2E8E6;             /* pista de la barra de progreso */
+    --foco:#16211F;              /* anillo de foco: igual en todo el sitio, maxima visibilidad */
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
   *{box-sizing:border-box;}
-  body{ margin:0; min-height:100vh; background:var(--bg); color:#F2EEE2; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; display:flex; flex-direction:column; align-items:center; }
-  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:#CFE3DF; font-size:0.9rem; text-decoration:none; }
-  a.volver:hover{ color:var(--accent); }
-  h1{ font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; font-size:1.6rem; margin:0.6rem 0 0.2rem; }
-  .marcador{ color:#CFE3DF; font-size:0.9rem; margin-bottom:1rem; }
-  .tablero{ background:var(--card); color:var(--ink); border-radius:6px; padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem; }
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--juego-texto); }
+  h1{
+    font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem);
+    letter-spacing:-0.01em; line-height:1.2;
+    margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem;
+  }
+  .marcador{ color:var(--muted); font-size:0.9rem; margin-bottom:1rem; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:8px;
+    border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem; }
   .enunciado{ font-size:0.98rem; margin:0 0 1rem; line-height:1.5; }
   .secuencia{ font-family:"Courier New",monospace; font-size:1.3rem; text-align:center; letter-spacing:0.15em; margin-bottom:1rem; background:#F7F3E7; padding:0.7rem; border-radius:4px; }
-  .secuencia .mut{ color:#B1473F; font-weight:700; }
+  .secuencia .mut{ color:#DC0F19; font-weight:700; }
   .opciones{ display:grid; grid-template-columns:1fr; gap:0.6rem; }
-  .opciones button{ padding:0.7rem 0.8rem; border-radius:4px; border:1.5px solid var(--accent-deep); background:#fff; color:var(--ink); font-size:0.95rem; cursor:pointer; font-family:"Courier New",monospace; text-align:left; }
-  .opciones button:hover{ background:#FBF1DD; }
+  .opciones button{
+    min-height:44px; padding:0.7rem 0.8rem; border-radius:4px; border:1.5px solid var(--juego); background:#fff; color:var(--ink); font-size:0.95rem; cursor:pointer;
+    transition:background-color .15s ease, border-color .15s ease, opacity .15s ease; font-family:"Courier New",monospace; text-align:left; }
+  .opciones button:hover{ background:var(--juego-tinte); }
   .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
   .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
-  .feedback{ min-height:2.6rem; margin-top:0.9rem; font-size:0.92rem; font-family:system-ui,sans-serif; }
-  .siguiente{ margin-top:0.6rem; align-self:flex-end; background:var(--accent); color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px; font-weight:600; cursor:pointer; display:none; }
+  .feedback{ min-height:2.6rem; margin-top:0.9rem; font-size:0.92rem; font-family:var(--fuente); }
+  .siguiente{ margin-top:0.6rem; width:fit-content; margin-left:auto; background:var(--accent); color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px; font-weight:600; cursor:pointer; display:none; }
   .final{ text-align:center; }
   .final button{ margin-top:1rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
+
+  /* --- I1 · foco visible para navegacion con teclado --- */
+  .opciones button:focus-visible, .siguiente:focus-visible,
+  a.volver:focus-visible, summary:focus-visible, #seguir:focus-visible{
+    outline:3px solid var(--foco); outline-offset:2px;
+  }
+  /* --- I2 · senal de acierto/error que no depende del color ---
+     verde y rojo son indistinguibles en la forma mas frecuente de daltonismo */
+  .opciones button.ok::before{  content:"\2713\00a0"; font-weight:700; }
+  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
+  /* --- I3 · los botones ya respondidos dejan de parecer clickeables --- */
+  .opciones button:disabled{ cursor:default; }
+  .opciones button:disabled:not(.ok):not(.mal){ opacity:0.45; border-color:#C9CFCE; }
+  /* --- I4 · en pantallas chicas, una sola columna de opciones --- */
+  @media (max-width:520px){ .opciones{ grid-template-columns:1fr; } }
+
+  /* --- V1 · el verde del logo como color de estructura, compartido con la portada.
+     El ambar queda reservado para la accion principal y el enfasis del texto. --- */
+  /* --- V2 · barra de progreso --- */
+  .progreso{
+    width:min(560px,92vw); height:5px; margin:0 0 1.1rem;
+    background:var(--pista); border-radius:999px; overflow:hidden;
+  }
+  .progreso > i{
+    display:block; height:100%; width:0; border-radius:999px;
+    background:var(--juego-texto); transition:width .3s ease;
+  }
+  /* en los juegos contrarreloj la barra se vacia, y va en ambar (urgencia) */
+  .progreso.tiempo > i{ background:var(--enfasis); width:100%; }
 </style>
 </head>
 <body>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
 <h1>CRISPR simplificado</h1>
 <p class="marcador" id="marcador">Ronda 1 de 5 · Aciertos: 0</p>
+<div class="progreso" aria-hidden="true"><i id="barra"></i></div>
 <div class="tablero" id="tablero"></div>
 
 <script>
@@ -50,6 +98,13 @@ const rondas = [
 let ronda = 0, aciertos = 0;
 const tablero = document.getElementById('tablero');
 const marcador = document.getElementById('marcador');
+
+// Actualiza el marcador y la barra de progreso. `hechas` = rondas ya respondidas.
+function marcar(hechas){
+  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
+  const b = document.getElementById('barra');
+  if(b) b.style.width = (hechas / rondas.length * 100) + '%';
+}
 
 function aARN(s){ return s.replace(/T/g, "U"); }
 
@@ -82,7 +137,7 @@ function secuenciaHTML(r){
 
 function dibujar(){
   const r = rondas[ronda];
-  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
+  marcar(ronda);
   const correcta = aARN(r.proto);
   const opciones = opcionesPara(r);
 
@@ -109,9 +164,9 @@ function dibujar(){
         ? "¡Correcto! Ese guía se aparea con las 12 bases que están justo antes del PAM, así que Cas9 corta el ADN exactamente ahí. Importante: Cas9 corta, no corrige. Para cambiar la base hace falta además darle a la célula un molde con la secuencia correcta, o usar un editor de bases."
         : `${porQueMal(elegida, r)} El ARN guía correcto era ${correcta}.`;
       if(acierto) aciertos++;
-      marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
+      marcar(ronda+1);
       const sig = document.getElementById('siguiente');
-      sig.style.display = 'inline-block';
+      sig.style.display = 'block';
       sig.onclick = () => { ronda++; ronda < rondas.length ? dibujar() : final(); };
     });
   });
@@ -120,7 +175,7 @@ function dibujar(){
 function final(){
   tablero.innerHTML = `
     <div class="final">
-      <h2 style="font-family:'Iowan Old Style',Georgia,serif;">Terminaste el juego</h2>
+      <h2 style="font-weight:300;letter-spacing:-0.01em;">Terminaste el juego</h2>
       <p>Acertaste ${aciertos} de ${rondas.length} rondas.</p>
       <div style="font-size:0.9rem;color:#5B6E6B;max-width:38em;margin:1.4rem auto;line-height:1.6;text-align:left;border-top:1px solid #E6E9E8;padding-top:1rem;">
         <b>Para el/la docente:</b> tres simplificaciones de este juego, que dan
@@ -142,8 +197,8 @@ function final(){
 dibujar();
 </script>
 
-<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:#5B6E6B;line-height:1.55;text-align:left;">
-  <summary style="cursor:pointer;font-weight:700;color:#16211F;font-size:0.95rem;">Para el/la docente</summary>
+<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:var(--muted);line-height:1.55;text-align:left;">
+  <summary style="cursor:pointer;font-weight:700;color:var(--ink);font-size:0.95rem;">Para el/la docente</summary>
   <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Docentes</p>
   <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Reconocimiento del ADN por complementariedad; ARN guía; la secuencia PAM como requisito de Cas9; corte de doble cadena; reparación con molde y edición de bases.</p>
   <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> CRISPR/Cas9 encuentra y corta: corregir la base es un paso aparte. ¿Qué implicancias distintas tiene editar células somáticas de una persona frente a editar la línea germinal, que se transmite a la descendencia?</p>

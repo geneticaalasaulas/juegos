@@ -1,14 +1,14 @@
 <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
-  <rect width="300" height="200" fill="#0F3D3E"/>
+  <rect width="300" height="200" fill="#0B9053"/>
   <g>
-    <rect x="50" y="70" width="16" height="40" rx="4" fill="#E1A73B"/>
-    <circle cx="58" cy="65" r="7" fill="#E1A73B"/>
-    <rect x="100" y="70" width="16" height="40" rx="4" fill="#3E6B67"/>
-    <circle cx="108" cy="65" r="7" fill="#3E6B67"/>
-    <rect x="150" y="70" width="16" height="40" rx="4" fill="#E1A73B"/>
-    <circle cx="158" cy="65" r="7" fill="#E1A73B"/>
-    <rect x="200" y="70" width="16" height="40" rx="4" fill="#3E6B67"/>
-    <circle cx="208" cy="65" r="7" fill="#3E6B67"/>
+    <rect x="50" y="70" width="16" height="40" rx="4" fill="#91CDB2"/>
+    <circle cx="58" cy="65" r="7" fill="#91CDB2"/>
+    <rect x="100" y="70" width="16" height="40" rx="4" fill="#91CDB2"/>
+    <circle cx="108" cy="65" r="7" fill="#91CDB2"/>
+    <rect x="150" y="70" width="16" height="40" rx="4" fill="#91CDB2"/>
+    <circle cx="158" cy="65" r="7" fill="#91CDB2"/>
+    <rect x="200" y="70" width="16" height="40" rx="4" fill="#91CDB2"/>
+    <circle cx="208" cy="65" r="7" fill="#91CDB2"/>
   </g>
-  <text x="150" y="150" text-anchor="middle" fill="#CFE3DF" font-family="Georgia,serif" font-size="13">encendido / apagado</text>
+  <text x="150" y="150" text-anchor="middle" fill="#91CDB2" font-family="Georgia,serif" font-size="13">encendido / apagado</text>
 </svg>

@@ -5,148 +5,463 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Selección natural simulada · Genética a las Aulas</title>
 <style>
-  :root{ --bg:#0F3D3E; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#E1A73B; --accent-deep:#B9822B; --ok:#2E7D5B; --mal:#B1473F; }
+  :root{
+    --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B;
+    --enfasis:#0A824B;
+    --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
+    --juego:#0B9053;          /* verde del logo */
+    --juego-texto:#0A824B;
+    --juego-tinte:#E4F3EC;
+    --pista:#E2E8E6;
+    --foco:#16211F;              /* anillo de foco, igual en todo el sitio */
+    --tronco-claro:#C9D0C0; --tronco-oscuro:#3A3A35;
+    --pol-clara:#F0F2E8;    --pol-oscura:#2B2B28;
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
   *{box-sizing:border-box;}
-  body{ margin:0; min-height:100vh; background:var(--bg); color:#F2EEE2; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; display:flex; flex-direction:column; align-items:center; }
-  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:#CFE3DF; font-size:0.9rem; text-decoration:none; }
-  a.volver:hover{ color:var(--accent); }
-  h1{ font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; font-size:1.6rem; margin:0.6rem 0 0.2rem; }
-  .marcador{ color:#CFE3DF; font-size:0.9rem; margin-bottom:1rem; }
-  .tablero{ background:var(--card); color:var(--ink); border-radius:6px; padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem; }
-  .enunciado{ font-size:0.98rem; margin:0 0 1rem; line-height:1.5; }
-  .poblacion{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:1rem; min-height:70px; align-items:center; justify-content:center; }
-  .poblacion span{ width:16px; height:16px; border-radius:50%; display:inline-block; }
-  .opciones{ display:grid; grid-template-columns:repeat(1,1fr); gap:0.6rem; }
-  .opciones button{ padding:0.7rem 0.8rem; border-radius:4px; border:1.5px solid var(--accent-deep); background:#fff; color:var(--ink); font-size:0.92rem; cursor:pointer; text-align:left; }
-  .opciones button:hover{ background:#FBF1DD; }
-  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
-  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
-  .feedback{ min-height:2.6rem; margin-top:0.9rem; font-size:0.92rem; }
-  .siguiente{ margin-top:0.6rem; align-self:flex-end; background:var(--accent); color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px; font-weight:600; cursor:pointer; display:none; }
-  .final{ text-align:center; }
-  .final button{ margin-top:1rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:var(--fuente); display:flex; flex-direction:column; align-items:center;
+  }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--juego-texto); }
+  a.volver:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  h1{
+    font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem);
+    letter-spacing:-0.01em; line-height:1.2;
+    margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem;
+  }
+  .bajada{ color:var(--muted); font-size:0.92rem; margin:0 0 1.1rem; text-align:center; max-width:36em; padding:0 1rem; }
+  .intro{ width:min(620px,94vw); margin:0 0 1.3rem; font-size:0.93rem; line-height:1.6; }
+  .intro p{ margin:0 0 0.7rem; }
+  .intro p:last-child{ margin-bottom:0; }
+  .intro i{ font-style:italic; }
+  .balance{
+    width:min(620px,94vw); background:var(--card); border:1px solid #E1E7E5; border-radius:8px;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05);
+    padding:1.5rem 1.6rem; margin:0 0 1.2rem; font-size:0.93rem; line-height:1.6;
+  }
+  .balance h2{ font-size:1.1rem; font-weight:600; letter-spacing:-0.01em; margin:0 0 0.7rem; }
+  .balance p{ margin:0 0 0.8rem; }
+  .balance ol{ margin:0 0 0.9rem; padding-left:1.35rem; }
+  .balance li{ margin:0 0 0.6rem; }
+  .balance .corrida{
+    background:var(--juego-tinte); border-left:3px solid var(--juego);
+    padding:0.65rem 0.85rem; font-size:0.9rem;
+  }
+  .balance .ojo{ border-top:1px solid #E6E9E8; padding-top:0.9rem; margin:1.1rem 0 0; }
+  .balance .ojo ul{ margin:0.5rem 0 0; padding-left:1.15rem; }
+  .balance .ojo li{ margin:0 0 0.55rem; }
+  .balance .caso{ margin:1.1rem 0 0; color:var(--ink); }
+  .tablero{
+    background:var(--card); color:var(--ink); border-radius:8px;
+    border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05);
+    padding:1.6rem; width:min(620px,94vw); margin-bottom:1.2rem;
+  }
+  .lectura{ display:flex; gap:1.6rem; flex-wrap:wrap; font-size:0.9rem; margin-bottom:0.9rem; }
+  .lectura b{ font-size:1.25rem; font-weight:600; display:block; letter-spacing:-0.01em; }
+  .lectura span{ color:var(--muted); }
+  .tronco{ border-radius:6px; padding:9px; display:grid; grid-template-columns:repeat(20,1fr);
+    gap:4px; transition:background-color .35s ease; }
+  .tronco svg{ display:block; width:100%; height:auto; aspect-ratio:1; }
+  /* El contraste bajo es deliberado: la polilla camuflada tiene que costar de
+     ver. Por eso estas dos no llevan contorno ni buscan separarse del fondo. */
+  .tronco .clara { color:var(--pol-clara); }
+  .tronco .oscura{ color:var(--pol-oscura); }
+  h2.etapa{ font-size:0.82rem; text-transform:uppercase; letter-spacing:0.09em;
+    color:var(--muted); font-weight:600; margin:1.3rem 0 0.5rem; }
+  svg.grafico{ width:100%; height:auto; display:block; margin:0.3rem 0 0.4rem; }
+  .pie{ font-size:0.8rem; color:var(--muted); margin:0.3rem 0 0; line-height:1.5; }
+  .pie.centro{ text-align:center; }
+  .aclaracion{
+    font-size:0.82rem; color:var(--ink); background:var(--juego-tinte);
+    border-left:3px solid var(--juego); padding:0.6rem 0.8rem; margin:0.9rem 0 0; line-height:1.5;
+  }
+  .controles{ display:flex; gap:0.6rem; flex-wrap:wrap; margin:1.2rem 0 0; }
+  button{
+    min-height:44px; padding:0.6rem 1rem; border-radius:6px; font-size:0.93rem;
+    cursor:pointer; font-family:inherit; border:1.5px solid var(--juego);
+    background:#fff; color:var(--ink);
+    transition:background-color .15s ease, border-color .15s ease, opacity .15s ease;
+  }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button.activo{ background:var(--juego-texto); border-color:var(--juego-texto); color:#fff; font-weight:600; }
+  button:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  .grupo{ display:flex; gap:0.5rem; flex-wrap:wrap; }
+  .ajustes{ margin-top:1.2rem; border-top:1px solid #E6E9E8; padding-top:1rem; }
+  .ajustes label{ display:block; font-size:0.85rem; color:var(--muted); }
+  .ajustes label b{ color:var(--ink); }
+  .ajustes input[type=range]{ width:100%; accent-color:var(--juego-texto); min-height:24px; }
+  .ajustes input[type=range]:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  .nota{ font-size:0.9rem; line-height:1.55; background:#F4F6F5;
+    border-left:3px solid var(--accent); padding:0.7rem 0.9rem; margin-top:1.1rem; }
+  details{ max-width:34em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8;
+    padding-top:1rem; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  summary:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  details p{ margin:0.6rem 0 0; }
+  @media (max-width:520px){ .controles button{ flex:1 1 100%; } .grupo button{ flex:1 1 100%; } }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <!-- Polilla del abedul en reposo: alas abiertas y planas. Silueta llena y SIN
+       contorno, al contrario de las tortugas del cuello de botella: aca el bajo
+       contraste contra el tronco es el contenido del juego, asi que la polilla
+       camuflada tiene que costar de ver. La mitad derecha es el espejo de la
+       izquierda, para que salga simetrica. -->
+  <symbol id="polilla" viewBox="0 0 24 24">
+    <g fill="currentColor">
+      <path d="M11.3 8.2 C10 6.4 8.4 5.1 6.6 4.3" fill="none" stroke="currentColor" stroke-width="0.95" stroke-linecap="round"/>
+      <g transform="translate(24,0) scale(-1,1)"><path d="M11.3 8.2 C10 6.4 8.4 5.1 6.6 4.3" fill="none" stroke="currentColor" stroke-width="0.95" stroke-linecap="round"/></g>
+      <path d="M11.2 9 C7.4 9.2 3 11.6 1.3 15.6 C0.7 17 1.6 17.9 3.2 17.6 C7.2 16.9 10.3 14.7 11.2 12.4 Z"/><path d="M11.2 13.4 C9.6 14.9 7.9 17.3 8 19.4 C8.1 20.6 9.5 20.7 10.3 19.7 C11 18.8 11.4 17.2 11.2 15.6 Z"/>
+      <g transform="translate(24,0) scale(-1,1)"><path d="M11.2 9 C7.4 9.2 3 11.6 1.3 15.6 C0.7 17 1.6 17.9 3.2 17.6 C7.2 16.9 10.3 14.7 11.2 12.4 Z"/><path d="M11.2 13.4 C9.6 14.9 7.9 17.3 8 19.4 C8.1 20.6 9.5 20.7 10.3 19.7 C11 18.8 11.4 17.2 11.2 15.6 Z"/></g>
+      <ellipse cx="12" cy="7.4" rx="1.55" ry="1.5"/>
+      <path d="M10.5 9 C10.5 8.2 13.5 8.2 13.5 9 L12.9 19.4 C12.9 20.4 11.1 20.4 11.1 19.4 Z"/>
+    </g>
+  </symbol>
+</svg>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
 <h1>Selección natural simulada</h1>
-<p class="marcador" id="marcador">Ronda 1 de 5 · Aciertos: 0</p>
-<div class="tablero" id="tablero"></div>
+<p class="bajada">Cien polillas sobre el tronco de un árbol. Los pájaros las cazan a simple vista, y el color del tronco decide a cuáles ven primero.</p>
+
+<div class="intro">
+  <p>En los bosques de Inglaterra vive la <b>polilla del abedul</b> (<i>Biston
+  betularia</i>). Tiene dos formas: una <b>clara y moteada</b> y una <b>oscura</b>.
+  No son dos especies distintas, ni la misma polilla en dos momentos de su vida:
+  son dos variantes que conviven en la misma población. Y el color se hereda &mdash;
+  cada polilla nace de un color y muere de ese color.</p>
+
+  <p>De día las polillas descansan quietas sobre los troncos, y ahí las cazan los
+  pájaros, que las buscan con la vista. Sobre un tronco claro, cubierto de
+  líquenes, la polilla clara casi no se distingue y la oscura queda a la vista.
+  Sobre un tronco oscurecido por el hollín pasa exactamente lo contrario. La que
+  no se camufla no es peor en nada más: vuela igual, come lo mismo, pone la misma
+  cantidad de huevos. Lo único que le pasa es que <b>la comen más seguido</b>, así
+  que en promedio deja menos crías.</p>
+
+  <p>Vos elegís de qué color está el tronco y hacés pasar las generaciones. El
+  gráfico lleva la cuenta de qué porcentaje de la población es oscura. Cuando la
+  curva se estabilice, cambiá el color del tronco y seguí unas generaciones más.</p>
+</div>
+
+<div class="tablero">
+  <div class="lectura">
+    <div><b id="lec-gen">0</b><span>generaciones</span></div>
+    <div><b id="lec-osc">10%</b><span>son oscuras</span></div>
+    <div><b id="lec-tronco">claro</b><span>color del tronco</span></div>
+  </div>
+
+  <h2 class="etapa">La población sobre el tronco &mdash; 100 polillas</h2>
+  <div class="tronco" id="tronco" aria-hidden="true"></div>
+  <p class="pie centro" id="pie-tronco"></p>
+
+  <h2 class="etapa">Cómo cambia la población, generación a generación</h2>
+  <svg class="grafico" id="grafico" viewBox="0 0 560 240" role="img" aria-labelledby="g-desc"></svg>
+  <p class="pie centro" id="g-desc">Las franjas de fondo muestran de qué color estaba el tronco en cada generación.</p>
+
+  <div class="controles">
+    <div class="grupo">
+      <button id="btn-claro">Tronco claro (con líquenes)</button>
+      <button id="btn-oscuro">Tronco oscuro (hollín)</button>
+    </div>
+  </div>
+  <div class="controles">
+    <button class="primario" id="btn-gen">Siguiente generación</button>
+    <button id="btn-x5">&times;5 generaciones</button>
+    <button id="btn-reset">Reiniciar</button>
+  </div>
+
+  <p class="nota" id="nota"></p>
+
+  <p class="aclaracion">
+    <b>Ojo con esto:</b> ninguna polilla cambió de color. Cada una nació clara u oscura y murió del mismo color.
+    Lo que cambia de una generación a la otra es <b>cuántas hay de cada tipo</b>.
+  </p>
+
+  <div class="ajustes">
+    <label for="s">Cuánto castiga el no camuflarse: <b id="v-s">30%</b> menos de descendencia
+      <input type="range" id="s" min="5" max="60" step="5" value="30">
+    </label>
+  </div>
+</div>
+
+<section class="balance">
+  <h2>El balance: qué es la selección natural</h2>
+
+  <p class="corrida" id="balance-corrida"></p>
+
+  <p>Lo que viste no fue una polilla adaptándose. Fue una <b>población cambiando de
+  composición</b>. Para que eso pase tienen que darse tres cosas al mismo tiempo, y
+  las tres estaban en el juego:</p>
+
+  <ol>
+    <li><b>Había variación.</b> En la población había polillas de los dos colores
+    desde la generación 0: no aparecieron cuando hicieron falta, ya estaban. Si
+    hubieran sido todas claras, la selección no habría tenido nada entre qué
+    elegir.</li>
+
+    <li><b>Esa variación se hereda.</b> El color pasa de una generación a la
+    siguiente. Una ventaja que no se hereda no cambia nada: se muere con el
+    individuo que la tuvo.</li>
+
+    <li><b>Una de las variantes deja más crías que la otra.</b> No porque sea más
+    fuerte ni más rápida, sino porque sobre ese tronco los pájaros la encuentran
+    menos. Esa diferencia es la <b>presión de selección</b>, y es lo que movés con
+    la barra del final.</li>
+  </ol>
+
+  <p>Con las tres cosas juntas, la cuenta se hace sola: la variante que deja más
+  crías ocupa en cada generación una porción un poco más grande de la población, y
+  esa diferencia chica se acumula. Eso es la forma de la curva &mdash; despacio al
+  principio, cuando la variante favorecida es rara; rápido en el medio; y frenando
+  al final, cuando ya casi no queda de la otra para reemplazar.</p>
+
+  <div class="ojo">
+    <b>Dos cosas que conviene no confundir:</b>
+    <ul>
+      <li>Ninguna polilla cambió de color, y ningún gen se modificó. Cambió
+      <b>cuántas hay de cada tipo</b>. Los individuos no evolucionan; las
+      poblaciones sí.</li>
+      <li>Ninguna de las dos variantes es mejor que la otra. Ser oscura es una
+      ventaja sobre el hollín y una desventaja sobre los líquenes: la misma
+      polilla, el mismo gen, y el resultado se da vuelta porque cambió el ambiente.
+      La selección natural no tiene una dirección propia &mdash; la dirección la
+      pone el ambiente, y el ambiente cambia.</li>
+    </ul>
+  </div>
+
+  <p class="caso"><b>Y esto pasó de verdad.</b> En la Inglaterra del siglo XIX el
+  hollín de la industrialización oscureció los troncos y mató los líquenes, y la
+  forma oscura de la polilla pasó de rarísima a mayoría en pocas décadas. Cuando se
+  limpió el aire, en la segunda mitad del siglo XX, volvió a ser rara. Nadie lo
+  planificó: solamente cambió cuál de las dos se veía menos.</p>
+</section>
+
+<details>
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Secundaria</p>
+  <p><b>Conceptos que trabaja:</b> selección natural; la variación tiene que
+  existir antes de que actúe la selección; presión de selección; el ambiente
+  define qué variante es ventajosa; melanismo industrial como caso real.</p>
+  <p><b>El caso es real.</b> La polilla del abedul (<i>Biston betularia</i>)
+  tiene una forma clara y una oscura. En las zonas industriales de Inglaterra,
+  el hollín oscureció los troncos y mató los líquenes: la forma oscura pasó de
+  ser rarísima a ser mayoría en pocas décadas. Cuando bajó la contaminación, el
+  proceso se revirtió.</p>
+  <p><b>Lo que hay que mostrar con el botón:</b> cambiá el color del tronco en
+  mitad de la corrida. La curva se da vuelta. No hay una variante "mejor" en
+  abstracto: ser oscura es una ventaja sobre un tronco con hollín y una
+  desventaja sobre un tronco con líquenes. La misma polilla, el mismo gen, y el
+  resultado se invierte porque cambió el ambiente.</p>
+  <p><b>La confusión que este formato ayuda a desarmar:</b> muchos estudiantes
+  entienden que las polillas "se oscurecieron para camuflarse". Acá se ve que no:
+  ninguna cambia de color nunca. Las oscuras ya existían antes del hollín —
+  arrancá con el control en 10% y se ve que están desde la generación 0. Lo único
+  que cambió fue cuántas dejaron descendencia.</p>
+  <p><b>La simplificación del modelo:</b> acá cada polilla tiene crías de su
+  mismo color, como si el color fuera un solo alelo que se transmite entero. En
+  <i>Biston betularia</i> el color depende de un gen con una forma oscura
+  dominante, así que hay heterocigotas oscuras que pueden tener crías claras. El
+  modelo del juego sigue la proporción de polillas de cada color, que es lo que se
+  ve y lo que se cuenta en el campo.</p>
+  <p><b>Para discutir:</b> si al inicio hubiera habido <b>cero</b> polillas
+  oscuras, ¿qué habría pasado cuando los troncos se oscurecieron? Sin variación
+  previa, la selección natural no tiene sobre qué actuar.</p>
+</details>
 
 <script>
-const rondas = [
-  { texto:"En un bosque con troncos oscuros vive una población de escarabajos: 70% verdes y 30% marrones. Un pájaro los caza a simple vista.",
-    poblacion:{verdes:70, verde:"70% verdes", otro:"30% marrones"}, correcta:"Van a aumentar los marrones (se camuflan mejor)",
-    distractores:[
-      "Los escarabajos verdes van a cambiar de color para camuflarse mejor",
-      "No va a cambiar nada: el pájaro caza al azar"
-    ],
-    explicacion:"Los escarabajos marrones se confunden con la corteza oscura y son cazados con menos frecuencia: sobreviven más y dejan más descendencia." },
-  { texto:"Una población de bacterias se expone repetidamente a un antibiótico. Al inicio, el 5% de las bacterias tiene una mutación que la hace resistente.",
-    poblacion:{verdes:95, verde:"95% sensibles al antibiótico", otro:"5% resistentes"}, correcta:"Va a aumentar la proporción de resistentes",
-    distractores:[
-      "El antibiótico va a provocar que las bacterias sensibles se vuelvan resistentes",
-      "La proporción de resistentes se va a mantener en 5%"
-    ],
-    explicacion:"El antibiótico mata a las bacterias sensibles; las resistentes sobreviven y se multiplican, aumentando su proporción generación tras generación." },
-  { texto:"En una especie de aves, los machos con cola más larga son elegidos más veces por las hembras para aparearse, aunque vuelan un poco peor.",
-    poblacion:null, correcta:"Va a aumentar la proporción de colas largas",
-    distractores:[
-      "Van a aumentar las colas cortas, porque volar mejor ayuda a sobrevivir",
-      "No va a cambiar nada, porque las dos cosas se compensan"
-    ],
-    explicacion:"Esto es selección sexual: un rasgo puede favorecerse por atraer pareja, incluso si no mejora (o perjudica levemente) la supervivencia." },
-  { texto:"En estudios históricos de poblaciones humanas — antes de los cuidados neonatales modernos — los bebés con peso al nacer muy bajo o muy alto tenían mayor mortalidad, y el peso intermedio era el que sobrevivía más.",
-    poblacion:null, correcta:"El peso promedio se mantiene estable (selección estabilizadora)",
-    distractores:[
-      "El peso promedio va a aumentar generación tras generación",
-      "La variación de peso en la población va a aumentar"
-    ],
-    explicacion:"Cuando los extremos son desfavorecidos, la variación se reduce y el valor intermedio se mantiene — no hay un desplazamiento hacia un extremo. Hoy, con la atención neonatal, esa presión es mucho menor: la selección natural también cambia cuando cambia el ambiente." },
-  { texto:"Un hongo agrícola se vuelve resistente a un fungicida que se usa todos los años sin cambiar de producto.",
-    poblacion:{verdes:98, verde:"98% sensibles al fungicida", otro:"2% resistentes"}, correcta:"Va a aumentar la proporción de resistentes",
-    distractores:[
-      "El fungicida va a dejar de funcionar porque se degrada con los años",
-      "El hongo va a desaparecer del cultivo"
-    ],
-    explicacion:"El uso repetido del mismo fungicida actúa como presión de selección constante, igual que con los antibióticos." }
-];
+// Modelo estandar de seleccion en un locus, con frecuencias (0 a 1).
+//   p = frecuencia de la polilla OSCURA
+//   la variante camuflada tiene eficacia biologica 1; la visible, 1 - s
+//   p' = p*wO / (p*wO + (1-p)*wC)
+const PASOS_MAX = 40;
+let p0 = 0.10, s = 0.30;
+let troncoOscuro = false;
+let historia = [];   // [{p, oscuro}]
 
-let ronda = 0, aciertos = 0;
-const tablero = document.getElementById('tablero');
-const marcador = document.getElementById('marcador');
+const el = id => document.getElementById(id);
 
-// La barra se dibuja solo en las rondas donde los colores representan de verdad
-// la proporcion de dos variantes en la poblacion. En las otras (cola de las aves,
-// peso al nacer) el rasgo no es una variable de dos categorias, asi que mostrar
-// cuadraditos de color daba a entender que el rasgo en juego era un color.
-function poblacionHTML(r){
-  if(!r.poblacion) return "";
-  const p = r.poblacion;
-  let html = "";
-  for(let i=0;i<20;i++){
-    const esVerde = i < Math.round(p.verdes/5);
-    html += `<span style="background:${esVerde ? '#2E7D5B' : '#B9822B'}"></span>`;
+// Cerca de 0% y de 100% los cambios por generacion son de decimas.
+function pct(p){
+  const v = p * 100;
+  // Cerca de los extremos el cambio por generacion es de centesimas: con
+  // redondeo a entero el numero no se mueve y parece que el modelo se trabo.
+  let txt;
+  if(v >= 99.9 || (v > 0 && v < 0.1))      txt = v.toFixed(2);
+  else if(v > 99.4 || (v > 0 && v < 0.6))  txt = v.toFixed(1);
+  else                                     txt = String(Math.round(v));
+  return txt.replace('.', ',') + '%';
+}
+
+function reiniciar(){
+  historia = [{p: p0, oscuro: null}];
+  dibujar();
+}
+
+function paso(){
+  if(historia.length > PASOS_MAX) return;
+  const p = historia[historia.length - 1].p;
+  const wO = troncoOscuro ? 1 : (1 - s);   // la oscura se camufla en tronco oscuro
+  const wC = troncoOscuro ? (1 - s) : 1;   // la clara se camufla en tronco claro
+  historia.push({ p: (p * wO) / (p * wO + (1 - p) * wC), oscuro: troncoOscuro });
+  dibujar();
+}
+
+function graficoSVG(){
+  const W = 560, H = 240, ML = 76, MR = 14, MT = 14, MB = 40;
+  const n = Math.max(12, historia.length - 1);
+  const x = g => ML + (g / n) * (W - ML - MR);
+  const y = p => MT + (1 - p) * (H - MT - MB);
+  let s2 = '';
+
+  historia.forEach((h, i) => {
+    if(h.oscuro === null) return;
+    s2 += `<rect x="${x(i-1)}" y="${MT}" width="${x(i)-x(i-1)}" height="${H-MT-MB}" fill="${h.oscuro ? '#E4E4E0' : '#EDF1E6'}"/>`;
+  });
+
+  const etiquetas = {1:'todas', 0:'ninguna'};
+  [0, 0.25, 0.5, 0.75, 1].forEach(v => {
+    const yy = y(v);
+    s2 += `<line x1="${ML}" y1="${yy}" x2="${W-MR}" y2="${yy}" stroke="#E6E9E8" stroke-width="1"/>`;
+    if(etiquetas[v]){
+      s2 += `<text x="${ML-8}" y="${yy-1}" text-anchor="end" font-size="10" fill="#5B6E6B">${v*100}%</text>`;
+      s2 += `<text x="${ML-8}" y="${yy+10}" text-anchor="end" font-size="9" fill="#8A9A97">(${etiquetas[v]})</text>`;
+    } else {
+      s2 += `<text x="${ML-8}" y="${yy+3.5}" text-anchor="end" font-size="10" fill="#5B6E6B">${v*100}%</text>`;
+    }
+  });
+
+  s2 += `<text x="16" y="${MT + (H-MT-MB)/2}" font-size="10.5" fill="#16211F" text-anchor="middle"`
+      + ` transform="rotate(-90 16 ${MT + (H-MT-MB)/2})">polillas oscuras</text>`;
+  s2 += `<text x="29" y="${MT + (H-MT-MB)/2}" font-size="9" fill="#5B6E6B" text-anchor="middle"`
+      + ` transform="rotate(-90 29 ${MT + (H-MT-MB)/2})">(% de la población)</text>`;
+
+  const salto = n <= 12 ? 2 : Math.ceil(n/8);
+  for(let g = 0; g <= n; g += salto)
+    s2 += `<text x="${x(g)}" y="${H-MB+16}" text-anchor="middle" font-size="10" fill="#5B6E6B">${g}</text>`;
+  s2 += `<text x="${(ML+W-MR)/2}" y="${H-6}" text-anchor="middle" font-size="10.5" fill="#16211F">generaciones de polillas</text>`;
+  s2 += `<line x1="${ML}" y1="${MT}" x2="${ML}" y2="${H-MB}" stroke="#16211F" stroke-width="1.2"/>`;
+  s2 += `<line x1="${ML}" y1="${H-MB}" x2="${W-MR}" y2="${H-MB}" stroke="#16211F" stroke-width="1.2"/>`;
+
+  s2 += `<polyline points="${historia.map((h,i)=>`${x(i)},${y(h.p)}`).join(' ')}" fill="none" stroke="#0A874E" stroke-width="2.5" stroke-linejoin="round"/>`;
+  historia.forEach((h,i) => { s2 += `<circle cx="${x(i)}" cy="${y(h.p)}" r="3" fill="#0A874E"/>`; });
+  const ult = historia[historia.length-1];
+  s2 += `<text x="${Math.min(x(historia.length-1)+8, W-MR-36)}" y="${Math.max(y(ult.p)-8, MT+10)}" font-size="11" font-weight="700" fill="#16211F">${pct(ult.p)}</text>`;
+  return s2;
+}
+
+// A cada una de las 100 posiciones del tronco le toca un puesto fijo, sorteado
+// una sola vez con semilla fija. Dos consecuencias: el tablero no titila al
+// redibujarse, y cuando la proporcion de oscuras sube, las que ya eran oscuras
+// siguen oscuras y se suma una nueva, en lugar de reordenarse todo.
+const PUESTO = (() => {
+  const idx = Array.from({ length: 100 }, (_, i) => i);
+  let s = 20250927;
+  for(let i = idx.length - 1; i > 0; i--){
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const j = s % (i + 1);
+    [idx[i], idx[j]] = [idx[j], idx[i]];
   }
-  return `<div class="poblacion">${html}</div>
-    <p style="font-size:0.82rem;color:#5B6E6B;text-align:center;margin:0.4rem 0 0;">
-      <span style="color:#2E7D5B">&#9632;</span> ${p.verde} &nbsp;·&nbsp;
-      <span style="color:#B9822B">&#9632;</span> ${p.otro}</p>`;
+  const puesto = new Array(100);
+  idx.forEach((pos, r) => { puesto[pos] = r; });
+  return puesto;
+})();
+
+function troncoHTML(p){
+  const osc = Math.round(p * 100);
+  return PUESTO.map(r =>
+    `<svg class="${r < osc ? 'oscura' : 'clara'}" viewBox="0 0 24 24" aria-hidden="true"`
+    + ` focusable="false"><use href="#polilla"/></svg>`).join('');
+}
+
+function nota(){
+  const n = historia.length - 1, ult = historia[n], p = ult.p;
+  const pct = Math.round(p * 100);
+  if(n === 0)
+    return `La población arranca con ${pct}% de polillas oscuras. <b>Ya están ahí</b>, antes de que pase nada: la variación existe primero, y después la selección actúa sobre ella.`;
+  const anterior = historia[n-1].p;
+  const subio = p > anterior + 1e-9, bajo = p < anterior - 1e-9;
+  let t = '';
+  if(ult.oscuro && subio)
+    t = `Sobre el tronco oscuro las polillas oscuras se camuflan: los pájaros encuentran más a las claras, así que las oscuras dejan más descendencia. Van del ${Math.round(anterior*100)}% al ${pct}%. `;
+  else if(!ult.oscuro && bajo)
+    t = `Sobre el tronco claro son las claras las que se camuflan. Las oscuras quedan a la vista y bajan del ${Math.round(anterior*100)}% al ${pct}%. `;
+  else
+    t = `La proporción quedó en ${pct}%. `;
+  // cambio de ambiente
+  const cambios = cambiosDeTronco();
+  if(cambios > 0) t += `Cambiaste el color del tronco ${cambios} ${cambios===1?'vez':'veces'} y la curva se dio vuelta: <b>no hay una variante mejor en abstracto</b>, depende del ambiente. `;
+  else if(p > 0.9 || p < 0.1) t += `Probá cambiar el color del tronco y seguir: la curva se da vuelta. `;
+  return t;
+}
+
+function cambiosDeTronco(){
+  return historia.filter((h,i) => i > 1 && h.oscuro !== null
+    && historia[i-1].oscuro !== null && h.oscuro !== historia[i-1].oscuro).length;
+}
+
+// Resume la corrida del/de la estudiante al pie del texto de cierre.
+function balanceCorrida(){
+  const n = historia.length - 1;
+  if(n === 0)
+    return 'Todavía no hiciste pasar ninguna generación. Hacé pasar unas cuantas, '
+         + 'cambiá el color del tronco en el camino, y volvé a leer esto.';
+  const primero = historia[0].p, ultimo = historia[n].p;
+  const ps = historia.map(h => h.p), alto = Math.max(...ps), bajo = Math.min(...ps);
+  const gens = `${n} ${n === 1 ? 'generación' : 'generaciones'}`;
+
+  // Si hubo cambio de tronco la curva puede haber subido y vuelto: decir solo el
+  // punto de partida y el de llegada escondería el recorrido.
+  const vuelta = cambiosDeTronco() > 0;
+  const pico = (alto - Math.max(primero, ultimo)) > (Math.min(primero, ultimo) - bajo)
+    ? alto : bajo;
+  const hayPico = Math.abs(pico - primero) > 0.02 && Math.abs(pico - ultimo) > 0.02;
+
+  let t = (vuelta && hayPico)
+    ? `En tu corrida las polillas oscuras arrancaron en ${pct(primero)}, llegaron `
+      + `al ${pct(pico)} y ahora están en el ${pct(ultimo)}, en ${gens}. `
+    : `En tu corrida las polillas oscuras pasaron del ${pct(primero)} al `
+      + `${pct(ultimo)} en ${gens}. `;
+  t += vuelta
+    ? 'Cuando cambiaste el color del tronco la tendencia se dio vuelta: la misma '
+    + 'variante que venía ganando empezó a perder, sin que ninguna polilla cambiara.'
+    : 'Todavía no cambiaste el color del tronco &mdash; probá y mirá qué le pasa a la curva.';
+  return t;
 }
 
 function dibujar(){
-  const r = rondas[ronda];
-  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
-
-  // Distractores propios de cada ronda: antes se reciclaban las respuestas
-  // correctas de las otras, y eso permitia acertar por eliminacion.
-  const opciones = [r.correcta, ...r.distractores].sort(()=>Math.random()-0.5);
-
-  tablero.innerHTML = `
-    <p class="enunciado">${r.texto}</p>
-    ${poblacionHTML(r)}
-    <p class="enunciado">¿Qué esperás que pase después de varias generaciones?</p>
-    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
-    <p class="feedback" id="feedback"></p>
-    <button class="siguiente" id="siguiente">Siguiente &rarr;</button>
-  `;
-
-  tablero.querySelectorAll('.opciones button').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const acierto = btn.dataset.o === r.correcta;
-      tablero.querySelectorAll('.opciones button').forEach(b=>{
-        b.disabled = true;
-        if(b.dataset.o === r.correcta) b.classList.add('ok');
-        else if(b === btn) b.classList.add('mal');
-      });
-      document.getElementById('feedback').textContent = (acierto ? "¡Correcto! " : "No exactamente. ") + r.explicacion;
-      if(acierto) aciertos++;
-      marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
-      const sig = document.getElementById('siguiente');
-      sig.style.display = 'inline-block';
-      sig.onclick = () => { ronda++; ronda < rondas.length ? dibujar() : final(); };
-    });
-  });
+  const ult = historia[historia.length-1];
+  el('lec-gen').textContent = historia.length - 1;
+  el('lec-osc').textContent = pct(ult.p);
+  el('lec-tronco').textContent = troncoOscuro ? 'oscuro' : 'claro';
+  const t = el('tronco');
+  t.style.background = troncoOscuro ? 'var(--tronco-oscuro)' : 'var(--tronco-claro)';
+  t.innerHTML = troncoHTML(ult.p);
+  el('pie-tronco').innerHTML = troncoOscuro
+    ? 'Tronco oscurecido por el hollín: las polillas <b>oscuras</b> son las que cuesta ver.'
+    : 'Tronco claro, cubierto de líquenes: las polillas <b>claras</b> son las que cuesta ver.';
+  el('btn-claro').classList.toggle('activo', !troncoOscuro);
+  el('btn-oscuro').classList.toggle('activo', troncoOscuro);
+  el('grafico').innerHTML = graficoSVG();
+  el('nota').innerHTML = nota();
+  el('balance-corrida').innerHTML = balanceCorrida();
+  const tope = historia.length > PASOS_MAX;
+  ['btn-gen','btn-x5'].forEach(id => el(id).disabled = tope);
 }
 
-function final(){
-  tablero.innerHTML = `
-    <div class="final">
-      <h2 style="font-family:'Iowan Old Style',Georgia,serif;">Terminaste el juego</h2>
-      <p>Acertaste ${aciertos} de ${rondas.length} escenarios.</p>
-      <button onclick="location.reload()">Jugar de nuevo</button>
-    </div>`;
-}
+el('btn-claro').onclick  = () => { troncoOscuro = false; dibujar(); };
+el('btn-oscuro').onclick = () => { troncoOscuro = true;  dibujar(); };
+el('btn-gen').onclick    = () => paso();
+el('btn-x5').onclick     = () => { for(let i=0;i<5;i++) paso(); };
+el('btn-reset').onclick  = () => reiniciar();
+el('s').oninput = e => { s = +e.target.value/100; el('v-s').textContent = e.target.value+'%'; };
 
-dibujar();
+reiniciar();
 </script>
-
-<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:#5B6E6B;line-height:1.55;text-align:left;">
-  <summary style="cursor:pointer;font-weight:700;color:#16211F;font-size:0.95rem;">Para el/la docente</summary>
-  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Secundaria</p>
-  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Selección natural; la variación tiene que existir antes de que actúe la selección; presión de selección; selección sexual; selección estabilizadora.</p>
-  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> En la ronda de los escarabajos: ¿cambia de color un escarabajo, o cambia la composición de la población? Los individuos no evolucionan; las poblaciones sí. Es la distinción que más cuesta y la que sostiene todo el resto del tema.</p>
-</details>
-
 </body>
 </html>

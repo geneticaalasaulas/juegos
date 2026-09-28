@@ -1,6 +1,6 @@
 <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
-  <rect width="300" height="200" fill="#0F3D3E"/>
-  <rect x="120" y="50" width="60" height="80" rx="6" fill="#F2EEE2"/>
-  <rect x="130" y="40" width="40" height="15" fill="#E1A73B"/>
-  <text x="150" y="100" text-anchor="middle" font-family="Georgia,serif" font-size="18" fill="#0F3D3E">Lac</text>
+  <rect width="300" height="200" fill="#6AC7CA"/>
+  <rect x="120" y="50" width="60" height="80" rx="6" fill="#16211F"/>
+  <rect x="130" y="40" width="40" height="15" fill="#3C6C6C"/>
+  <text x="150" y="100" text-anchor="middle" font-family="Georgia,serif" font-size="18" fill="#6AC7CA">Lac</text>
 </svg>

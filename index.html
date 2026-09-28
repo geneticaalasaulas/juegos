@@ -10,9 +10,10 @@
     --ink:#161616;
     --muted:#6B6B6B;
     --line:#E6E6E6;
-    --accent:#1C6B66;   /* verde-azulado tomado del logo */
-    --accent-soft:#EAF3F2;
+    --accent:#0462B7;   /* azul del logo */
+    --accent-soft:#E6EFF8;
     --bg:#FFFFFF;
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -20,7 +21,7 @@
     margin:0;
     background:var(--bg);
     color:var(--ink);
-    font-family:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family:var(--fuente);
     line-height:1.6;
     font-weight:400;
   }
@@ -84,17 +85,23 @@
     padding:0.4rem 1rem; border-radius:999px; font-size:0.85rem; cursor:pointer;
   }
   .filtros button.activo{ background:var(--ink); border-color:var(--ink); color:#fff; }
+  .filtros button.activo[data-id="primaria"]{   background:#0462B7; border-color:#0462B7; }
+  .filtros button.activo[data-id="secundaria"]{ background:#BC0440; border-color:#BC0440; }
+  .filtros button.activo[data-id="docentes"]{   background:#5E0478; border-color:#5E0478; }
+  .filtros button:focus-visible, .carta:focus-visible, nav.principal a:focus-visible,
+  .hero .cta:focus-visible{ outline:3px solid var(--ink); outline-offset:2px; }
   .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1.6rem; }
   .carta{
     text-decoration:none; color:var(--ink); display:flex; flex-direction:column;
     border:1px solid var(--line); transition:border-color .15s ease;
   }
-  .carta:hover{ border-color:var(--accent); }
+  .carta:hover{ border-color:var(--acento, var(--accent)); }
   .carta .capa{ aspect-ratio:3/2; width:100%; display:block; background:#f4f4f4; }
   .carta .cuerpo{ padding:1.1rem 1.2rem 1.3rem; }
   .carta .nivel{
-    font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em;
-    color:var(--accent); font-weight:600;
+    display:inline-block; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em;
+    font-weight:700; padding:0.12rem 0.55rem; border-radius:999px;
+    color:#fff; background:var(--ink);   /* juegos.js sobreescribe el fondo con el color del nivel */
   }
   .carta h3{ font-size:1.15rem; font-weight:600; margin:0.3rem 0 0.4rem; }
   .carta .subt{ font-size:0.9rem; color:var(--muted); margin:0; }
@@ -209,10 +216,13 @@
       const a = document.createElement('a');
       a.className = 'carta';
       a.href = j.url;
+      // cada juego lleva su color del logo; el nivel, el suyo
+      if(j.acento) a.style.setProperty('--acento', j.acento);
+      const nc = (nivelColor[j.nivel] || {}).solido || 'var(--ink)';
       a.innerHTML = `
         <img class="capa" src="${j.capa}" alt="" loading="lazy">
         <div class="cuerpo">
-          <p class="nivel">${niveles[j.nivel] || j.nivel}</p>
+          <p class="nivel" style="background:${nc}">${niveles[j.nivel] || j.nivel}</p>
           <h3>${j.es.nombre}</h3>
           <p class="subt">${j.es.subtitulo}</p>
         </div>`;

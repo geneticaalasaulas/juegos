@@ -7,6 +7,13 @@ const niveles = {
   docentes: "Docentes"
 };
 
+// Color de cada nivel, tomado del logo. Se usa en las chips del catalogo.
+const nivelColor = {
+  primaria:   { solido:"#0462B7", tinte:"#E6EFF8" },
+  secundaria: { solido:"#BC0440", tinte:"#F8E6EC" },
+  docentes:   { solido:"#5E0478", tinte:"#EFE6F2" }
+};
+
 const temas = {
   herencia: "Herencia",
   evolucion: "Evolución",
@@ -18,6 +25,9 @@ const juegos = [
     id: "arbol-genealogico",
     url: "arbol-genealogico/",
     capa: "capas/arbol-genealogico.svg",
+    // color del logo asignado a este juego (ver capas/arbol-genealogico.svg)
+    acento: "#0462B7",
+    acentoTexto: "#0462B7",
     publicado: "2026-09",
     nivel: "secundaria",
     duracion: 8,
@@ -34,6 +44,9 @@ const juegos = [
     id: "punnett-rapido",
     url: "punnett-rapido/",
     capa: "capas/punnett-rapido.svg",
+    // color del logo asignado a este juego (ver capas/punnett-rapido.svg)
+    acento: "#C88705",
+    acentoTexto: "#A06C04",
     publicado: "2026-09",
     nivel: "secundaria",
     duracion: 5,
@@ -50,6 +63,9 @@ const juegos = [
     id: "cariotipo-express",
     url: "cariotipo-express/",
     capa: "capas/cariotipo-express.svg",
+    // color del logo asignado a este juego (ver capas/cariotipo-express.svg)
+    acento: "#BC0440",
+    acentoTexto: "#BC0440",
     publicado: "2026-10",
     nivel: "primaria",
     duracion: 6,
@@ -66,6 +82,9 @@ const juegos = [
     id: "seleccion-natural",
     url: "seleccion-natural/",
     capa: "capas/seleccion-natural.svg",
+    // color del logo asignado a este juego (ver capas/seleccion-natural.svg)
+    acento: "#0B9053",
+    acentoTexto: "#0A874E",
     publicado: "2026-10",
     // Incluye seleccion sexual y estabilizadora: vocabulario de secundaria.
     nivel: "secundaria",
@@ -74,15 +93,18 @@ const juegos = [
     autores: ["Genética a las Aulas"],
     es: {
       nombre: "Selección natural simulada",
-      subtitulo: "Predecí qué rasgo sobrevive",
-      resumen: "A partir de escenarios reales (camuflaje, resistencia, selección sexual), predecí cómo cambia una población generación tras generación.",
-      aprende: ["Selección natural", "Selección sexual y estabilizadora", "Presión de selección"]
+      subtitulo: "Camuflaje, generación a generación",
+      resumen: "Polillas claras y oscuras sobre el tronco de un abedul. Elegí el color del tronco, hacé pasar las generaciones y mirá cómo se mueven las proporciones. Cambiá el tronco a mitad de camino y la curva se da vuelta.",
+      aprende: ["Selección natural", "La variación existe antes de la selección", "El ambiente define qué variante es ventajosa", "Melanismo industrial"]
     }
   },
   {
     id: "filogenia",
     url: "filogenia/",
     capa: "capas/filogenia.svg",
+    // color del logo asignado a este juego (ver capas/filogenia.svg)
+    acento: "#02A690",
+    acentoTexto: "#018574",
     publicado: "2026-10",
     nivel: "secundaria",
     duracion: 6,
@@ -99,38 +121,47 @@ const juegos = [
     id: "cuello-de-botella",
     url: "cuello-de-botella/",
     capa: "capas/cuello-de-botella.svg",
+    // color del logo asignado a este juego (ver capas/cuello-de-botella.svg)
+    acento: "#5E0478",
+    acentoTexto: "#5E0478",
     publicado: "2026-10",
     nivel: "secundaria",
-    duracion: 7,
+    duracion: 8,
     temas: ["evolucion"],
     autores: ["Genética a las Aulas"],
     es: {
       nombre: "Cuello de botella",
-      subtitulo: "Efecto fundador y deriva génica",
-      resumen: "Explorá qué pasa con la variación genética de una población cuando una catástrofe reduce drásticamente su tamaño.",
-      aprende: ["Cuello de botella poblacional", "Efecto fundador", "Deriva génica"]
+      subtitulo: "Simulá la deriva genética",
+      resumen: "Una tormenta deja unas pocas tortugas sobrevivientes, elegidas al azar. Corré la simulación varias veces y mirá cómo el resultado cambia cada vez: eso es la deriva genética.",
+      aprende: ["Deriva genética", "Cuello de botella poblacional", "Pérdida de variación por azar", "Diferencia entre deriva y selección"]
     }
   },
   {
     id: "resistencia-antibioticos",
     url: "resistencia-antibioticos/",
     capa: "capas/resistencia-antibioticos.svg",
+    // color del logo asignado a este juego (ver capas/resistencia-antibioticos.svg)
+    acento: "#ED101B",
+    acentoTexto: "#EB101B",
     publicado: "2026-10",
     nivel: "secundaria",
-    duracion: 6,
+    duracion: 8,
     temas: ["evolucion", "salud"],
     autores: ["Genética a las Aulas"],
     es: {
       nombre: "Resistencia a antibióticos",
-      subtitulo: "Evolución en tiempo real",
-      resumen: "Predecí cómo cambia la proporción de bacterias resistentes generación tras generación bajo el mismo antibiótico.",
-      aprende: ["Evolución de la resistencia bacteriana", "Presión de selección por fármacos", "Uso racional de antibióticos"]
+      subtitulo: "Simulador interactivo",
+      resumen: "Aplicá o no el antibiótico en cada generación y mirá en el gráfico cómo cambia la proporción de bacterias resistentes. Ajustá la ventaja de las resistentes y el costo de serlo.",
+      aprende: ["Evolución de la resistencia bacteriana", "El antibiótico selecciona, no crea", "Proporción frente a cantidad", "Uso responsable de antibióticos"]
     }
   },
   {
     id: "nutrigenetica",
     url: "nutrigenetica/",
     capa: "capas/nutrigenetica.svg",
+    // color del logo asignado a este juego (ver capas/nutrigenetica.svg)
+    acento: "#3BA2A5",
+    acentoTexto: "#2F8183",
     publicado: "2026-10",
     nivel: "secundaria",
     duracion: 5,
@@ -147,6 +178,9 @@ const juegos = [
     id: "crispr",
     url: "crispr/",
     capa: "capas/crispr.svg",
+    // color del logo asignado a este juego (ver capas/crispr.svg)
+    acento: "#0462B7",
+    acentoTexto: "#0462B7",
     publicado: "2026-10",
     nivel: "docentes",
     duracion: 8,
@@ -163,6 +197,9 @@ const juegos = [
     id: "farmacogenomica",
     url: "farmacogenomica/",
     capa: "capas/farmacogenomica.svg",
+    // color del logo asignado a este juego (ver capas/farmacogenomica.svg)
+    acento: "#C88705",
+    acentoTexto: "#A06C04",
     publicado: "2026-10",
     nivel: "docentes",
     duracion: 5,
@@ -179,6 +216,9 @@ const juegos = [
     id: "detective-clinico",
     url: "detective-clinico/",
     capa: "capas/detective-clinico.svg",
+    // color del logo asignado a este juego (ver capas/detective-clinico.svg)
+    acento: "#BC0440",
+    acentoTexto: "#BC0440",
     publicado: "2026-10",
     nivel: "docentes",
     duracion: 8,
@@ -195,6 +235,9 @@ const juegos = [
     id: "epigenetica",
     url: "epigenetica/",
     capa: "capas/epigenetica.svg",
+    // color del logo asignado a este juego (ver capas/epigenetica.svg)
+    acento: "#0B9053",
+    acentoTexto: "#0A874E",
     publicado: "2026-10",
     nivel: "docentes",
     duracion: 7,

@@ -1,9 +1,9 @@
 <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
-  <rect width="300" height="200" fill="#0F3D3E"/>
-  <rect x="130" y="40" width="40" height="70" rx="8" fill="#F2EEE2"/>
-  <rect x="138" y="40" width="24" height="20" fill="#E1A73B"/>
-  <path d="M100 160 q50 -40 100 0" stroke="#F2EEE2" stroke-width="2" fill="none"/>
-  <circle cx="100" cy="160" r="6" fill="#2E7D5B"/>
-  <circle cx="150" cy="130" r="6" fill="#E1A73B"/>
-  <circle cx="200" cy="160" r="6" fill="#B1473F"/>
+  <rect width="300" height="200" fill="#F2A406"/>
+  <rect x="130" y="40" width="40" height="70" rx="8" fill="#16211F"/>
+  <rect x="138" y="40" width="24" height="20" fill="#795C14"/>
+  <path d="M100 160 q50 -40 100 0" stroke="#16211F" stroke-width="2" fill="none"/>
+  <circle cx="100" cy="160" r="6" fill="#795C14"/>
+  <circle cx="150" cy="130" r="6" fill="#795C14"/>
+  <circle cx="200" cy="160" r="6" fill="#795C14"/>
 </svg>

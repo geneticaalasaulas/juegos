@@ -5,124 +5,303 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Resistencia a antibióticos · Genética a las Aulas</title>
 <style>
-  :root{ --bg:#0F3D3E; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#E1A73B; --accent-deep:#B9822B; --ok:#2E7D5B; --mal:#B1473F; }
+  :root{
+    --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B;
+    /* Una sola paleta de texto: --ink y --muted sirven tanto sobre la
+       pagina como sobre el tablero, porque los dos son claros. */
+    --enfasis:#E10F1A;        /* enfasis del texto, en el color del juego */
+    --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
+    --juego:#ED101B;          /* rojo del logo — ver capas/resistencia-antibioticos.svg */
+    --juego-texto:#E10F1A;    /* misma familia, oscurecido hasta 4.5:1 sobre blanco */
+    --juego-tinte:#FDE5E6;    /* fondo del boton al pasar el mouse */
+    --pista:#E2E8E6;             /* pista de la barra de progreso */
+    --foco:#16211F;              /* anillo de foco: igual en todo el sitio, maxima visibilidad */
+    --res:#EB101B;         /* resistentes — rojo del logo */
+    --sen:#6AC7CA;         /* sensibles — cian del logo, mas claro que el rojo */
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
   *{box-sizing:border-box;}
-  body{ margin:0; min-height:100vh; background:var(--bg); color:#F2EEE2; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; display:flex; flex-direction:column; align-items:center; }
-  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:#CFE3DF; font-size:0.9rem; text-decoration:none; }
-  a.volver:hover{ color:var(--accent); }
-  h1{ font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; font-size:1.6rem; margin:0.6rem 0 0.2rem; }
-  .marcador{ color:#CFE3DF; font-size:0.9rem; margin-bottom:1rem; }
-  .tablero{ background:var(--card); color:var(--ink); border-radius:6px; padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem; }
-  .enunciado{ font-size:0.98rem; margin:0 0 1rem; line-height:1.5; }
-  .barra{ height:26px; border-radius:4px; overflow:hidden; display:flex; margin-bottom:0.3rem; }
-  .barra div{ height:100%; }
-  .etiqueta{ font-size:0.8rem; color:var(--muted); margin-bottom:1rem; }
-  .opciones{ display:grid; grid-template-columns:repeat(2,1fr); gap:0.6rem; }
-  .opciones button{ padding:0.7rem 0.5rem; border-radius:4px; border:1.5px solid var(--accent-deep); background:#fff; color:var(--ink); font-size:0.92rem; cursor:pointer; }
-  .opciones button:hover{ background:#FBF1DD; }
-  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
-  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
-  .feedback{ min-height:2.6rem; margin-top:0.9rem; font-size:0.92rem; }
-  .siguiente{ margin-top:0.6rem; align-self:flex-end; background:var(--accent); color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px; font-weight:600; cursor:pointer; display:none; }
-  .final{ text-align:center; }
-  .final button{ margin-top:1rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:var(--fuente); display:flex; flex-direction:column; align-items:center;
+  }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--juego-texto); }
+  a.volver:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  h1{
+    font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem);
+    letter-spacing:-0.01em; line-height:1.2;
+    margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem;
+  }
+  .bajada{ color:var(--muted); font-size:0.92rem; margin:0 0 1.1rem; text-align:center; max-width:34em; padding:0 1rem; }
+  .tablero{
+    background:var(--card); color:var(--ink); border-radius:8px;
+    border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05);
+    padding:1.6rem; width:min(620px,94vw); margin-bottom:1.2rem;
+  }
+  .lectura{ display:flex; gap:1.6rem; flex-wrap:wrap; font-size:0.9rem; margin-bottom:0.9rem; }
+  .lectura b{ font-size:1.25rem; font-weight:600; display:block; letter-spacing:-0.01em; }
+  .lectura span{ color:var(--muted); }
+  svg.grafico{ width:100%; height:auto; display:block; margin:0 0 0.4rem; }
+  .pie{ font-size:0.8rem; color:var(--muted); margin:0 0 1.1rem; line-height:1.5; }
+  .pie.centro{ text-align:center; }
+  .aclaracion{
+    font-size:0.82rem; color:var(--ink); background:var(--juego-tinte);
+    border-left:3px solid var(--juego); padding:0.6rem 0.8rem; margin:0 0 1.1rem; line-height:1.5;
+  }
+  .poblacion{ display:grid; grid-template-columns:repeat(20,1fr); gap:3px; margin:0 0 0.4rem; }
+  .poblacion i{ display:block; aspect-ratio:1; border:1px solid rgba(22,33,31,0.22); }
+  /* forma distinta ademas del color: no se depende del color para distinguirlos */
+  .poblacion i.res{ border-radius:50%; }
+  .poblacion i.sen{ border-radius:2px; }
+  .controles{ display:flex; gap:0.6rem; flex-wrap:wrap; margin:1.1rem 0 0; }
+  button{
+    min-height:44px; padding:0.6rem 1rem; border-radius:6px; font-size:0.93rem;
+    cursor:pointer; font-family:inherit; border:1.5px solid var(--juego);
+    background:#fff; color:var(--ink);
+    transition:background-color .15s ease, border-color .15s ease, opacity .15s ease;
+  }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  .ajustes{ margin-top:1.2rem; border-top:1px solid #E6E9E8; padding-top:1rem; }
+  .ajustes label{ display:block; font-size:0.85rem; color:var(--muted); margin-bottom:0.8rem; }
+  .ajustes input[type=range]{ width:100%; accent-color:var(--juego-texto); min-height:24px; }
+  .ajustes input[type=range]:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  .ajustes label b{ color:var(--ink); }
+  .nota{
+    font-size:0.9rem; line-height:1.55; background:#F4F6F5;
+    border-left:3px solid var(--accent); padding:0.7rem 0.9rem; margin-top:1.1rem;
+  }
+  details{ max-width:34em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8;
+    padding-top:1rem; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  summary:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  details p{ margin:0.6rem 0 0; }
+  @media (max-width:520px){ .controles button{ flex:1 1 100%; } }
 </style>
 </head>
 <body>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
 <h1>Resistencia a antibióticos</h1>
-<p class="marcador" id="marcador">Ronda 1 de 5 · Aciertos: 0</p>
-<div class="tablero" id="tablero"></div>
+<p class="bajada">Una población de bacterias, un antibiótico y una decisión en cada generación. Mirá cómo cambia la proporción de bacterias resistentes.</p>
+
+<div class="tablero">
+  <div class="lectura">
+    <div><b id="lec-gen">0</b><span>generaciones</span></div>
+    <div><b id="lec-res">2%</b><span>son resistentes</span></div>
+    <div><b id="lec-dosis">0</b><span>generaciones con antibiótico</span></div>
+  </div>
+
+  <svg class="grafico" id="grafico" viewBox="0 0 560 240" role="img" aria-labelledby="g-desc"></svg>
+  <p class="pie centro" id="g-desc">Cada punto es una generación. Las franjas <span style="background:#FBF1DD;padding:0 4px;">beige</span> marcan las generaciones con antibiótico; las <span style="background:#EAF3F2;padding:0 4px;">verdes</span>, las generaciones sin antibiótico.</p>
+
+  <p class="aclaracion">
+    <b>Qué mide el eje vertical:</b> qué <b>porcentaje de la población</b> es resistente — o sea, de cada 100 bacterias, cuántas lo son.
+    No es la <b>cantidad</b> de bacterias. Eso es importante: con antibiótico el total de bacterias <b>baja</b> (mueren las sensibles),
+    y al mismo tiempo el porcentaje de resistentes <b>sube</b>, porque las que quedan son cada vez más las resistentes.
+  </p>
+
+  <div class="poblacion" id="poblacion" aria-hidden="true"></div>
+  <p class="pie centro">
+    <span style="display:inline-block;width:10px;height:10px;background:var(--sen);border:1px solid rgba(22,33,31,.22);border-radius:2px;vertical-align:-1px;"></span> sensibles (cuadrado) &nbsp;·&nbsp;
+    <span style="display:inline-block;width:10px;height:10px;background:var(--res);border:1px solid rgba(22,33,31,.22);border-radius:50%;vertical-align:-1px;"></span> resistentes (círculo) &nbsp;— muestra de 100 bacterias
+  </p>
+
+  <div class="controles">
+    <button class="primario" id="btn-dar">Dar antibiótico &rarr; 1 generación</button>
+    <button id="btn-no">Sin antibiótico &rarr; 1 generación</button>
+    <button id="btn-x5">Dar &times;5</button>
+    <button id="btn-reset">Reiniciar</button>
+  </div>
+
+  <p class="nota" id="nota"></p>
+
+  <div class="ajustes">
+    <label for="p0">Resistentes al inicio: <b id="v-p0">2%</b>
+      <input type="range" id="p0" min="0.5" max="20" step="0.5" value="2">
+    </label>
+    <label for="w">Ventaja de las resistentes con antibiótico: <b id="v-w">2.0&times;</b>
+      <input type="range" id="w" min="1.1" max="3" step="0.1" value="2">
+    </label>
+    <label for="c">Costo de ser resistente cuando no hay antibiótico: <b id="v-c">15%</b>
+      <input type="range" id="c" min="0" max="40" step="1" value="15">
+    </label>
+  </div>
+</div>
+
+<details>
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Secundaria</p>
+  <p><b>Conceptos que trabaja:</b> evolución de la resistencia bacteriana; la
+  mutación existe antes del antibiótico; presión de selección por fármacos;
+  crecimiento de la frecuencia del alelo ventajoso; costo de la resistencia;
+  uso responsable de antibióticos.</p>
+  <p><b>Lo primero que conviene aclarar:</b> el eje vertical es una
+  <b>proporción</b>, no una cantidad. Es la confusión más común del tema: con
+  antibiótico la población total de bacterias baja mucho, y sin embargo el
+  porcentaje de resistentes sube. Las dos cosas pasan a la vez y no se
+  contradicen.</p>
+  <p><b>Qué permite ver que una pregunta de opción múltiple no permitía:</b> la
+  <b>forma</b> de la curva. La proporción de resistentes no crece a ritmo
+  constante: arranca lento, se acelera y se frena sola cuando ya casi no quedan
+  bacterias sensibles a las que desplazar. Esa curva en S es el resultado del
+  modelo de selección en un locus.</p>
+  <p><b>La decisión que hay que tomar:</b> el botón "sin antibiótico" está para
+  que se vea que la resistencia suele tener un <b>costo</b> — sin la droga, las
+  resistentes quedan en desventaja y su proporción baja. Ahí está la discusión
+  interesante: ¿alcanza con suspender el antibiótico para que la resistencia
+  desaparezca? Probá con el costo en 0%: la proporción se queda donde estaba. Lo
+  que subió por selección no baja solo si nada empuja en el otro sentido.</p>
+  <p><b>Para discutir después de jugar:</b> el antibiótico no crea la
+  resistencia — la mutación ya estaba en unas pocas bacterias antes de la primera
+  dosis (movés el control "resistentes al inicio" y siempre hay algunas). Lo que
+  hace el antibiótico es eliminar a las demás. ¿Qué consecuencia tiene eso para
+  cómo usamos antibióticos?</p>
+</details>
 
 <script>
-// Cada ronda: % inicial de resistentes + N generaciones con antibiótico -> el usuario predice el % final.
-// w = eficacia biologica relativa de las resistentes frente a las sensibles.
-// Ej.: w = 2 significa que, bajo antibiotico, cada resistente deja el doble
-// de descendencia que una sensible.
-const rondas = [
-  { inicial:1,   generaciones:3,  w:1.5 },
-  { inicial:10,  generaciones:2,  w:1.8 },
-  { inicial:5,   generaciones:4,  w:2.0 },
-  { inicial:0.5, generaciones:6,  w:2.5 },
-  { inicial:2,   generaciones:10, w:2.0 }
-];
+// Modelo estandar de seleccion en un locus, trabajando con frecuencias (0 a 1):
+//   con antibiotico: las resistentes tienen eficacia biologica relativa w > 1
+//   sin antibiotico: ser resistente tiene un costo c, o sea eficacia 1 - c
+// En los dos casos:  p' = p*wR / (p*wR + (1-p)*1)
+const PASOS_MAX = 40;
+let p0 = 0.02, w = 2.0, costo = 0.15;
+let historia = [];   // [{p, antibiotico}]
 
-let ronda = 0, aciertos = 0;
-const tablero = document.getElementById('tablero');
-const marcador = document.getElementById('marcador');
+const el = id => document.getElementById(id);
 
-// Modelo estandar de seleccion en un locus:  p' = p*w / (p*w + (1-p))
-// Se trabaja con frecuencias (0 a 1), no con porcentajes: a medida que las
-// resistentes se vuelven mayoria, quedan menos sensibles a las que desplazar
-// y el crecimiento se frena solo (curva logistica).
-function calcularFinal(inicial, generaciones, w){
-  let p = inicial / 100;
-  for(let i=0;i<generaciones;i++){ p = (p*w) / (p*w + (1-p)); }
-  return Math.round(p*100);
+// Cerca de 0% y de 100% los cambios por generacion son de decimas: si se redondea
+// a entero, el numero no se mueve y parece que el modelo esta trabado.
+function pct(p){
+  const v = p * 100;
+  // Cerca de los extremos el cambio por generacion es de centesimas: con
+  // redondeo a entero el numero no se mueve y parece que el modelo se trabo.
+  let txt;
+  if(v >= 99.9 || (v > 0 && v < 0.1))      txt = v.toFixed(2);
+  else if(v > 99.4 || (v > 0 && v < 0.6))  txt = v.toFixed(1);
+  else                                     txt = String(Math.round(v));
+  return txt.replace('.', ',') + '%';
 }
 
-function bucket(valor){
-  if(valor < 15) return "Menos del 15%";
-  if(valor < 40) return "Entre 15% y 40%";
-  if(valor < 70) return "Entre 40% y 70%";
-  return "Más del 70%";
+function reiniciar(){
+  historia = [{p: p0, antibiotico: null}];
+  dibujar();
+}
+
+function paso(conAntibiotico){
+  if(historia.length > PASOS_MAX) return;
+  const p = historia[historia.length - 1].p;
+  const wR = conAntibiotico ? w : (1 - costo);
+  historia.push({p: (p * wR) / (p * wR + (1 - p)), antibiotico: conAntibiotico});
+  dibujar();
+}
+
+function graficoSVG(){
+  const W = 560, H = 240, ML = 76, MR = 14, MT = 14, MB = 40;
+  const n = Math.max(12, historia.length - 1);
+  const x = g => ML + (g / n) * (W - ML - MR);
+  const y = p => MT + (1 - p) * (H - MT - MB);
+  let s = '';
+
+  // franjas segun lo que se hizo en cada generacion
+  historia.forEach((h, i) => {
+    if(h.antibiotico === null) return;
+    const col = h.antibiotico ? '#FBF1DD' : '#EAF3F2';
+    s += `<rect x="${x(i-1)}" y="${MT}" width="${x(i)-x(i-1)}" height="${H-MT-MB}" fill="${col}"/>`;
+  });
+
+  // guias horizontales y etiquetas del eje Y
+  const etiquetas = {1:'todas', 0:'ninguna'};
+  [0, 0.25, 0.5, 0.75, 1].forEach(v => {
+    s += `<line x1="${ML}" y1="${y(v)}" x2="${W-MR}" y2="${y(v)}" stroke="#E6E9E8" stroke-width="1"/>`;
+    const yy = y(v);
+    if(etiquetas[v]){
+      s += `<text x="${ML-8}" y="${yy-1}" text-anchor="end" font-size="10" fill="#5B6E6B">${v*100}%</text>`;
+      s += `<text x="${ML-8}" y="${yy+10}" text-anchor="end" font-size="9" fill="#8A9A97">(${etiquetas[v]})</text>`;
+    } else {
+      s += `<text x="${ML-8}" y="${yy+3.5}" text-anchor="end" font-size="10" fill="#5B6E6B">${v*100}%</text>`;
+    }
+  });
+
+  // titulo del eje Y, rotado
+  s += `<text x="16" y="${MT + (H-MT-MB)/2}" font-size="10.5" fill="#16211F" text-anchor="middle"`
+     + ` transform="rotate(-90 16 ${MT + (H-MT-MB)/2})">bacterias resistentes</text>`;
+  s += `<text x="29" y="${MT + (H-MT-MB)/2}" font-size="9" fill="#5B6E6B" text-anchor="middle"`
+     + ` transform="rotate(-90 29 ${MT + (H-MT-MB)/2})">(% de la población)</text>`;
+
+  // eje X
+  const salto = n <= 12 ? 2 : Math.ceil(n/8);
+  for(let g = 0; g <= n; g += salto)
+    s += `<text x="${x(g)}" y="${H-MB+16}" text-anchor="middle" font-size="10" fill="#5B6E6B">${g}</text>`;
+  s += `<text x="${(ML+W-MR)/2}" y="${H-6}" text-anchor="middle" font-size="10.5" fill="#16211F">generaciones de bacterias</text>`;
+  s += `<line x1="${ML}" y1="${MT}" x2="${ML}" y2="${H-MB}" stroke="#16211F" stroke-width="1.2"/>`;
+  s += `<line x1="${ML}" y1="${H-MB}" x2="${W-MR}" y2="${H-MB}" stroke="#16211F" stroke-width="1.2"/>`;
+
+  // curva
+  s += `<polyline points="${historia.map((h,i)=>`${x(i)},${y(h.p)}`).join(' ')}" fill="none" stroke="#EB101B" stroke-width="2.5" stroke-linejoin="round"/>`;
+  historia.forEach((h,i) => { s += `<circle cx="${x(i)}" cy="${y(h.p)}" r="3" fill="#EB101B"/>`; });
+  const ult = historia[historia.length-1];
+  s += `<text x="${Math.min(x(historia.length-1)+8, W-MR-40)}" y="${Math.max(y(ult.p)-8, MT+10)}" font-size="11" font-weight="700" fill="#EB101B">${pct(ult.p)}</text>`;
+  return s;
+}
+
+function poblacionHTML(p){
+  const res = Math.round(p * 100);
+  let s = '';
+  for(let i = 0; i < 100; i++)
+    s += i < res ? `<i class="res" style="background:var(--res)"></i>`
+                 : `<i class="sen" style="background:var(--sen)"></i>`;
+  return s;
+}
+
+function nota(){
+  const n = historia.length - 1, ult = historia[n], p = ult.p;
+  const dosis = historia.filter(h => h.antibiotico === true).length;
+  if(n === 0)
+    return `Arrancás con ${pct(p)} de bacterias resistentes. Ojo: <b>ya están ahí antes de la primera dosis</b> — el antibiótico no las va a crear, las va a seleccionar.`;
+  if(ult.antibiotico === false && p < historia[n-1].p - 1e-9){
+    const caida = (historia[n-1].p - p) * 100;
+    let extra = '';
+    if(caida < 0.5)
+      extra = ` Fijate que la bajada es lentísima: cuando casi todas son resistentes, apenas quedan sensibles con las que competir, así que la desventaja casi no se nota. Volver para atrás lleva muchísimas más generaciones que subir.`;
+    return `Sin antibiótico la proporción <b>baja</b>: ser resistente tiene un costo (${Math.round(costo*100)}%), así que las resistentes quedan en desventaja.` + extra +
+      (caida >= 0.5 ? ` Si llevás el costo a 0%, la curva se queda quieta.` : '');
+  }
+  if(ult.antibiotico === false)
+    return `Sin antibiótico y sin costo de resistencia, la proporción no se mueve. Lo que subió por selección no baja solo: hace falta algo que empuje en el otro sentido.`;
+  if(p > 0.95)
+    return `Casi toda la población es resistente. La curva se frenó sola: ya no quedan bacterias sensibles a las que desplazar. Probá "sin antibiótico" y mirá qué pasa.`;
+  if(p > 0.5)
+    return `Las resistentes ya son mayoría. Fijate que la curva <b>se está frenando</b>: no crece siempre al mismo ritmo.`;
+  return `${dosis} generación${dosis===1?'':'es'} con antibiótico y las resistentes pasaron de ${Math.round(historia[0].p*100)}% a ${Math.round(p*100)}%. La curva arranca lento y se acelera.`;
 }
 
 function dibujar(){
-  const r = rondas[ronda];
-  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
-
-  const final = calcularFinal(r.inicial, r.generaciones, r.w);
-  const correcta = bucket(final);
-  const todas = ["Menos del 15%","Entre 15% y 40%","Entre 40% y 70%","Más del 70%"];
-
-  tablero.innerHTML = `
-    <p class="enunciado">Una población de bacterias empieza con <b>${r.inicial}%</b> de individuos resistentes a un antibiótico. Se aplica el mismo antibiótico durante <b>${r.generaciones} generaciones</b> seguidas, sin cambiar de tratamiento.</p>
-    <div class="barra"><div style="width:${r.inicial}%;background:#E1A73B"></div><div style="width:${100-r.inicial}%;background:#2E7D5B"></div></div>
-    <p class="etiqueta">Población inicial — <span style="color:#B9822B">■</span> resistentes &nbsp; <span style="color:#2E7D5B">■</span> sensibles</p>
-    <p class="enunciado">¿Qué porcentaje de resistentes esperás encontrar después de esas ${r.generaciones} generaciones?</p>
-    <div class="opciones">${todas.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
-    <p class="feedback" id="feedback"></p>
-    <button class="siguiente" id="siguiente">Siguiente &rarr;</button>
-  `;
-
-  tablero.querySelectorAll('.opciones button').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const acierto = btn.dataset.o === correcta;
-      tablero.querySelectorAll('.opciones button').forEach(b=>{
-        b.disabled = true;
-        if(b.dataset.o === correcta) b.classList.add('ok');
-        else if(b === btn) b.classList.add('mal');
-      });
-      document.getElementById('feedback').textContent = (acierto ? "¡Correcto! " : "No exactamente. ")
-        + `El valor final calculado fue ${final}% de resistentes. Cada generación, las bacterias resistentes dejan más descendencia que las sensibles, y su proporción crece. Algo importante: el antibiótico no crea la resistencia — la mutación ya estaba en unas pocas bacterias, y el antibiótico elimina a las demás. Por eso conviene usar antibióticos solo cuando un médico los indica, completar el tratamiento y no automedicarse: cada uso innecesario le da otra oportunidad a las resistentes.`;
-      if(acierto) aciertos++;
-      marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
-      const sig = document.getElementById('siguiente');
-      sig.style.display = 'inline-block';
-      sig.onclick = () => { ronda++; ronda < rondas.length ? dibujar() : final2(); };
-    });
-  });
+  const ult = historia[historia.length-1];
+  el('lec-gen').textContent   = historia.length - 1;
+  el('lec-res').textContent   = pct(ult.p);
+  el('lec-dosis').textContent = historia.filter(h => h.antibiotico === true).length;
+  el('grafico').innerHTML   = graficoSVG();
+  el('poblacion').innerHTML = poblacionHTML(ult.p);
+  el('nota').innerHTML      = nota();
+  const tope = historia.length > PASOS_MAX;
+  ['btn-dar','btn-no','btn-x5'].forEach(id => el(id).disabled = tope);
 }
 
-function final2(){
-  tablero.innerHTML = `
-    <div class="final">
-      <h2 style="font-family:'Iowan Old Style',Georgia,serif;">Terminaste el juego</h2>
-      <p>Acertaste ${aciertos} de ${rondas.length} rondas.</p>
-      <button onclick="location.reload()">Jugar de nuevo</button>
-    </div>`;
-}
+el('btn-dar').onclick   = () => paso(true);
+el('btn-no').onclick    = () => paso(false);
+el('btn-x5').onclick    = () => { for(let i=0;i<5;i++) paso(true); };
+el('btn-reset').onclick = () => reiniciar();
 
-dibujar();
+el('p0').oninput = e => { p0 = +e.target.value/100; el('v-p0').textContent = e.target.value+'%'; reiniciar(); };
+el('w').oninput  = e => { w  = +e.target.value;     el('v-w').textContent  = (+e.target.value).toFixed(1)+'\u00d7'; reiniciar(); };
+el('c').oninput  = e => { costo = +e.target.value/100; el('v-c').textContent = e.target.value+'%'; };
+
+reiniciar();
 </script>
-
-<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:#5B6E6B;line-height:1.55;text-align:left;">
-  <summary style="cursor:pointer;font-weight:700;color:#16211F;font-size:0.95rem;">Para el/la docente</summary>
-  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Secundaria</p>
-  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Evolución de la resistencia bacteriana; la mutación existe antes del antibiótico; presión de selección por fármacos; crecimiento de la frecuencia del alelo ventajoso; uso responsable de antibióticos.</p>
-  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> ¿El antibiótico genera bacterias resistentes, o selecciona las que ya estaban? De la respuesta se desprende todo lo demás: por qué no hay que automedicarse, por qué conviene completar el tratamiento indicado y por qué los antibióticos no sirven para una infección viral.</p>
-</details>
-
 </body>
 </html>

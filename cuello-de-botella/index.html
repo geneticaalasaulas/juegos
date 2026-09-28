@@ -5,159 +5,329 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cuello de botella · Genética a las Aulas</title>
 <style>
-  :root{ --bg:#0F3D3E; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#E1A73B; --accent-deep:#B9822B; --ok:#2E7D5B; --mal:#B1473F; }
+  :root{
+    --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B;
+    --enfasis:#5E0478;
+    --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
+    --juego:#5E0478;          /* violeta del logo */
+    --juego-texto:#5E0478;
+    --juego-tinte:#EDE3F0;
+    --pista:#E2E8E6;
+    --foco:#16211F;              /* anillo de foco, igual en todo el sitio */
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
   *{box-sizing:border-box;}
-  body{ margin:0; min-height:100vh; background:var(--bg); color:#F2EEE2; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; display:flex; flex-direction:column; align-items:center; }
-  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:#CFE3DF; font-size:0.9rem; text-decoration:none; }
-  a.volver:hover{ color:var(--accent); }
-  h1{ font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; font-size:1.6rem; margin:0.6rem 0 0.2rem; }
-  .marcador{ color:#CFE3DF; font-size:0.9rem; margin-bottom:1rem; }
-  .tablero{ background:var(--card); color:var(--ink); border-radius:6px; padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem; }
-  .enunciado{ font-size:0.98rem; margin:0 0 1rem; line-height:1.5; }
-  .poblacion{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:1rem; min-height:50px; }
-  .poblacion span{ width:14px; height:14px; border-radius:50%; display:inline-block; }
-  .antes-despues{ display:flex; gap:1.5rem; margin-bottom:1rem; }
-  .antes-despues > div{ flex:1; }
-  .antes-despues h4{ margin:0 0 0.4rem; font-size:0.85rem; color:var(--muted); }
-  .opciones{ display:grid; grid-template-columns:1fr; gap:0.6rem; }
-  .opciones button{ padding:0.7rem 0.8rem; border-radius:4px; border:1.5px solid var(--accent-deep); background:#fff; color:var(--ink); font-size:0.9rem; cursor:pointer; text-align:left; }
-  .opciones button:hover{ background:#FBF1DD; }
-  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
-  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
-  .feedback{ min-height:2.6rem; margin-top:0.9rem; font-size:0.92rem; }
-  .siguiente{ margin-top:0.6rem; align-self:flex-end; background:var(--accent); color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px; font-weight:600; cursor:pointer; display:none; }
-  .final{ text-align:center; }
-  .final button{ margin-top:1rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:var(--fuente); display:flex; flex-direction:column; align-items:center;
+  }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--juego-texto); }
+  a.volver:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  h1{
+    font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem);
+    letter-spacing:-0.01em; line-height:1.2;
+    margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem;
+  }
+  .bajada{ color:var(--muted); font-size:0.92rem; margin:0 0 1.1rem; text-align:center; max-width:36em; padding:0 1rem; }
+  .tablero{
+    background:var(--card); color:var(--ink); border-radius:8px;
+    border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05);
+    padding:1.6rem; width:min(620px,94vw); margin-bottom:1.2rem;
+  }
+  h2.etapa{ font-size:0.82rem; text-transform:uppercase; letter-spacing:0.09em;
+    color:var(--muted); font-weight:600; margin:1.3rem 0 0.5rem; }
+  h2.etapa:first-of-type{ margin-top:0; }
+  .tortugas{ display:grid; grid-template-columns:repeat(20,1fr); gap:3px; }
+  .tortugas svg{ display:block; width:100%; height:auto; aspect-ratio:1; }
+  .tortugas.pocas{ grid-template-columns:repeat(10,1fr); gap:6px; max-width:390px; }
+  /* Tres colores del logo elegidos por distancia de color perceptual, medida
+     también en los tres tipos de daltonismo más frecuentes: el peor par en el
+     peor tipo de visión separa ΔE 78. Con esa separación el color solo alcanza,
+     así que ninguna necesita un dibujo distinto. No son colores de tortuga
+     real: están elegidos para que se distingan. */
+  .amarilla{ color:#F2A406; }
+  .azul    { color:#0B04E1; }
+  .celeste { color:#6AC7CA; }
+  .barras{ margin-top:0.6rem; }
+  .fila{ display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; margin-bottom:0.3rem; }
+  .fila .swatch{ width:20px; height:20px; flex:none; display:block; }
+  .fila .nom{ width:5.2em; flex:none; }
+  .fila .riel{ flex:1; height:12px; background:#EEF1F0; border-radius:3px; overflow:hidden; }
+  /* el contorno delimita la barra aunque el relleno sea claro */
+  .fila .riel b{ display:block; height:100%; box-shadow:inset 0 0 0 1px rgba(22,33,31,0.3); }
+  .fila .val{ width:5.6em; text-align:right; flex:none; font-variant-numeric:tabular-nums; }
+  .fila.perdido .nom, .fila.perdido .val{ color:var(--mal); font-weight:600; }
+  .controles{ display:flex; gap:0.6rem; flex-wrap:wrap; margin:1.3rem 0 0; }
+  button{
+    min-height:44px; padding:0.6rem 1rem; border-radius:6px; font-size:0.93rem;
+    cursor:pointer; font-family:inherit; border:1.5px solid var(--juego);
+    background:#fff; color:var(--ink);
+    transition:background-color .15s ease, border-color .15s ease, opacity .15s ease;
+  }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  .ajustes{ margin-top:1.2rem; border-top:1px solid #E6E9E8; padding-top:1rem; }
+  .ajustes label{ display:block; font-size:0.85rem; color:var(--muted); }
+  .ajustes label b{ color:var(--ink); }
+  .ajustes input[type=range]{ width:100%; accent-color:var(--juego-texto); min-height:24px; }
+  .ajustes input[type=range]:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  .nota{ font-size:0.9rem; line-height:1.55; background:#F4F6F5;
+    border-left:3px solid var(--accent); padding:0.7rem 0.9rem; margin-top:1.1rem; }
+  .registro{ margin-top:1.2rem; border-top:1px solid #E6E9E8; padding-top:1rem; font-size:0.85rem; }
+  .registro table{ border-collapse:collapse; width:100%; margin-top:0.5rem; }
+  .registro td, .registro th{ text-align:left; padding:0.22rem 0.4rem; border-bottom:1px solid #F0F2F1; }
+  .registro th{ font-size:0.78rem; color:var(--muted); font-weight:600; }
+  .registro .pastilla{ display:inline-block; width:18px; height:18px;
+    margin-right:1px; vertical-align:-5px; }
+  .registro .cero{ color:var(--mal); font-weight:600; }
+  .pie{ font-size:0.8rem; color:var(--muted); margin:0.4rem 0 0; }
+  details{ max-width:34em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8;
+    padding-top:1rem; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  summary:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  details p{ margin:0.6rem 0 0; }
+  @media (max-width:520px){ .controles button{ flex:1 1 100%; } }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <!-- Tortuga de perfil. El caparazon toma el color del alelo
+       (fill="currentColor"); el contorno oscuro la hace visible sobre la
+       tarjeta blanca aunque el color sea claro. -->
+  <symbol id="tortuga" viewBox="0 0 24 24">
+    <g fill="currentColor" stroke="#16211F" stroke-opacity="0.55" stroke-width="0.95" stroke-linejoin="round">
+      <ellipse cx="21.4" cy="14.6" rx="2.6" ry="2.1"/>
+      <ellipse cx="7.6" cy="17.8" rx="2.2" ry="1.4"/>
+      <ellipse cx="15.2" cy="17.8" rx="2.2" ry="1.4"/>
+      <path d="M3.2 16.8 C3.2 10.1 6.9 5.7 12 5.7 C17.1 5.7 20.8 10.1 20.8 16.8 Z"/>
+    </g>
+    <path d="M12 5.9 L12 16.7 M7.4 7.9 L8.7 16.7 M16.6 7.9 L15.3 16.7" fill="none" stroke="#16211F" stroke-opacity="0.32" stroke-width="0.85"/>
+    <circle cx="22.2" cy="14.1" r="0.7" fill="#FFFFFF" stroke="#16211F" stroke-opacity="0.5" stroke-width="0.35"/>
+  </symbol>
+</svg>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
 <h1>Cuello de botella</h1>
-<p class="marcador" id="marcador">Ronda 1 de 5 · Aciertos: 0</p>
-<div class="tablero" id="tablero"></div>
+<p class="bajada">Una isla con 100 tortugas y tres colores de caparazón. Una tormenta deja unas pocas sobrevivientes, elegidas al azar. Corré la simulación varias veces: el resultado no es el mismo.</p>
+
+<div class="tablero">
+  <h2 class="etapa">Antes de la tormenta — 100 tortugas</h2>
+  <div class="tortugas" id="antes" aria-hidden="true"></div>
+  <div class="barras" id="barras-antes"></div>
+
+  <h2 class="etapa" id="titulo-sobrev">Sobrevivientes</h2>
+  <div class="tortugas pocas" id="sobrevivientes" aria-hidden="true"></div>
+  <div class="barras" id="barras-sobrev"></div>
+
+  <h2 class="etapa">Después — la población se recupera desde las sobrevivientes</h2>
+  <div class="tortugas" id="despues" aria-hidden="true"></div>
+  <div class="barras" id="barras-despues"></div>
+
+  <div class="controles">
+    <button class="primario" id="btn-correr">¡Tormenta! &mdash; correr de nuevo</button>
+    <button id="btn-borrar">Borrar el registro</button>
+  </div>
+
+  <p class="nota" id="nota">Apretá <b>¡Tormenta!</b> para correr la simulación.</p>
+
+  <div class="ajustes">
+    <label for="k">Cuántas tortugas sobreviven: <b id="v-k">6</b> de 100
+      <input type="range" id="k" min="2" max="60" step="1" value="6">
+    </label>
+  </div>
+
+  <div class="registro" id="registro"></div>
+</div>
+
+<details>
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Secundaria</p>
+  <p><b>Conceptos que trabaja:</b> deriva genética; cuello de botella
+  poblacional; pérdida de variación genética por azar; diferencia entre deriva y
+  selección natural.</p>
+  <p><b>Por qué este juego dejó de ser de opción múltiple:</b> porque la deriva
+  genética es <b>azar</b>, y eso no se puede enseñar con una pregunta de
+  respuesta única. Lo importante acá no es una corrida: es correrlo diez veces
+  con el mismo número de sobrevivientes y ver que el resultado cambia cada vez.
+  El registro de abajo acumula las corridas justamente para eso.</p>
+  <p><b>La pregunta que hay que hacer:</b> con 6 sobrevivientes, ¿qué color se
+  pierde más seguido? El celeste, que arranca en 20%. No porque sea peor
+  —ninguno es peor, no hay selección acá— sino porque al ser el menos frecuente
+  tiene más probabilidad de quedar afuera de una muestra chica. Esa es la
+  diferencia con la selección natural: ahí el que desaparece es el menos apto;
+  acá, el menos numeroso.</p>
+  <p><b>Sobre los colores:</b> no son colores de tortuga real. Están elegidos
+  para que se distingan bien entre sí, incluso para quien no distingue rojo de
+  verde: el par más parecido, en el peor de los tres tipos de daltonismo más
+  frecuentes, todavía separa 78 unidades de color. Si un/a estudiante pregunta,
+  vale decirlo: acá el color es una etiqueta para seguir un alelo, no un retrato.</p>
+  <p><b>Para discutir después de jugar:</b> moviendo el control, ¿a partir de
+  cuántas sobrevivientes deja de perderse algún color casi siempre? Y una vez
+  que un color se perdió, ¿puede volver? No por azar: haría falta una mutación
+  nueva o que lleguen tortugas de otra población.</p>
+</details>
 
 <script>
-function colores(n, prop){
-  const colores = ["#2E7D5B","#E1A73B","#3B6BB0","#B1473F","#7A5BB0"];
-  const usados = colores.slice(0, prop.length);
-  let arr = [];
-  prop.forEach((p,i)=>{ for(let k=0;k<Math.round(p*n);k++) arr.push(usados[i]); });
-  while(arr.length < n) arr.push(usados[0]);
-  return arr.slice(0,n);
-}
-
-const rondas = [
-  { escenario:"Una isla con 100 tortugas tiene 3 colores de caparazón: 50% marrón, 30% gris, 20% moteado. Una tormenta destruye el hábitat y solo sobreviven 6 tortugas, elegidas al azar.",
-    n:100, prop:[0.5,0.3,0.2],
-    sobreviven:6,
-    correcta:"Es probable que se pierda el color moteado y las frecuencias cambien mucho",
-    distractores:[
-      "Las tres variantes van a mantener aproximadamente las mismas proporciones que antes",
-      "Van a sobrevivir sobre todo las marrones, porque el marrón es el color más ventajoso"
-    ],
-    explicacion:"Con una muestra tan chica (6 de 100), es muy probable que algún alelo/color minoritario desaparezca por azar, y que las frecuencias del resto ya no se parezcan a las originales. Esto es un cuello de botella." },
-  { escenario:"Un grupo de 20 personas funda una colonia aislada. En la población de origen, 1 de cada 50 personas porta una mutación recesiva rara.",
-    // 0.02 = frecuencia de PORTADORES (1 de cada 50), no frecuencia del alelo.
-    n:100, prop:[0.98,0.02],
-    sobreviven:20,
-    correcta:"La frecuencia de esa mutación en la colonia puede terminar siendo mucho más alta o directamente cero",
-    distractores:[
-      "La frecuencia va a seguir siendo de 1 en 50, porque los fundadores vienen de esa misma población",
-      "La mutación va a desaparecer con seguridad, porque 20 personas son muy pocas"
-    ],
-    explicacion:"Esto es efecto fundador: si por azar alguno de los 20 fundadores porta la mutación, su frecuencia de portadores en la nueva población puede dispararse muy por encima del 2% original — o desaparecer del todo." },
-  { escenario:"Una plaga elimina al 95% de una población de zorros de 500 individuos. Sobreviven 25, elegidos al azar.",
-    n:100, prop:[0.4,0.35,0.25],
-    sobreviven:25,
-    correcta:"La variación genética de la población sobreviviente va a ser menor que la original",
-    distractores:[
-      "La variación genética se mantiene igual, porque el ambiente no cambió",
-      "La población va a quedar mejor adaptada, porque sobrevivieron los más aptos"
-    ],
-    explicacion:"Aunque 25 no es una muestra extremadamente chica, sigue siendo mucho menor que 500 — se pierde variación genética simplemente porque no todos los alelos originales quedan representados." },
-  { escenario:"Los guepardos actuales tienen muy poca variación genética, al punto de aceptar injertos de piel entre individuos no emparentados. Se cree que hace miles de años la especie pasó por una casi extinción.",
-    n:100, prop:[0.9,0.1],
-    sobreviven:8,
-    correcta:"Es un ejemplo real de cuello de botella histórico",
-    distractores:[
-      "Es un caso de efecto fundador: un grupo chico colonizó un territorio nuevo",
-      "La poca variación genética es la causa de la casi extinción, no su consecuencia"
-    ],
-    explicacion:"La baja variación genética actual de los guepardos es la evidencia clásica de un cuello de botella poblacional en su pasado evolutivo." },
-  { escenario:"Una empresa de pesca captura selectivamente los peces más grandes de un lago durante 30 años, dejando reproducirse solo a los más chicos.",
-    n:100, prop:[0.6,0.4],
-    sobreviven:60,
-    correcta:"Esto no es un cuello de botella clásico — es selección dirigida por el humano",
-    distractores:[
-      "Es un cuello de botella, porque el tamaño de la población se redujo mucho",
-      "No va a cambiar nada genéticamente: el tamaño de los peces depende solo de la alimentación"
-    ],
-    explicacion:"Un cuello de botella reduce el tamaño poblacional al azar (catástrofe). Acá el humano elige activamente qué peces sobreviven — es selección artificial, un mecanismo distinto aunque también cambia las frecuencias alélicas." }
+const N = 100;
+// Cada tortuga del color que dice su nombre. Los tres salen del logo y estan
+// elegidos por distancia de color perceptual: el peor par, en el peor de los
+// tres tipos de daltonismo mas frecuentes, separa 78 unidades de CIELAB. Con esa
+// separacion el color solo alcanza y las tres llevan el mismo dibujo.
+const alelos = [
+  { nombre:"amarilla", plural:"amarillas", clase:"amarilla", color:"#F2A406", f:0.50 },
+  { nombre:"azul",     plural:"azules",    clase:"azul",     color:"#0B04E1", f:0.30 },
+  { nombre:"celeste",  plural:"celestes",  clase:"celeste",  color:"#6AC7CA", f:0.20 }
 ];
 
-let ronda = 0, aciertos = 0;
-const tablero = document.getElementById('tablero');
-const marcador = document.getElementById('marcador');
+// Una tortuga del alelo i. La clase pone el color; el sprite, el dibujo.
+function icono(i, clase){
+  return `<svg class="${clase ? clase + ' ' : ''}${alelos[i].clase}" viewBox="0 0 24 24"`
+       + ` aria-hidden="true" focusable="false"><use href="#tortuga"/></svg>`;
+}
+
+let k = 6;
+let corridas = 0, corridasConPerdida = 0;
+let perdidasPorAlelo = alelos.map(() => 0);
+let registro = [];   // [{k, cuentas:[...], perdidos:n}]
+let estado = null;   // {antes, sobrev, despues}
+
+const el = id => document.getElementById(id);
+
+function poblacionInicial(){
+  const pob = [];
+  alelos.forEach((a, i) => { for(let j = 0; j < Math.round(a.f * N); j++) pob.push(i); });
+  while(pob.length < N) pob.push(0);
+  return pob.slice(0, N);
+}
+
+// Muestra al azar SIN reposicion: las sobrevivientes son un subconjunto real.
+function muestraSinReposicion(pob, cuantas){
+  const copia = pob.slice();
+  for(let i = copia.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia.slice(0, cuantas);
+}
+
+// Reproduccion: la poblacion se recompone sorteando entre las sobrevivientes.
+function repoblar(sobrev, total){
+  const out = [];
+  for(let i = 0; i < total; i++) out.push(sobrev[Math.floor(Math.random() * sobrev.length)]);
+  return out;
+}
+
+function cuentas(pob){ return alelos.map((_, i) => pob.filter(x => x === i).length); }
+
+function correr(){
+  const antes    = poblacionInicial();
+  const sobrev   = muestraSinReposicion(antes, k);
+  const despues  = repoblar(sobrev, N);
+  const cS = cuentas(sobrev);
+  const perdidos = cS.filter(c => c === 0).length;
+
+  corridas++;
+  if(perdidos > 0) corridasConPerdida++;
+  cS.forEach((c, i) => { if(c === 0) perdidasPorAlelo[i]++; });
+  registro.unshift({ k, cuentas: cS, perdidos });
+  if(registro.length > 8) registro.pop();
+
+  estado = { antes, sobrev, despues };
+  dibujar();
+}
+
+function tortugasHTML(pob){
+  return pob.map(i => icono(i)).join('');
+}
+
+function barrasHTML(pob, total){
+  const c = cuentas(pob);
+  return alelos.map((a, i) => {
+    const pct = total ? (c[i] / total * 100) : 0;
+    const perdido = c[i] === 0;
+    return `<div class="fila${perdido ? ' perdido' : ''}">
+      ${icono(i, 'swatch')}
+      <span class="nom">${a.nombre}</span>
+      <span class="riel"><b style="width:${pct}%;background:${a.color}"></b></span>
+      <span class="val">${perdido ? 'se perdió' : pct.toFixed(0) + '%'}</span>
+    </div>`;
+  }).join('');
+}
+
+function registroHTML(){
+  if(corridas === 0) return '';
+  const filas = registro.map((r, n) => `<tr>
+      <td>${corridas - n}</td>
+      <td>${r.cuentas.map((c, i) =>
+        `${icono(i, 'pastilla')}<span class="${c===0?'cero':''}">${c}</span>`
+      ).join(' &nbsp;')}</td>
+      <td>${r.perdidos === 0 ? '—' : r.perdidos + (r.perdidos === 1 ? ' color' : ' colores')}</td>
+    </tr>`).join('');
+  const pctPerdida = (corridasConPerdida / corridas * 100).toFixed(0);
+  const detalle = alelos.map((a, i) =>
+    `${a.nombre}: ${perdidasPorAlelo[i]}`).join(' &nbsp;·&nbsp; ');
+  return `<b>Registro de corridas</b>
+    <table>
+      <tr><th>#</th><th>tortugas sobrevivientes de cada color</th><th>se perdió</th></tr>
+      ${filas}
+    </table>
+    <p class="pie">Corriste <b>${corridas}</b> ${corridas === 1 ? 'vez' : 'veces'}.
+      En <b>${corridasConPerdida}</b> (${pctPerdida}%) se perdió al menos un color.<br>
+      Veces que se perdió cada uno &mdash; ${detalle}</p>`;
+}
+
+function nota(){
+  if(!estado) return 'Apretá <b>¡Tormenta!</b> para correr la simulación.';
+  const cS = cuentas(estado.sobrev);
+  const perdidos = alelos.filter((_, i) => cS[i] === 0);
+  let t = '';
+  if(perdidos.length === 0){
+    t = `Esta vez sobrevivieron los tres colores, pero mirá las proporciones: ya no son 50 / 30 / 20. `;
+  } else {
+    const nom = perdidos.map(a => `<b>${a.plural}</b>`).join(' y las ');
+    t = `Esta vez se perdieron las ${nom}. Nadie las eliminó: simplemente ninguna `
+      + `de las ${k} sobrevivientes era de ${perdidos.length === 1 ? 'ese color' : 'esos colores'}. `;
+  }
+  t += `Con ${k} sobrevivientes de 100, las frecuencias de la población nueva quedan a merced del azar. `;
+  if(corridas >= 3)
+    t += `Ya corriste ${corridas} veces y el resultado no fue el mismo: <b>eso es la deriva genética</b>.`;
+  else
+    t += `Volvé a apretar <b>¡Tormenta!</b> sin cambiar nada: el resultado va a ser distinto.`;
+  return t;
+}
 
 function dibujar(){
-  const r = rondas[ronda];
-  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
-
-  const antes = colores(30, r.prop);
-  const despues = antes.slice().sort(()=>Math.random()-0.5).slice(0, Math.max(3, Math.round(r.sobreviven/ r.n * 30)));
-
-  // Distractores propios de cada ronda: antes se reciclaban las respuestas
-  // correctas de las otras, y eso permitia acertar por eliminacion.
-  const opciones = [r.correcta, ...r.distractores].sort(()=>Math.random()-0.5);
-
-  tablero.innerHTML = `
-    <p class="enunciado">${r.escenario}</p>
-    <div class="antes-despues">
-      <div><h4>Antes (muestra)</h4><div class="poblacion">${antes.map(c=>`<span style="background:${c}"></span>`).join('')}</div></div>
-      <div><h4>Después</h4><div class="poblacion">${despues.map(c=>`<span style="background:${c}"></span>`).join('')}</div></div>
-    </div>
-    <p class="enunciado">¿Qué es lo más probable que ocurra?</p>
-    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
-    <p class="feedback" id="feedback"></p>
-    <button class="siguiente" id="siguiente">Siguiente &rarr;</button>
-  `;
-
-  tablero.querySelectorAll('.opciones button').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const acierto = btn.dataset.o === r.correcta;
-      tablero.querySelectorAll('.opciones button').forEach(b=>{
-        b.disabled = true;
-        if(b.dataset.o === r.correcta) b.classList.add('ok');
-        else if(b === btn) b.classList.add('mal');
-      });
-      document.getElementById('feedback').textContent = (acierto ? "¡Correcto! " : "No exactamente. ") + r.explicacion;
-      if(acierto) aciertos++;
-      marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
-      const sig = document.getElementById('siguiente');
-      sig.style.display = 'inline-block';
-      sig.onclick = () => { ronda++; ronda < rondas.length ? dibujar() : final(); };
-    });
-  });
+  el('barras-antes').innerHTML = barrasHTML(poblacionInicial(), N);
+  el('antes').innerHTML = tortugasHTML(poblacionInicial());
+  el('titulo-sobrev').textContent = `Sobrevivientes — ${k} tortugas al azar`;
+  if(estado){
+    el('sobrevivientes').innerHTML = tortugasHTML(estado.sobrev);
+    el('barras-sobrev').innerHTML  = barrasHTML(estado.sobrev, k);
+    el('despues').innerHTML        = tortugasHTML(estado.despues);
+    el('barras-despues').innerHTML = barrasHTML(estado.despues, N);
+  } else {
+    el('sobrevivientes').innerHTML = '';
+    el('barras-sobrev').innerHTML  = '<p class="pie">Todavía no corriste la simulación.</p>';
+    el('despues').innerHTML        = '';
+    el('barras-despues').innerHTML = '';
+  }
+  el('nota').innerHTML     = nota();
+  el('registro').innerHTML = registroHTML();
 }
 
-function final(){
-  tablero.innerHTML = `
-    <div class="final">
-      <h2 style="font-family:'Iowan Old Style',Georgia,serif;">Terminaste el juego</h2>
-      <p>Acertaste ${aciertos} de ${rondas.length} escenarios.</p>
-      <button onclick="location.reload()">Jugar de nuevo</button>
-    </div>`;
-}
+el('btn-correr').onclick = () => correr();
+el('btn-borrar').onclick = () => {
+  corridas = 0; corridasConPerdida = 0;
+  perdidasPorAlelo = alelos.map(() => 0);
+  registro = []; estado = null;
+  dibujar();
+};
+el('k').oninput = e => { k = +e.target.value; el('v-k').textContent = k; dibujar(); };
 
 dibujar();
 </script>
-
-<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:#5B6E6B;line-height:1.55;text-align:left;">
-  <summary style="cursor:pointer;font-weight:700;color:#16211F;font-size:0.95rem;">Para el/la docente</summary>
-  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Secundaria</p>
-  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Deriva genética; cuello de botella poblacional; efecto fundador; pérdida de variación genética; diferencia entre deriva y selección.</p>
-  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> ¿En qué se parecen y en qué se diferencian un cuello de botella y la selección natural? Los dos cambian las frecuencias alélicas, pero uno es azar y el otro no. La última ronda (la pesca selectiva) sirve justo para separar los dos mecanismos.</p>
-</details>
-
 </body>
 </html>

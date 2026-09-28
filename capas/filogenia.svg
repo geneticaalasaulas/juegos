@@ -1,6 +1,6 @@
 <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
-  <rect width="300" height="200" fill="#0F3D3E"/>
-  <g stroke="#F2EEE2" stroke-width="2" fill="none">
+  <rect width="300" height="200" fill="#02BAA2"/>
+  <g stroke="#16211F" stroke-width="2" fill="none">
     <line x1="40" y1="100" x2="90" y2="100"/>
     <line x1="90" y1="60" x2="90" y2="140"/>
     <line x1="90" y1="60" x2="150" y2="60"/>
@@ -12,7 +12,7 @@
     <line x1="150" y1="140" x2="220" y2="140"/>
     <line x1="150" y1="140" x2="220" y2="170"/>
   </g>
-  <g fill="#E1A73B">
+  <g fill="#0D665A">
     <circle cx="220" cy="40" r="5"/>
     <circle cx="220" cy="80" r="5"/>
     <circle cx="220" cy="140" r="5"/>

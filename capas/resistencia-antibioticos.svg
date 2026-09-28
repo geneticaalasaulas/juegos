@@ -1,11 +1,11 @@
 <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
-  <rect width="300" height="200" fill="#0F3D3E"/>
+  <rect width="300" height="200" fill="#ED101B"/>
   <g>
-    <rect x="40" y="140" width="24" height="40" fill="#2E7D5B"/>
-    <rect x="80" y="100" width="24" height="80" fill="#2E7D5B"/>
-    <rect x="120" y="70" width="24" height="110" fill="#E1A73B"/>
-    <rect x="160" y="50" width="24" height="130" fill="#E1A73B"/>
-    <rect x="200" y="35" width="24" height="145" fill="#E1A73B"/>
+    <rect x="40" y="140" width="24" height="40" fill="#F79398"/>
+    <rect x="80" y="100" width="24" height="80" fill="#F79398"/>
+    <rect x="120" y="70" width="24" height="110" fill="#F79398"/>
+    <rect x="160" y="50" width="24" height="130" fill="#F79398"/>
+    <rect x="200" y="35" width="24" height="145" fill="#F79398"/>
   </g>
-  <line x1="20" y1="180" x2="260" y2="180" stroke="#F2EEE2" stroke-width="2"/>
+  <line x1="20" y1="180" x2="260" y2="180" stroke="#FFFFFF" stroke-width="2"/>
 </svg>
