@@ -164,7 +164,14 @@ function dibujar(){
   });
 }
 
+// Una sola vez por visita, igual que en el resto de los juegos.
+let finContado = false;
 function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path: 'fin/cariotipo-express',
+      title: 'Completó Cariotipo express', event: true });
+  }
   tablero.innerHTML = `
     <div class="final">
       <h2 style="font-weight:300;letter-spacing:-0.01em;">Terminaste el juego</h2>
@@ -183,5 +190,7 @@ dibujar();
   <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> ¿Qué información da un cariotipo y qué información no da? Un cariotipo dice cuántos cromosomas hay y cómo son; no dice nada sobre la personalidad, las capacidades ni el futuro de una persona.</p>
 </details>
 
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

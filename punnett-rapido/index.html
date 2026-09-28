@@ -232,7 +232,15 @@ function repaso(){
   return `<div style="font-size:0.88rem;color:#5B6E6B;max-width:36em;margin:1.4rem auto;line-height:1.55;text-align:left;border-top:1px solid #E6E9E8;padding-top:1rem;"><b>Para repasar — las que erraste:</b><ul style="margin:0.7rem 0 0;padding-left:1.2rem;">${filas}</ul></div>`;
 }
 
+// Aca final() la llama el reloj, y "Jugar de nuevo" reinicia sin recargar la
+// pagina: sin la bandera, cada partida terminada contaria de nuevo.
+let finContado = false;
 function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path: 'fin/punnett-rapido',
+      title: 'Completó Punnett rápido', event: true });
+  }
   const mejor = Math.max(puntaje, parseInt(localStorage.getItem('punnett-mejor')||"0"));
   localStorage.setItem('punnett-mejor', mejor);
   tablero.innerHTML = `
@@ -259,5 +267,7 @@ franja.innerHTML = `<span>Tiempo: <b>${TIEMPO_TOTAL}s</b></span><span>Puntaje: <
   <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> Los cinco rasgos de este juego son monogénicos de verdad. Varios de los que aparecen en los libros de texto — lóbulo de la oreja, pico de viuda, pulgar de autoestopista, pecas — resultaron ser poligénicos cuando se los estudió con datos genómicos. ¿Cómo se podría averiguar si un rasgo se hereda de forma mendeliana simple?</p>
 </details>
 
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

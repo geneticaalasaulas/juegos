@@ -226,11 +226,17 @@
           <h3>${j.es.nombre}</h3>
           <p class="subt">${j.es.subtitulo}</p>
         </div>`;
+      a.addEventListener('click', () => {
+        window.goatcounter?.count({ path: 'click/' + j.id,
+          title: 'Abrió ' + j.es.nombre, event: true });
+      });
       grilla.appendChild(a);
     });
   }
   render();
 })();
 </script>
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

@@ -183,7 +183,14 @@ function dibujar(){
   });
 }
 
+// Una sola vez por visita, igual que en el resto de los juegos.
+let finContado = false;
 function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path: 'fin/epigenetica',
+      title: 'Completó Epigenética con interruptores', event: true });
+  }
   tablero.innerHTML = `
     <div class="final">
       <h2 style="font-weight:300;letter-spacing:-0.01em;">Terminaste el juego</h2>
@@ -202,5 +209,7 @@ dibujar();
   <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> ¿Por qué la epigenética aparece tanto en los titulares de prensa? Vale separar lo que está bien establecido — el ambiente modula la expresión de los genes, y una exposición durante el desarrollo puede dejar marcas duraderas — de lo que sigue en estudio: si esas marcas se transmiten a generaciones que nunca estuvieron expuestas.</p>
 </details>
 
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

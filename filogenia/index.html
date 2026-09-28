@@ -202,7 +202,14 @@ function dibujar(){
   });
 }
 
+// Una sola vez por visita, igual que en el resto de los juegos.
+let finContado = false;
 function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path: 'fin/filogenia',
+      title: 'Completó Árbol filogenético', event: true });
+  }
   tablero.innerHTML = `
     <div class="final">
       <h2 style="font-weight:300;letter-spacing:-0.01em;">Terminaste el juego</h2>
@@ -221,5 +228,7 @@ dibujar();
   <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> Un porcentaje de similitud no significa nada si no se aclara qué se comparó: por eso circulan cifras tan distintas para "cuánto compartimos con el chimpancé". ¿Qué habría que preguntar siempre antes de aceptar un número así?</p>
 </details>
 
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

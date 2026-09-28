@@ -280,6 +280,17 @@ function nota(){
   return `${dosis} generación${dosis===1?'':'es'} con antibiótico y las resistentes pasaron de ${Math.round(historia[0].p*100)}% a ${Math.round(p*100)}%. La curva arranca lento y se acelera.`;
 }
 
+// No hay pantalla final: esto se juega hasta que la persona decide parar. Cuento
+// "completo" cuando avanzo 10 generaciones, que es donde la curva ya subio y se
+// ve la forma de S. Una sola vez por visita: Reiniciar rearma el estado.
+let finContado = false;
+function contarFin(){
+  if(finContado || historia.length - 1 < 10) return;
+  finContado = true;
+  window.goatcounter?.count({ path: 'fin/resistencia-antibioticos',
+    title: 'Completó Resistencia a antibióticos', event: true });
+}
+
 function dibujar(){
   const ult = historia[historia.length-1];
   el('lec-gen').textContent   = historia.length - 1;
@@ -290,6 +301,7 @@ function dibujar(){
   el('nota').innerHTML      = nota();
   const tope = historia.length > PASOS_MAX;
   ['btn-dar','btn-no','btn-x5'].forEach(id => el(id).disabled = tope);
+  contarFin();
 }
 
 el('btn-dar').onclick   = () => paso(true);
@@ -303,5 +315,7 @@ el('c').oninput  = e => { costo = +e.target.value/100; el('v-c').textContent = e
 
 reiniciar();
 </script>
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

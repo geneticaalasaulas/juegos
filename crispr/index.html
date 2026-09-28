@@ -172,7 +172,14 @@ function dibujar(){
   });
 }
 
+// Una sola vez por visita, igual que en el resto de los juegos.
+let finContado = false;
 function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path: 'fin/crispr',
+      title: 'Completó CRISPR simplificado', event: true });
+  }
   tablero.innerHTML = `
     <div class="final">
       <h2 style="font-weight:300;letter-spacing:-0.01em;">Terminaste el juego</h2>
@@ -204,5 +211,7 @@ dibujar();
   <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> CRISPR/Cas9 encuentra y corta: corregir la base es un paso aparte. ¿Qué implicancias distintas tiene editar células somáticas de una persona frente a editar la línea germinal, que se transmite a la descendencia?</p>
 </details>
 
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

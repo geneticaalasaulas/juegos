@@ -299,6 +299,17 @@ function nota(){
   return t;
 }
 
+// No hay pantalla final. Cuento "completo" en la tercera corrida, que es el
+// umbral que ya usa la nota para decir que eso es la deriva genetica, y el
+// sentido del juego es correrlo varias veces. Una sola vez por visita.
+let finContado = false;
+function contarFin(){
+  if(finContado || corridas < 3) return;
+  finContado = true;
+  window.goatcounter?.count({ path: 'fin/cuello-de-botella',
+    title: 'Completó Cuello de botella', event: true });
+}
+
 function dibujar(){
   el('barras-antes').innerHTML = barrasHTML(poblacionInicial(), N);
   el('antes').innerHTML = tortugasHTML(poblacionInicial());
@@ -316,6 +327,7 @@ function dibujar(){
   }
   el('nota').innerHTML     = nota();
   el('registro').innerHTML = registroHTML();
+  contarFin();
 }
 
 el('btn-correr').onclick = () => correr();
@@ -329,5 +341,7 @@ el('k').oninput = e => { k = +e.target.value; el('v-k').textContent = k; dibujar
 
 dibujar();
 </script>
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

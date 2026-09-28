@@ -183,7 +183,14 @@ function dibujar(){
   });
 }
 
+// Una sola vez por visita, igual que en el resto de los juegos.
+let finContado = false;
 function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path: 'fin/nutrigenetica',
+      title: 'Completó Nutrigenética: lactosa', event: true });
+  }
   tablero.innerHTML = `
     <div class="final">
       <h2 style="font-weight:300;letter-spacing:-0.01em;">Terminaste el juego</h2>
@@ -202,5 +209,7 @@ dibujar();
   <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> La no persistencia de lactasa es la condición ancestral y la más frecuente en el mundo. ¿Por qué se la suele describir como un problema o una falla? Da para conversar sobre qué poblaciones se estudian más y cómo eso moldea lo que llamamos "normal".</p>
 </details>
 
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

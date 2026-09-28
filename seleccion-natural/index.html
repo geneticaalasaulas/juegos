@@ -434,6 +434,17 @@ function balanceCorrida(){
   return t;
 }
 
+// No hay pantalla final. Cuento "completo" cuando se cumplio la consigna del
+// juego: 10 generaciones y al menos un cambio de tronco, que es cuando la curva
+// se da vuelta. Una sola vez por visita: Reiniciar rearma el estado.
+let finContado = false;
+function contarFin(){
+  if(finContado || historia.length - 1 < 10 || cambiosDeTronco() < 1) return;
+  finContado = true;
+  window.goatcounter?.count({ path: 'fin/seleccion-natural',
+    title: 'Completó Selección natural simulada', event: true });
+}
+
 function dibujar(){
   const ult = historia[historia.length-1];
   el('lec-gen').textContent = historia.length - 1;
@@ -452,6 +463,7 @@ function dibujar(){
   el('balance-corrida').innerHTML = balanceCorrida();
   const tope = historia.length > PASOS_MAX;
   ['btn-gen','btn-x5'].forEach(id => el(id).disabled = tope);
+  contarFin();
 }
 
 el('btn-claro').onclick  = () => { troncoOscuro = false; dibujar(); };
@@ -463,5 +475,7 @@ el('s').oninput = e => { s = +e.target.value/100; el('v-s').textContent = e.targ
 
 reiniciar();
 </script>
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
