@@ -36,7 +36,7 @@ const juegos = [
     es: {
       nombre: "Árbol genealógico: poné a prueba tu hipótesis",
       subtitulo: "Inferí el modo de herencia",
-      resumen: "Cada familia se genera con un modo de herencia oculto. Proponé una hipótesis, mirá si es compatible con el árbol y ponela a prueba: elegí una pareja, predecí su descendencia y mirá nacer una nueva generación.",
+      resumen: "Cada familia se genera con un modo de herencia oculto. Proponé una hipótesis, mirá si es compatible con el árbol y ponela a prueba: elegí qué familia seguir, predecí su descendencia y mirá quiénes nacen.",
       aprende: ["Herencia autosómica dominante y recesiva", "Herencia ligada al cromosoma X", "Lectura de árboles genealógicos", "Poner a prueba una hipótesis"]
     }
   },

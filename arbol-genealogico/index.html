@@ -311,7 +311,7 @@ function motivo(H){
         if(ext) return `${lab(c)} está ${afectTxt(c)}: con herencia autosómica recesiva necesita recibir la variante de cada progenitor, pero ${lab(ext)} se sumó a la familia desde afuera y suponemos que no la porta, porque la condición es poco frecuente.`;
       }
       if(H === 'AR' && !c.afectado && P.afectado && M.afectado)
-        return `${lab(P)} y ${lab(M)} están afectados: con herencia autosómica recesiva los dos son aa y solo pueden pasar el alelo a. Todas sus crías tendrían que estar afectadas, pero ${lab(c)} no lo está.`;
+        return `${lab(P)} y ${lab(M)} están afectados: con herencia autosómica recesiva los dos son aa y solo pueden pasar el alelo a. Todos sus hijos e hijas tendrían que estar afectadas, pero ${lab(c)} no lo está.`;
       if(H === 'XR' && c.afectado && c.sexo === 'F' && !P.afectado)
         return `${lab(c)} es una mujer afectada: con herencia recesiva ligada al X necesita la variante en sus dos X, y uno de ellos viene de su padre, ${lab(P)}, que no está afectado.`;
       if(H === 'XR' && c.afectado && c.sexo === 'F' && M.externo && !M.afectado)
@@ -327,7 +327,7 @@ function motivo(H){
       if(H === 'XR' && c.afectado && c.sexo === 'M' && !M.afectado && M.padre != null && !porId(M.padre).afectado && porId(M.madre).externo)
         return `${lab(c)} es un varón afectado, así que su madre, ${lab(M)}, tendría que ser portadora. Pero ella no pudo recibir la variante: su padre no está afectado y su madre se sumó desde afuera.`;
     }
-    return `La familia de ${lab(P)} y ${lab(M)} con sus crías no se puede explicar con herencia ${MODOS[H].nombre}.`;
+    return `La familia de ${lab(P)} y ${lab(M)} con sus hijos e hijas no se puede explicar con herencia ${MODOS[H].nombre}.`;
   }
   return 'Cada familia por separado parece posible, pero no hay una forma de asignar genotipos a todas las personas a la vez. Revisá a quienes son hijos o hijas y a la vez tienen descendencia.';
 }
@@ -445,7 +445,7 @@ function inicio(){
   tablero.innerHTML = `
     <div class="inicio">
       <p>En cada ronda vas a ver una familia en la que hay una condición genética poco frecuente. Tu tarea es descubrir <b>cómo se hereda</b>.</p>
-      <p>Proponé una hipótesis y fijate si es compatible con el árbol. Si más de una lo es, <b>ponela a prueba</b>: elegí a alguien de la familia, predecí cómo serían sus hijos e hijas según tu hipótesis y mirá qué pasa en la generación siguiente.</p>
+      <p>Proponé una hipótesis y fijate si es compatible con el árbol. Si más de una lo es, <b>ponela a prueba</b>: elegí qué familia seguir en el tiempo, predecí cómo serían sus hijos e hijas según tu hipótesis y mirá quiénes nacieron.</p>
       <ul class="niveles">${NIVELES.map(nv => {
         const idx = RONDAS.map((r, i) => i).filter(i => RONDAS[i].nivel === nv.n);
         return `<li><button data-r="${idx[0]}" class="${idx.every(i => resultados[i]) ? 'hecho' : ''}"><span class="n">Nivel ${nv.n}</span><span class="d">${nv.desc}</span></button></li>`;
@@ -516,9 +516,9 @@ function sugerencia(){
       if(r) ops.push({ P, t, sx, r, seguro:genotiposPosibles(H, P).length === 1, fuerte:e[sx] !== 'puede' });
     });
   }));
-  if(!ops.length) return 'No hay una prueba directa en este momento. Probá con alguien afectado/a: su descendencia puede servir para la prueba siguiente.';
+  if(!ops.length) return 'No hay una familia decisiva en este momento. Observá la de alguien afectado/a: su descendencia puede servir para la observación siguiente.';
   const o = ops.find(x => x.fuerte && x.seguro) || ops.find(x => x.fuerte) || ops.find(x => x.seguro) || ops[0];
-  return `Probá con ${lab(o.P)} y alguien de afuera ${o.t === 'sano' ? (o.P.sexo === 'M' ? 'no afectada' : 'no afectado') : (o.P.sexo === 'M' ? 'afectada' : 'afectado')}. Fijate qué predice tu hipótesis para ${o.sx === 'M' ? 'los hijos varones' : 'las hijas'} y qué predeciría la herencia ${MODOS[o.r].nombre}.`;
+  return `Observá la familia de ${lab(o.P)} con una pareja ${o.t === 'sano' ? 'no afectada' : 'afectada'}. Fijate qué predice tu hipótesis para ${o.sx === 'M' ? 'los hijos varones' : 'las hijas'} y qué predeciría la herencia ${MODOS[o.r].nombre}.`;
 }
 
 function empezar(i){
@@ -554,7 +554,7 @@ function dibujar(){
     <p class="enunciado">En esta familia hay una condición genética poco frecuente. Los símbolos rellenos son personas afectadas. ¿Cómo se hereda?</p>
     <div class="estado">
       <span>Hipótesis descartadas: <b>${S.descartadas.size}</b></span>
-      <span>Generaciones de prueba: <b>${S.pruebas} de ${MAX_PRUEBAS}</b></span>
+      <span>Familias observadas: <b>${S.pruebas} de ${MAX_PRUEBAS}</b></span>
       <span id="st-crono" ${OPC.crono ? '' : 'hidden'}>Tiempo: <b id="st-t">${mmss(segundos())}</b></span>
       <span id="st-err" ${OPC.errores ? '' : 'hidden'}>Errores: <b id="st-e">${S.errores}</b></span>
     </div>
@@ -563,7 +563,7 @@ function dibujar(){
       <span><svg width="18" height="18"><rect x="1" y="1" width="16" height="16" fill="#fff" stroke="#16211F" stroke-width="2"/></svg>varón</span>
       <span><svg width="18" height="18"><circle cx="9" cy="9" r="8" fill="#fff" stroke="#16211F" stroke-width="2"/></svg>mujer</span>
       <span><svg width="18" height="18"><rect x="1" y="1" width="16" height="16" fill="#0462B7" stroke="#16211F" stroke-width="2"/></svg>afectado/a</span>
-      ${eleg.size && !S.hecho ? `<span><svg width="22" height="22"><rect x="2" y="2" width="18" height="18" rx="5" fill="none" stroke="#0462B7" stroke-width="2" stroke-dasharray="4 3"/></svg>se puede poner a prueba</span>` : ''}
+      ${eleg.size && !S.hecho ? `<span><svg width="22" height="22"><rect x="2" y="2" width="18" height="18" rx="5" fill="none" stroke="#0462B7" stroke-width="2" stroke-dasharray="4 3"/></svg>se puede seguir en el tiempo</span>` : ''}
     </div>
 
     <section class="paso">
@@ -576,16 +576,16 @@ function dibujar(){
     <section class="paso" ${S.hecho ? 'hidden' : ''}>
       <h2><span class="n">2</span>Ponela a prueba</h2>
       ${pr ? `
-      <p>Elegí en el árbol a alguien sin pareja (tiene un borde punteado). ${P ? `Elegiste a <b>${lab(P)}</b>.` : ''}</p>
-      <p>Su pareja va a ser:</p>
-      <div class="fila-btn">${opt('t', 'sano', 'Alguien de afuera, no afectado/a', S.tipoPareja)}${opt('t', 'afectado', 'Alguien de afuera, afectado/a', S.tipoPareja)}</div>
+      <p>Elegí a quién seguir en el tiempo: alguien que todavía no tiene pareja (borde punteado). ${P ? `Elegiste a <b>${lab(P)}</b>.` : ''}</p>
+      <p>Años después forma pareja con alguien de fuera de la familia. ¿Qué caso querés observar?</p>
+      <div class="fila-btn">${opt('t', 'sano', 'Su pareja no está afectada', S.tipoPareja)}${opt('t', 'afectado', 'Su pareja está afectada', S.tipoPareja)}</div>
       <p>Según tu hipótesis${S.hip ? ` (${MODOS[S.hip].nombre})` : ''}, ¿qué esperás en su descendencia?</p>
       <div class="pred">
         <span>Hijos varones:</span><div class="fila-btn">${opt('m', 'ninguno', 'Ninguno afectado', S.predM)}${opt('m', 'puede', 'Puede haber afectados', S.predM)}${opt('m', 'todos', 'Todos afectados', S.predM)}</div>
         <span>Hijas:</span><div class="fila-btn">${opt('f', 'ninguno', 'Ninguna afectada', S.predF)}${opt('f', 'puede', 'Puede haber afectadas', S.predF)}${opt('f', 'todos', 'Todas afectadas', S.predF)}</div>
       </div>
-      <div class="fila-btn"><button class="primario" id="nueva">Ver la nueva generación</button><button id="sugerir">¿Qué prueba conviene?</button></div>` :
-      `<p>Ya usaste las ${MAX_PRUEBAS} generaciones de prueba.</p><button id="rendirse">Mostrar el modo de herencia</button>`}
+      <div class="fila-btn"><button class="primario" id="nueva">Ver quiénes nacieron</button><button id="sugerir">¿Qué familia conviene observar?</button></div>` :
+      `<p>Ya observaste las ${MAX_PRUEBAS} familias posibles.</p><button id="rendirse">Mostrar el modo de herencia</button>`}
       ${msgHTML(S.msg.prueba)}
     </section>
 
@@ -650,7 +650,7 @@ function esperado(H, P, tipo){
 
 function nuevaGeneracion(){
   const H = S.hip, P = S.elegido != null ? porId(S.elegido) : null;
-  const falta = !H ? 'Primero elegí una hipótesis.' : !P ? 'Elegí a una persona en el árbol.' : !S.tipoPareja ? 'Elegí quién va a ser su pareja.' : (!S.predM || !S.predF) ? 'Completá tu predicción para hijos varones y para hijas.' : null;
+  const falta = !H ? 'Primero elegí una hipótesis.' : !P ? 'Elegí a una persona en el árbol.' : !S.tipoPareja ? 'Elegí qué caso querés observar.' : (!S.predM || !S.predF) ? 'Completá tu predicción para hijos varones y para hijas.' : null;
   if(falta){ S.msg.prueba = { tipo:'info', texto:falta }; dibujar(); return; }
   if(!viable(H)){ S.msg.prueba = { tipo:'pista', texto:'Tu hipótesis ya quedó descartada con el árbol actual, así que no sirve para predecir. Revisala en el paso 1.' }; dibujar(); return; }
   const esp = esperado(H, P, S.tipoPareja);
@@ -669,7 +669,7 @@ function nuevaGeneracion(){
   if(esp.M === 'puede' && esp.F === 'puede')
     nota = ' Ojo: tu hipótesis permitía cualquier resultado ("puede haber" en los dos casos). Una prueba así solo la descarta si lo observado es muy improbable. Las pruebas más fuertes son las que, según tu hipótesis, dan "ninguno" o "todos".';
   else if(!distingue)
-    nota = ' Ojo: con cualquiera de las hipótesis que siguen en pie se esperaba lo mismo, así que esta prueba no podía distinguirlas. Buscá una pareja para la que las hipótesis predigan cosas distintas.';
+    nota = ' Ojo: con cualquiera de las hipótesis que siguen en pie se esperaba lo mismo, así que esta prueba no podía distinguirlas. Buscá una familia para la que las hipótesis predigan cosas distintas.';
   // La predicción es coherente con la hipótesis: ahora nace la generación,
   // según el modo de herencia REAL.
   const real = S.r.modo;
@@ -710,7 +710,7 @@ function confirmar(){
     if(otros.length){
       error();
       S.intentosConf = (S.intentosConf || 0) + 1;
-      S.msg.conf = { tipo:'pista', texto:`Tu hipótesis es compatible, pero todavía hay ${otros.length === 1 ? 'otro modo de herencia que también explica' : 'otros modos que también explican'} el árbol${S.intentosConf > 1 ? ' (por ejemplo, herencia ' + MODOS[otros[0]].nombre + ')' : ''}. Pensá qué pareja daría resultados distintos según cada hipótesis, y ponela a prueba.` };
+      S.msg.conf = { tipo:'pista', texto:`Tu hipótesis es compatible, pero todavía hay ${otros.length === 1 ? 'otro modo de herencia que también explica' : 'otros modos que también explican'} el árbol${S.intentosConf > 1 ? ' (por ejemplo, herencia ' + MODOS[otros[0]].nombre + ')' : ''}. Pensá qué familia daría resultados distintos según cada hipótesis, y observala.` };
     } else {
       cerrar(true, H);
       return;
@@ -732,7 +732,7 @@ function cerrar(ganada, H){
     (!ganada ? `El modo real era herencia <b>${MODOS[S.r.modo].nombre}</b>. `
       : H === S.r.modo ? `<b>¡Bien!</b> La herencia es ${MODOS[S.r.modo].nombre}, y es la única que explica bien todo el árbol. `
       : `<b>Con estos datos, tu conclusión era la razonable:</b> la herencia ${MODOS[H].nombre} explica mucho mejor lo observado. Pero en esta familia el modo real era <b>${MODOS[S.r.modo].nombre}</b>: a veces el azar produce datos engañosos. Por eso en genética se estudian muchas familias o se analiza el gen directamente. `) +
-    `${EXPLICA[S.r.modo]} ` + (S.pruebas ? `Usaste ${S.pruebas} ${S.pruebas === 1 ? 'generación' : 'generaciones'} de prueba.` : '') +
+    `${EXPLICA[S.r.modo]} ` + (S.pruebas ? `Observaste ${S.pruebas} ${S.pruebas === 1 ? 'familia nueva' : 'familias nuevas'}.` : '') +
     (datos.length ? ` ${datos.join(' · ')}.` : '') };
   if(Object.keys(resultados).length === RONDAS.length) contarFin();
   dibujar();
@@ -752,7 +752,7 @@ function final(){
   tablero.innerHTML = `
     <div class="final">
       <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">Terminaste el juego</h2>
-      <table><tr><th>Nivel</th><th>Modo de herencia</th><th>Pruebas</th>${OPC.crono ? '<th>Tiempo</th>' : ''}${OPC.errores ? '<th>Errores</th>' : ''}</tr>${filas}</table>
+      <table><tr><th>Nivel</th><th>Modo de herencia</th><th>Familias observadas</th>${OPC.crono ? '<th>Tiempo</th>' : ''}${OPC.errores ? '<th>Errores</th>' : ''}</tr>${filas}</table>
       <div class="acciones"><button class="primario" id="ini">Volver a los niveles</button></div>
     </div>`;
   el('ini').onclick = inicio;
@@ -766,10 +766,11 @@ inicio();
   <p><b>Nivel sugerido:</b> Secundaria.</p>
   <p><b>Conceptos que trabaja:</b> herencia autosómica dominante y recesiva; herencia recesiva y dominante ligada al cromosoma X; lectura de genealogías (cuadrado = varón, círculo = mujer, relleno = afectado/a; números romanos para las generaciones); razonamiento hipotético-deductivo: una hipótesis compatible no es necesariamente la correcta, y una predicción que falla la descarta.</p>
   <p><b>Cómo funciona:</b> cada familia se genera al azar a partir de un modo de herencia oculto. El juego verifica si una hipótesis es compatible buscando alguna forma de asignar genotipos a todas las personas que respete los fenotipos y las reglas de Mendel. Al poner a prueba una hipótesis, la predicción se corrige según esa hipótesis (aunque sea falsa), y la nueva generación nace según el modo real: así se ve cómo los datos pueden refutar una hipótesis.</p>
-  <p><b>Compatible no es lo mismo que probable:</b> algunas hipótesis nunca se pueden refutar con lógica. Por ejemplo, la herencia autosómica dominante admite cualquier descendencia de una persona afectada, así que solo los números la distinguen de la dominante ligada al X: si un varón afectado tiene 3 hijas afectadas y 3 hijos no afectados, con herencia autosómica eso pasaría 1 de cada 64 veces. Por eso el juego descarta una hipótesis cuando es imposible o cuando hace que lo observado sea al menos 32 veces menos probable que con la mejor hipótesis (la idea detrás del LOD score). Como en la vida real, alguna vez el azar puede producir datos engañosos; si pasa, el juego lo explica.</p>
+  <p><b>Observar, no diseñar:</b> en genética humana no se diseñan cruzas: una hipótesis se pone a prueba sumando información (más familias, las generaciones que nacen con el tiempo, o el análisis del gen). El juego lo condensa: quien juega elige qué familia observar, como un equipo que decide qué familias estudiar porque son las más informativas, no a quién se une cada persona.</p>
+  <p><b>Compatible no es lo mismo que probable:</b> algunas hipótesis nunca se pueden refutar con lógica. Por ejemplo, la herencia autosómica dominante admite cualquier descendencia de una persona afectada, así que solo los números la distinguen de la dominante ligada al X: si un varón afectado tiene 3 hijas afectadas y 3 hijos no afectados, con herencia autosómica eso pasaría 1 de cada 64 veces. Por eso el juego descarta una hipótesis cuando es imposible o cuando hace que lo observado sea al menos 32 veces menos probable que con la mejor hipótesis (la misma lógica de razón de verosimilitudes del LOD score; en los estudios de ligamiento, donde se usa el LOD, el umbral habitual es mucho más exigente: 1000 a 1). Como en la vida real, alguna vez el azar puede producir datos engañosos; si pasa, el juego lo explica.</p>
   <p><b>Supuestos del modelo:</b> penetrancia completa; no hay mutaciones nuevas; la condición es poco frecuente, por lo que quien se suma a la familia sin estar afectado/a no porta la variante, y quien está afectado/a por una condición dominante es heterocigota. En la realidad hay penetrancia incompleta, expresividad variable y mutaciones de novo, que pueden hacer que un árbol "parezca" de otro tipo.</p>
-  <p><b>Sobre la numeración:</b> las personas se numeran de izquierda a derecha en cada generación; quienes nacen en las generaciones de prueba reciben el número siguiente, para que nadie cambie de nombre durante la partida.</p>
-  <p><b>Para discutir después de jugar:</b> ¿qué parejas resultaron más informativas para distinguir la herencia autosómica de la ligada al X? ¿Por qué un árbol con solo varones afectados no alcanza para afirmar que la herencia es ligada al X? En la última familia, ¿cuántas generaciones de prueba hicieron falta y por qué a veces una sola no alcanza?</p>
+  <p><b>Sobre la numeración:</b> las personas se numeran de izquierda a derecha en cada generación; quienes nacen en las familias observadas durante la partida reciben el número siguiente, para que nadie cambie de nombre durante la partida.</p>
+  <p><b>Para discutir después de jugar:</b> ¿qué familias resultaron más informativas para distinguir la herencia autosómica de la ligada al X? ¿Por qué un árbol con solo varones afectados no alcanza para afirmar que la herencia es ligada al X? En la última familia, ¿cuántas familias nuevas hizo falta observar y por qué a veces una sola no alcanza?</p>
   <div class="opciones-doc">
     <b>Opciones para la clase</b>
     <label><input type="checkbox" id="o-crono"> Mostrar cronómetro</label>
