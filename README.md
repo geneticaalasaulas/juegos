@@ -1,5 +1,7 @@
 # Juegos — Genética a las Aulas
 
+Sitio publicado: **https://geneticaalasaulas.github.io/juegos/**
+
 Sitio estático, sin build, sin framework, sin dependencias: solo HTML, CSS
 y un catálogo en JavaScript. Incluye 12 juegos: Árbol genealógico: poné a prueba tu hipótesis, Punnett: de los gametos
 a la descendencia, Cariotipo: armá y diagnosticá, Selección natural simulada, Árbol filogenético: armalo vos,
@@ -31,12 +33,12 @@ genéticas y Epigenética con interruptores.
    git add .
    git commit -m "Primera versión"
    git branch -M main
-   git remote add origin https://github.com/TU-USUARIO/TU-REPO.git
+   git remote add origin https://github.com/geneticaalasaulas/juegos.git
    git push -u origin main
    ```
 2. **Activar Pages**: `Settings → Pages` → *Deploy from a branch* → rama
    `main`, carpeta `/ (root)`.
-3. Con eso el sitio queda en `https://TU-USUARIO.github.io/TU-REPO/`.
+3. Con eso el sitio queda en `https://geneticaalasaulas.github.io/juegos/`.
 
 ### Si querés un dominio propio (ej. algo.com)
 
@@ -50,7 +52,7 @@ genéticas y Epigenética con interruptores.
   | A     | @      | 185.199.109.153          |
   | A     | @      | 185.199.110.153          |
   | A     | @      | 185.199.111.153          |
-  | CNAME | www    | TU-USUARIO.github.io     |
+  | CNAME | www    | geneticaalasaulas.github.io |
 
 - Esperá a que propague (15 min a 24 h) y recién ahí activá *Enforce HTTPS*.
 
