@@ -3,21 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cariotipo express · Genética a las Aulas</title>
+<title>Cariotipo: armá y diagnosticá · Genética a las Aulas</title>
 <style>
-  :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
-    /* Una sola paleta de texto: --ink y --muted sirven tanto sobre la
-       pagina como sobre el tablero, porque los dos son claros. */
-    --enfasis:#BC0440;        /* enfasis del texto, en el color del juego */
+  :root{
+    --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B;
+    --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
+    --enfasis:#BC0440;
     --juego:#BC0440;          /* magenta del logo — ver capas/cariotipo-express.svg */
-    --juego-texto:#BC0440;    /* misma familia, oscurecido hasta 4.5:1 sobre blanco */
-    --juego-tinte:#F8E3EA;    /* fondo del boton al pasar el mouse */
-    --pista:#E2E8E6;             /* pista de la barra de progreso */
-    --foco:#16211F;              /* anillo de foco: igual en todo el sitio, maxima visibilidad */
+    --juego-texto:#BC0440;
+    --juego-tinte:#F8E3EA;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
+    /* Cromosomas: tinción tipo Giemsa (bandas G), en versión esquemática */
+    --cuerpo:#EFE9F4; --banda:#4A3F55; --borde:#3A3142;
+    --k:11;                   /* px por unidad de longitud relativa; lo recalcula el JS */
     --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
   *{box-sizing:border-box;}
-  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:var(--fuente); display:flex; flex-direction:column; align-items:center;
+    padding-bottom:5rem; /* lugar para el aviso fijo de abajo */
+  }
   a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
   a.volver:hover{ color:var(--juego-texto); }
   h1{
@@ -25,170 +32,911 @@
     letter-spacing:-0.01em; line-height:1.2;
     margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem;
   }
-  .marcador{ color:var(--muted); font-size:0.9rem; margin-bottom:1rem; }
-  .tablero{ background:var(--card); color:var(--ink); border-radius:8px;
-    border:1px solid #E1E7E5;
-    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem; }
-  .enunciado{ font-size:0.98rem; margin:0 0 1rem; line-height:1.5; }
-  .foto-wrap{ text-align:center; margin-bottom:0.5rem; }
-  img.cario{ max-width:100%; max-height:320px; border-radius:4px; border:1px solid #eee; background:#fafafa; }
-  .credito{ font-size:0.72rem; color:var(--muted); margin:0.4rem 0 1.1rem; text-align:center; }
-  .credito a{ color:var(--muted); }
-  .opciones{ display:grid; grid-template-columns:1fr; gap:0.6rem; }
-  .opciones button{
-    min-height:44px; padding:0.7rem 0.5rem; border-radius:4px; border:1.5px solid var(--juego); background:#fff; color:var(--ink); font-size:0.9rem; cursor:pointer;
-    transition:background-color .15s ease, border-color .15s ease, opacity .15s ease; }
-  .opciones button:hover{ background:var(--juego-tinte); }
-  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
-  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
-  .feedback{ min-height:2.6rem; margin-top:0.9rem; font-size:0.92rem; }
-  .siguiente{ margin-top:0.6rem; width:fit-content; margin-left:auto; background:var(--accent); color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px; font-weight:600; cursor:pointer; display:none; }
-  .final{ text-align:center; }
-  .final button{ margin-top:1rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
-
-  /* --- I1 · foco visible para navegacion con teclado --- */
-  .opciones button:focus-visible, .siguiente:focus-visible,
-  a.volver:focus-visible, summary:focus-visible, #seguir:focus-visible{
-    outline:3px solid var(--foco); outline-offset:2px;
-  }
-  /* --- I2 · senal de acierto/error que no depende del color ---
-     verde y rojo son indistinguibles en la forma mas frecuente de daltonismo */
-  .opciones button.ok::before{  content:"\2713\00a0"; font-weight:700; }
-  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
-  /* --- I3 · los botones ya respondidos dejan de parecer clickeables --- */
-  .opciones button:disabled{ cursor:default; }
-  .opciones button:disabled:not(.ok):not(.mal){ opacity:0.45; border-color:#C9CFCE; }
-  /* --- I4 · en pantallas chicas, una sola columna de opciones --- */
-  @media (max-width:520px){ .opciones{ grid-template-columns:1fr; } }
-
-  /* --- V1 · el verde del logo como color de estructura, compartido con la portada.
-     El ambar queda reservado para la accion principal y el enfasis del texto. --- */
-  /* --- V2 · barra de progreso --- */
+  .marcador{ color:var(--muted); font-size:0.95rem; margin:0 0 1rem; text-align:center; padding:0 1rem; }
   .progreso{
-    width:min(560px,92vw); height:5px; margin:0 0 1.1rem;
+    width:min(1180px,96vw); height:5px; margin:0 0 1.1rem;
     background:var(--pista); border-radius:999px; overflow:hidden;
   }
-  .progreso > i{
-    display:block; height:100%; width:0; border-radius:999px;
-    background:var(--juego-texto); transition:width .3s ease;
+  .progreso > i{ display:block; height:100%; width:0; border-radius:999px; background:var(--juego-texto); transition:width .3s ease; }
+
+  .tablero{
+    background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05);
+    padding:1.4rem; width:min(1180px,96vw); margin-bottom:1.2rem;
   }
-  /* en los juegos contrarreloj la barra se vacia, y va en ambar (urgencia) */
-  .progreso.tiempo > i{ background:var(--enfasis); width:100%; }
+  .tablero.angosto{ width:min(720px,96vw); }
+
+  button{
+    min-height:44px; padding:0.6rem 1rem; border-radius:6px; font-size:0.95rem;
+    cursor:pointer; font-family:inherit; border:1.5px solid var(--juego);
+    background:#fff; color:var(--ink);
+    transition:background-color .15s ease, border-color .15s ease, opacity .15s ease;
+  }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible,
+  .casilla:focus-visible, .cromo:focus-visible, input:focus-visible{
+    outline:3px solid var(--foco); outline-offset:2px;
+  }
+
+  /* --- Pantalla de inicio --- */
+  .inicio p{ line-height:1.6; margin:0 0 0.9rem; }
+  .niveles{ list-style:none; padding:0; margin:1.2rem 0; display:grid; gap:0.6rem; }
+  .niveles button{ width:100%; text-align:left; display:flex; gap:0.9rem; align-items:baseline; }
+  .niveles .n{ font-weight:700; color:var(--juego-texto); white-space:nowrap; }
+  .niveles .d{ color:var(--muted); font-size:0.88rem; }
+  .niveles .hecho::after{ content:"\2713"; margin-left:auto; color:var(--ok); font-weight:700; }
+
+  /* --- Consulta y estado --- */
+  .consulta{
+    background:var(--juego-tinte); border-left:4px solid var(--juego);
+    padding:0.9rem 1.1rem; border-radius:0 6px 6px 0; margin:0 0 1rem;
+    font-size:1.05rem; line-height:1.55;
+  }
+  .consulta .eti{ display:block; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; font-weight:700; color:var(--juego-texto); margin-bottom:0.3rem; }
+  .estado{ display:flex; gap:1.4rem; flex-wrap:wrap; align-items:center; font-size:0.95rem; margin:0 0 0.6rem; }
+  .estado b{ font-variant-numeric:tabular-nums; }
+  .instr{ font-size:0.93rem; color:var(--muted); line-height:1.5; margin:0 0 1rem; }
+
+  /* --- Área de trabajo: metafase + cariograma --- */
+  .area{ display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:1.1rem; align-items:start; }
+  @media (max-width:880px){ .area{ grid-template-columns:minmax(0,1fr); } }
+  .panel h2{ font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); font-weight:700; margin:0 0 0.5rem; }
+  .metafase{
+    position:relative; overflow:hidden; border-radius:8px; min-height:240px;
+    background:radial-gradient(ellipse at center, #FFFFFF 0%, #F5F1F8 70%, #ECE6F1 100%);
+    border:1px solid #E3DCE9;
+  }
+  .metafase .vacio{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:0.9rem; padding:1rem; text-align:center; }
+
+  .cromo{
+    width:calc(var(--k) * 1.4px); height:calc(var(--h) * var(--k) * 0.1px);
+    touch-action:none; user-select:none; -webkit-user-select:none; flex:none;
+  }
+  .cromo svg{ display:block; width:100%; height:100%; overflow:visible; }
+  .cromo .borde > *{ fill:var(--cuerpo); stroke:var(--borde); stroke-width:1.1; }
+  .cromo .relleno > *{ fill:var(--cuerpo); }
+  .metafase .cromo{
+    position:absolute; transform:translate(-50%,-50%) rotate(var(--rot)); cursor:grab;
+    filter:drop-shadow(0 1px 1px rgba(58,49,66,0.25));
+  }
+  .metafase .cromo.sel{ filter:drop-shadow(0 0 0 #fff) drop-shadow(0 0 4px var(--accent)) drop-shadow(0 0 2px var(--accent)); z-index:3; }
+  .cromo.arrastrando{
+    position:fixed !important; z-index:50; cursor:grabbing; pointer-events:none;
+    filter:drop-shadow(0 6px 10px rgba(22,33,31,0.3)) !important;
+  }
+  .cromo.rebote{ animation:rebote .45s ease; }
+  @keyframes rebote{
+    0%,100%{ transform:translate(-50%,-50%) rotate(var(--rot)); }
+    25%{ transform:translate(calc(-50% - 6px),-50%) rotate(var(--rot)); }
+    75%{ transform:translate(calc(-50% + 6px),-50%) rotate(var(--rot)); }
+  }
+
+  .kario{ display:flex; flex-direction:column; gap:0.7rem; }
+  .fila{ display:flex; flex-wrap:wrap; gap:0.5rem 1.1rem; align-items:flex-end; }
+  .grupo{ display:flex; flex-direction:column; }
+  .grupo .letra{ font-size:0.72rem; font-weight:700; color:var(--muted); letter-spacing:0.08em; margin-bottom:0.15rem; }
+  .casillas{ display:flex; flex-wrap:wrap; gap:0.35rem; border-top:1px solid #E1E7E5; padding-top:0.3rem; }
+  .casilla{
+    display:flex; flex-direction:column; align-items:center; border-radius:6px;
+    padding:0.25rem 0.25rem 0.1rem; border:1.5px dashed transparent; cursor:default;
+    transition:background-color .15s ease, border-color .15s ease;
+  }
+  .casilla .par{
+    display:flex; gap:calc(var(--k) * 0.3px); align-items:flex-start;
+    min-width:calc(var(--k) * 3.1px); justify-content:center;
+    min-height:calc(var(--hmax) * var(--k) * 0.1px);
+  }
+  .casilla .par .cromo{ margin-top:calc((var(--pmax) - var(--p)) * var(--k) * 0.1px); }
+  .casilla .num{ font-size:0.85rem; font-weight:600; border-top:2px solid var(--ink); width:100%; text-align:center; margin-top:0.15rem; }
+  .kario.eligiendo .casilla{ cursor:pointer; border-color:#D9C2CC; }
+  .casilla.sobre{ background:var(--juego-tinte); border-color:var(--juego); }
+  .casilla.ok{ background:#DDF1E6; }
+  .casilla.mal{ background:#FBDADB; }
+  .casilla.marcada{ background:#FFF1D1; border-color:var(--accent); border-style:solid; }
+  .cromo.dado{ opacity:0.6; }
+
+  /* --- Detective --- */
+  .detective h3{ font-size:1.15rem; font-weight:600; margin:0 0 0.5rem; }
+  .detective p{ line-height:1.5; margin:0 0 0.6rem; font-size:0.95rem; }
+  .paso{ border-top:1px solid #E6E9E8; padding:0.8rem 0 0.6rem; }
+  .paso .marca{ font-weight:700; margin-left:0.3rem; }
+  .paso .marca.si{ color:var(--ok); } .paso .marca.no{ color:var(--mal); }
+  .fila-ctrl{ display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; }
+  .fila-ctrl input{
+    width:5ch; min-height:44px; font-size:1.3rem; text-align:center; font-family:inherit;
+    border:1.5px solid var(--juego); border-radius:6px; padding:0.3rem;
+  }
+  .valor{ font-size:1.2rem; font-weight:600; letter-spacing:0.05em; min-width:3ch; }
+  .formula{
+    margin:1rem 0; padding:0.9rem 1rem; background:#F6F3F8; border-radius:6px; text-align:center;
+  }
+  .formula .eti{ display:block; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); font-weight:700; }
+  .formula output{ font-size:clamp(1.6rem,4vw,2.2rem); font-weight:600; letter-spacing:0.03em; font-variant-numeric:tabular-nums; }
+  .d-fb{ font-size:0.95rem; line-height:1.5; }
+  .d-fb ul{ margin:0.4rem 0 0; padding-left:1.2rem; }
+  .resultado .nombre{ font-size:1.3rem; font-weight:600; margin:0.2rem 0 0.7rem; }
+  .resultado .nota{ font-size:0.88rem; color:var(--muted); border-top:1px solid #E6E9E8; padding-top:0.8rem; margin-top:1rem; }
+  .resumen{ font-size:0.92rem; color:var(--muted); }
+
+  /* --- Aviso fijo abajo: se lee aunque el cariograma quede lejos en pantalla --- */
+  .aviso{
+    position:fixed; left:50%; bottom:max(1rem, env(safe-area-inset-bottom, 0px)); transform:translateX(-50%);
+    width:min(720px,94vw); background:var(--ink); color:#fff; border-radius:8px;
+    padding:0.8rem 1.1rem; font-size:1rem; line-height:1.45; z-index:40;
+    box-shadow:0 8px 24px rgba(22,33,31,0.25);
+  }
+  .aviso.ok{ background:var(--ok); }
+  .aviso.pista{ background:#5A2340; }
+  .aviso.pista::before{ content:"Pista: "; font-weight:700; }
+
+  details.ref{ margin-top:1.2rem; border-top:1px solid #E6E9E8; padding-top:0.8rem; }
+  details.ref summary{ cursor:pointer; font-weight:600; }
+  .ideograma{ display:flex; flex-wrap:wrap; gap:0.6rem 0.9rem; align-items:flex-end; margin-top:0.8rem; --k:7; }
+  .ideograma figure{ margin:0; display:flex; flex-direction:column; align-items:center; }
+  .ideograma figcaption{ font-size:0.75rem; font-weight:600; }
+
+  .final table{ border-collapse:collapse; margin:1rem auto; font-size:0.92rem; }
+  .final td, .final th{ padding:0.35rem 0.8rem; border-bottom:1px solid #E6E9E8; text-align:left; }
+  .botones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1rem; }
+
+  details.docente{ max-width:40em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  .opciones-doc{ background:#fff; border:1px solid #E1E7E5; border-radius:6px; padding:0.7rem 0.9rem; margin-top:0.8rem; color:var(--ink); }
+  .opciones-doc label{ display:flex; gap:0.5rem; align-items:center; min-height:36px; cursor:pointer; }
+  .opciones-doc input{ width:20px; height:20px; }
+  .opciones-doc code{ font-size:0.85rem; word-break:break-all; }
+
+  @media (prefers-reduced-motion:reduce){ .cromo.rebote{ animation:none; } .progreso > i{ transition:none; } }
 </style>
 </head>
 <body>
+<!-- Tramas para la heterocromatina (1q12, 9q12, 16q11.2, Yq12). Va fuera de
+     pantalla y no con display:none, porque algunos navegadores no dibujan
+     patrones que vienen de un SVG oculto. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="pat-h" width="2.4" height="2.4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="2.4" height="2.4" fill="#4A3F55"/><line x1="0" y1="0" x2="0" y2="2.4" stroke="#9A8CA8" stroke-width="0.9"/>
+    </pattern>
+    <pattern id="pat-hp" width="2.4" height="2.4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="2.4" height="2.4" fill="#E4DDEA"/><line x1="0" y1="0" x2="0" y2="2.4" stroke="#8E819B" stroke-width="0.7"/>
+    </pattern>
+  </defs>
+</svg>
+
 <a class="volver" href="../">&larr; Volver al catálogo</a>
-<h1>Cariotipo express</h1>
-<p class="marcador" id="marcador">Ronda 1 de 5 · Aciertos: 0</p>
+<h1>Cariotipo: armá y diagnosticá</h1>
+<p class="marcador" id="marcador">Ordená los cromosomas y leé el resultado</p>
 <div class="progreso" aria-hidden="true"><i id="barra"></i></div>
 <div class="tablero" id="tablero"></div>
+<div class="aviso" id="aviso" role="status" aria-live="polite" hidden></div>
 
 <script>
-// Fotos reales de cariotipos, de fuentes de uso libre:
-// - CDC Public Health Image Library (dominio público, EE.UU.)
-// - Wikimedia Commons (CC BY-SA 3.0, autor indicado)
-const rondas = [
-  { img:"https://wwwn.cdc.gov/phil///PHIL_Images/28669/28669_lores.jpg",
-    credito:'CDC/ Allan J. Ebbin, MD — dominio público', creditoUrl:"https://wwwn.cdc.gov/phil/details.aspx?pid=28669",
-    correcta:"Cariotipo típico (46 cromosomas)",
-    explicacion:"46 cromosomas en 23 pares — el complemento cromosómico humano habitual." },
-  { img:"https://wwwn.cdc.gov/phil///PHIL_Images/12502/12502_lores.jpg",
-    credito:'Cortesía: National Human Genome Research Institute — dominio público', creditoUrl:"https://wwwn.cdc.gov/phil/details.aspx?pid=12502",
-    correcta:"Trisomía 21 — síndrome de Down (47 cromosomas)",
-    explicacion:"Hay tres copias del cromosoma 21 en vez de dos (señalado con la flecha) — de ahí el nombre trisomía 21." },
-  { img:"https://upload.wikimedia.org/wikipedia/commons/1/1b/45%2CX.jpg",
-    credito:'The cat~commonswiki, Wikimedia Commons — CC BY-SA 3.0', creditoUrl:"https://commons.wikimedia.org/wiki/File:45,X.jpg",
-    correcta:"Síndrome de Turner — monosomía X (45 cromosomas)",
-    explicacion:"Solo hay un cromosoma sexual (X), sin su par — por eso el total es 45 en vez de 46." },
-  { img:"https://wwwn.cdc.gov/phil///PHIL_Images/12508/12508_lores.jpg",
-    credito:'CDC/ Allan J. Ebbin, MD, MPH — dominio público', creditoUrl:"https://wwwn.cdc.gov/phil/details.aspx?pid=12508",
-    correcta:"Trisomía 18 — síndrome de Edwards (47 cromosomas)",
-    explicacion:"Hay tres copias del cromosoma 18 en vez de dos — el segundo síndrome de trisomía autosómica más frecuente después de la trisomía 21." },
-  { img:"https://wwwn.cdc.gov/phil///PHIL_Images/12507/12507_lores.jpg",
-    credito:'CDC/ Allan J. Ebbin, MD, MPH — dominio público', creditoUrl:"https://wwwn.cdc.gov/phil/details.aspx?pid=12507",
-    correcta:"Trisomía 13 — síndrome de Patau (47 cromosomas)",
-    explicacion:"Hay tres copias del cromosoma 13 en vez de dos." }
+// ---------------------------------------------------------------------------
+// Datos de los cromosomas humanos (esquemáticos).
+//  len: longitud relativa aproximada, en % del juego haploide (valores
+//       redondeados a partir de las tablas de longitud relativa de ISCN).
+//  ci:  índice centromérico = largo del brazo p / largo total.
+//  sat: tiene satélites en el brazo corto (acrocéntricos de los grupos D y G).
+//  b:   bandas G oscuras, como [desde, hasta] en fracción del largo, desde la
+//       punta del brazo p (0) hasta la punta del q (1). Es una simplificación
+//       de las bandas más visibles del ideograma, no un ideograma ISCN.
+//       'h'  = heterocromatina que se ve oscura (1q12, 16q11.2, Yq12)
+//       'hp' = heterocromatina que se ve pálida con bandeo G (9q12)
+// ---------------------------------------------------------------------------
+const CROM = {
+  '1': {len:8.4, ci:.48, b:[[.07,.09],[.11,.14],[.18,.22],[.24,.31],[.34,.37],[.39,.42],[.44,.46],[.49,.55,'h'],[.61,.64],[.66,.68],[.71,.77],[.80,.82],[.85,.88],[.92,.95]]},
+  '2': {len:8.0, ci:.39, b:[[.06,.09],[.13,.17],[.22,.25],[.27,.29],[.33,.36],[.42,.45],[.53,.57],[.61,.65],[.71,.76],[.80,.82],[.86,.88],[.93,.95]]},
+  '3': {len:6.8, ci:.47, b:[[.06,.09],[.13,.16],[.29,.33],[.38,.43],[.52,.58],[.67,.70],[.76,.82],[.88,.91]]},
+  '4': {len:6.3, ci:.28, b:[[.05,.14],[.18,.22],[.32,.37],[.42,.46],[.50,.53],[.57,.67],[.76,.80],[.85,.88],[.93,.95]]},
+  '5': {len:6.1, ci:.27, b:[[.06,.13],[.18,.22],[.32,.40],[.46,.52],[.56,.60],[.75,.78],[.82,.86]]},
+  '6': {len:5.9, ci:.39, b:[[.08,.13],[.29,.35],[.43,.46],[.50,.58],[.64,.70],[.76,.80],[.88,.91]]},
+  '7': {len:5.4, ci:.37, b:[[.07,.12],[.16,.20],[.26,.30],[.45,.55],[.63,.71],[.77,.81],[.93,.95]]},
+  '8': {len:4.9, ci:.33, b:[[.08,.13],[.22,.28],[.40,.44],[.48,.57],[.65,.72],[.82,.86]]},
+  '9': {len:4.8, ci:.34, b:[[.05,.10],[.14,.20],[.26,.30],[.36,.46,'hp'],[.50,.56],[.62,.66],[.70,.76],[.82,.85]]},
+  '10':{len:4.6, ci:.32, b:[[.06,.10],[.17,.24],[.40,.50],[.62,.66],[.74,.79],[.85,.88]]},
+  '11':{len:4.6, ci:.40, b:[[.03,.06],[.10,.17],[.23,.29],[.54,.62],[.65,.68],[.71,.77],[.88,.91]]},
+  '12':{len:4.5, ci:.27, b:[[.09,.17],[.30,.34],[.44,.50],[.54,.64],[.69,.73],[.88,.92]]},
+  '13':{len:3.7, ci:.16, sat:true, b:[[.23,.27],[.34,.40],[.46,.60],[.66,.76],[.82,.86]]},
+  '14':{len:3.6, ci:.17, sat:true, b:[[.25,.30],[.38,.48],[.55,.58],[.70,.78]]},
+  '15':{len:3.4, ci:.18, sat:true, b:[[.28,.31],[.45,.56],[.72,.76]]},
+  '16':{len:3.2, ci:.43, b:[[.15,.22],[.45,.53,'h'],[.64,.72],[.80,.86]]},
+  '17':{len:3.1, ci:.33, b:[[.10,.17],[.60,.67],[.72,.80]]},
+  '18':{len:2.8, ci:.28, b:[[.10,.14],[.38,.48],[.58,.70],[.78,.86]]},
+  '19':{len:2.4, ci:.46, b:[[.40,.53]]},
+  '20':{len:2.3, ci:.45, b:[[.12,.28],[.76,.82]]},
+  '21':{len:1.7, ci:.20, sat:true, b:[[.36,.62]]},
+  '22':{len:1.9, ci:.20, sat:true, b:[[.52,.60]]},
+  'X': {len:5.1, ci:.40, b:[[.06,.08],[.15,.25],[.48,.62],[.70,.78],[.87,.90]]},
+  'Y': {len:1.9, ci:.24, b:[[.40,.46],[.60,1,'h']]}
+};
+const AUTOSOMAS = Array.from({length:22}, (_,i) => String(i+1));
+
+// Disposición clásica del cariograma: grupos A–G según tamaño y posición del
+// centrómero; X e Y aparte, al final. (Por tamaño, el X entra en el grupo C y
+// el Y en el G.)
+const FILAS = [
+  [{g:'A', ids:['1','2','3']}, {g:'B', ids:['4','5']}],
+  [{g:'C', ids:['6','7','8','9','10','11','12']}],
+  [{g:'D', ids:['13','14','15']}, {g:'E', ids:['16','17','18']}],
+  [{g:'F', ids:['19','20']}, {g:'G', ids:['21','22']}, {g:'X · Y', ids:['X','Y']}]
 ];
 
-const todasOpciones = [
-  "Cariotipo típico (46 cromosomas)",
-  "Trisomía 21 — síndrome de Down (47 cromosomas)",
-  "Trisomía 18 — síndrome de Edwards (47 cromosomas)",
-  "Trisomía 13 — síndrome de Patau (47 cromosomas)",
-  "Síndrome de Turner — monosomía X (45 cromosomas)"
+// Qué cromosomas ubica el/la estudiante en cada nivel. El resto ya viene
+// ubicado, así el cariotipo siempre está completo y se puede diagnosticar.
+const NIVELES = [
+  {n:1, desc:'Tres pares muy distintos entre sí y los cromosomas sexuales.',
+   armar:['1','13','19','X','Y']},
+  {n:2, desc:'Un par de cada grupo, de la A a la G, y los cromosomas sexuales.',
+   armar:['2','5','7','14','17','20','21','X','Y']},
+  {n:3, desc:'Los grupos C y G completos: acá hay que mirar las bandas.',
+   armar:['6','7','8','9','10','11','12','X','21','22','Y']},
+  {n:4, desc:'El cariotipo completo, desde cero.', armar:null}
 ];
 
-let ronda = 0, aciertos = 0;
-const tablero = document.getElementById('tablero');
-const marcador = document.getElementById('marcador');
+// Fórmulas en nomenclatura ISCN: número total, cromosomas sexuales y, si hay,
+// la alteración (+N = un cromosoma N de más).
+const CASOS = [
+  { id:'n1', nivel:1, sexo:'XY', extra:null,
+    titulo:'Pérdidas de embarazo',
+    consulta:'Una pareja llega al servicio de genética porque tuvo tres pérdidas de embarazo en los primeros meses. Como parte del estudio se analiza el cariotipo de los dos. Te toca ordenar el de él, a partir de una célula de una muestra de sangre.',
+    nombre:'Cariotipo sin alteraciones numéricas',
+    texto:'Hay 46 cromosomas: 22 pares de autosomas, un X y un Y. En parejas con pérdidas de embarazo repetidas, lo más frecuente es que el cariotipo de los dos sea como este. El estudio busca sobre todo reordenamientos balanceados, como las translocaciones, que no cambian el número de cromosomas y que este juego no muestra. La mayoría de las pérdidas tempranas se deben a alteraciones cromosómicas que aparecen por azar en el embrión.' },
+  { id:'n2', nivel:2, sexo:'X', extra:null,
+    titulo:'Una adolescente sin primera menstruación',
+    consulta:'Una adolescente de 15 años consulta con su familia porque todavía no tuvo su primera menstruación y siempre fue más baja que sus compañeras. La endocrinóloga pide un cariotipo.',
+    nombre:'Síndrome de Turner',
+    texto:'Hay un solo cromosoma sexual, un X. Se presenta en alrededor de 1 de cada 2500 niñas. Suele acompañarse de talla baja y de ovarios que dejan de funcionar temprano, por eso muchas veces la pubertad no empieza sola. Con seguimiento médico (hormona de crecimiento, tratamiento hormonal para la pubertad, controles del corazón y los riñones), las personas con síndrome de Turner estudian, trabajan y llevan una vida autónoma. En muchos casos es un mosaico: algunas células tienen 45 cromosomas y otras 46 (se escribe 45,X/46,XX).' },
+  { id:'n3', nivel:3, sexo:'XX', extra:'21',
+    titulo:'Una recién nacida',
+    consulta:'Nació Emma. El equipo de neonatología notó que tiene el tono muscular bajo y algunos rasgos físicos que hacen sospechar una condición cromosómica. Le proponen a la familia hacer un cariotipo para confirmarlo.',
+    nombre:'Trisomía 21 (síndrome de Down)',
+    texto:'Hay tres cromosomas 21. Es la alteración cromosómica más frecuente en recién nacidos: alrededor de 1 de cada 700. En la gran mayoría de los casos se origina por una no disyunción —los cromosomas 21 no se separan— al formarse el óvulo o el espermatozoide. Ocurre por azar: no es consecuencia de nada que la familia haya hecho. Las personas con síndrome de Down tienen discapacidad intelectual de grado variable y algunas condiciones de salud que conviene controlar, como cardiopatías; con los apoyos necesarios estudian, trabajan y participan de la vida en comunidad.' },
+  { id:'n4', nivel:4, sexo:'XXY', extra:null,
+    titulo:'Consulta por fertilidad',
+    consulta:'Un hombre de 32 años y su pareja consultan porque hace dos años que buscan un embarazo. En el estudio de fertilidad no se encontraron espermatozoides en el semen, y el equipo pide un cariotipo.',
+    nombre:'Síndrome de Klinefelter',
+    texto:'Hay dos X y un Y. Se presenta en alrededor de 1 de cada 600 varones, y muchos nunca reciben el diagnóstico porque los signos son sutiles. Es una de las causas genéticas más frecuentes de infertilidad masculina. El tratamiento con testosterona ayuda en varios aspectos de la salud, y en algunos casos se encuentran espermatozoides en el testículo que se pueden usar con técnicas de reproducción asistida.' },
+  { id:'x18', nivel:4, sexo:'XY', extra:'18', extraCaso:true,
+    titulo:'Un estudio prenatal',
+    consulta:'En la ecografía de la semana 20 se ven cambios en el corazón y en la posición de las manos del feto. La familia, después de hablar con el equipo, decide hacer una amniocentesis y se estudia el cariotipo fetal.',
+    nombre:'Trisomía 18 (síndrome de Edwards)',
+    texto:'Hay tres cromosomas 18. Se presenta en alrededor de 1 de cada 5000 nacimientos y se asocia a malformaciones importantes, sobre todo del corazón. Muchos embarazos no llegan a término y la supervivencia después del nacimiento suele ser corta, aunque algunos niños y niñas viven años. El asesoramiento genético acompaña a la familia con información clara para tomar sus propias decisiones.' },
+  { id:'x13', nivel:4, sexo:'XX', extra:'13', extraCaso:true,
+    titulo:'Una beba con una cardiopatía',
+    consulta:'Nace una beba con labio y paladar hendido, un dedo de más en cada mano y una cardiopatía que se había visto en la ecografía. El equipo propone un cariotipo para orientar su cuidado.',
+    nombre:'Trisomía 13 (síndrome de Patau)',
+    texto:'Hay tres cromosomas 13. Se presenta en alrededor de 1 de cada 10 000 nacimientos y, como la trisomía 18, se asocia a malformaciones importantes y a una supervivencia en general corta. Conocer el diagnóstico ayuda al equipo y a la familia a planificar los cuidados y a recibir asesoramiento genético.' }
+];
+const PRINCIPALES = CASOS.filter(c => !c.extraCaso);
 
-// Actualiza el marcador y la barra de progreso. `hechas` = rondas ya respondidas.
-function marcar(hechas){
-  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
-  const b = document.getElementById('barra');
-  if(b) b.style.width = (hechas / rondas.length * 100) + '%';
+// --- Opciones del docente: por URL (?crono=1&errores=1) o desde el panel ---
+const params = new URLSearchParams(location.search);
+const OPC = { crono: params.get('crono') === '1', errores: params.get('errores') === '1' };
+
+// ---------------------------------------------------------------------------
+// Dibujo de un cromosoma en SVG. Unidades: 10 por unidad de longitud relativa,
+// 14 de ancho. El CSS lo escala con --k.
+// ---------------------------------------------------------------------------
+function geo(id){
+  const c = CROM[id];
+  const L = c.len * 10;
+  const top = 1 + (c.sat ? 5 : 0);       // lugar para satélites y tallo
+  const cen = top + c.ci * L;
+  const H = top + L + 1;
+  return { L, top, cen, H, p:cen };
 }
 
-function dibujar(){
-  const r = rondas[ronda];
-  marcar(ronda);
+let nClip = 0;
+function svgCrom(id){
+  const c = CROM[id], g = geo(id), u = 'cc' + (nClip++);
+  const gap = 1.3;                         // medio alto de la constricción primaria
+  const pH = g.cen - gap - g.top, qY = g.cen + gap, qH = g.top + g.L - qY;
+  const formas =
+    `<rect x="1" y="${g.top}" width="12" height="${pH}" rx="${Math.min(5, pH/2)}"/>` +
+    `<rect x="1" y="${qY}" width="12" height="${qH}" rx="${Math.min(5, qH/2)}"/>` +
+    `<rect x="4" y="${g.cen - gap - 0.6}" width="6" height="${2*gap + 1.2}" rx="1.5"/>`;
+  const relleno = t => t === 'h' ? 'url(#pat-h)' : t === 'hp' ? 'url(#pat-hp)' : 'var(--banda)';
+  const bandas = c.b.map(([a, b, t]) =>
+    `<rect x="0" y="${g.top + a*g.L}" width="14" height="${(b - a)*g.L}" style="fill:${relleno(t)}"/>`).join('');
+  // Línea clara al medio: sugiere las dos cromátidas hermanas.
+  const cromatidas =
+    `<line x1="7" y1="${g.top}" x2="7" y2="${g.cen - gap - 0.4}"/><line x1="7" y1="${g.cen + gap + 0.4}" x2="7" y2="${g.top + g.L}"/>`;
+  const sat = c.sat
+    ? `<line x1="5.3" y1="${g.top - 2}" x2="5.3" y2="${g.top + 0.5}" stroke="var(--borde)" stroke-width="0.6"/>` +
+      `<line x1="8.7" y1="${g.top - 2}" x2="8.7" y2="${g.top + 0.5}" stroke="var(--borde)" stroke-width="0.6"/>` +
+      `<ellipse cx="7" cy="${g.top - 3.3}" rx="4.4" ry="1.5" fill="var(--cuerpo)" stroke="var(--borde)" stroke-width="0.9"/>`
+    : '';
+  return `<svg viewBox="0 0 14 ${g.H}" aria-hidden="true" focusable="false">
+    <defs><clipPath id="${u}">${formas}</clipPath></defs>
+    ${sat}<g class="borde">${formas}</g><g class="relleno">${formas}</g>
+    <g clip-path="url(#${u})">${bandas}<g stroke="rgba(255,255,255,0.55)" stroke-width="0.7">${cromatidas}</g></g>
+  </svg>`;
+}
 
-  const opciones = [r.correcta, ...todasOpciones.filter(o=>o!==r.correcta).sort(()=>Math.random()-0.5).slice(0,3)]
-    .sort(()=>Math.random()-0.5);
+// ---------------------------------------------------------------------------
+// Estado
+// ---------------------------------------------------------------------------
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+const aviso = document.getElementById('aviso');
+let S = null;                 // estado del caso en curso
+const resultados = {};        // id de caso -> {errores, segundos}
+let reloj = null, finContado = false;
+
+function el(id){ return document.getElementById(id); }
+function mmss(s){ return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+function segundos(){ return S ? Math.round(((S.fin || Date.now()) - S.inicio) / 1000) : 0; }
+function mezclar(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+let tAviso = null;
+function avisar(texto, tipo){
+  clearTimeout(tAviso);
+  aviso.className = 'aviso' + (tipo ? ' ' + tipo : '');
+  aviso.textContent = texto;
+  aviso.hidden = false;
+  tAviso = setTimeout(() => { aviso.hidden = true; }, tipo === 'pista' ? 9000 : 3500);
+}
+function callarAviso(){ clearTimeout(tAviso); aviso.hidden = true; }
+
+function progreso(){
+  const hechos = PRINCIPALES.filter(c => resultados[c.id]).length;
+  el('barra').style.width = (hechos / PRINCIPALES.length * 100) + '%';
+}
+
+// ---------------------------------------------------------------------------
+// Pantalla de inicio
+// ---------------------------------------------------------------------------
+function inicio(){
+  S = null; clearInterval(reloj); callarAviso();
+  tablero.className = 'tablero angosto';
+  marcador.textContent = 'Ordená los cromosomas y leé el resultado';
+  progreso();
+  const fila = c => {
+    const nv = NIVELES[c.nivel - 1];
+    return `<li><button data-caso="${c.id}" class="${resultados[c.id] ? 'hecho' : ''}">
+      <span class="n">${c.extraCaso ? 'Extra' : 'Nivel ' + c.nivel}</span>
+      <span><b>${c.titulo}</b><br><span class="d">${nv.desc}</span></span></button></li>`;
+  };
+  tablero.innerHTML = `
+    <div class="inicio">
+      <p>Un <b>cariotipo</b> muestra los cromosomas de una célula, ordenados por pares. Para armarlo, en el laboratorio se fotografía una célula en <b>metafase</b> —cuando los cromosomas están más condensados— y se los ordena del más grande al más chico.</p>
+      <p>En cada caso vas a recibir una consulta. Primero <b>armás el cariograma</b>: arrastrás cada cromosoma a su lugar, emparejando los homólogos por <b>tamaño</b>, <b>posición del centrómero</b> y <b>patrón de bandas</b>. Después, como <b>detective</b>, leés lo que armaste y escribís el resultado.</p>
+      <ul class="niveles">${PRINCIPALES.map(fila).join('')}</ul>
+      <p class="resumen">Casos extra, para cuando termines:</p>
+      <ul class="niveles">${CASOS.filter(c => c.extraCaso).map(fila).join('')}</ul>
+      <div class="botones"><button class="primario" id="empezar">Empezar por el nivel 1</button></div>
+    </div>`;
+  tablero.querySelectorAll('[data-caso]').forEach(b => b.onclick = () => empezar(b.dataset.caso));
+  el('empezar').onclick = () => empezar('n1');
+}
+
+// ---------------------------------------------------------------------------
+// Armado del caso
+// ---------------------------------------------------------------------------
+function empezar(idCaso){
+  const caso = CASOS.find(c => c.id === idCaso);
+  const nivel = NIVELES[caso.nivel - 1];
+  // Lista de cromosomas de esta célula
+  const ids = [];
+  AUTOSOMAS.forEach(a => { ids.push(a, a); if(caso.extra === a) ids.push(a); });
+  caso.sexo.split('').forEach(s => ids.push(s));
+  const armar = nivel.armar ? new Set(nivel.armar) : null;
+  S = {
+    caso, nivel, modo:'armar', errores:0, inicio:Date.now(), fin:null, sel:null,
+    cromos: ids.map((id, i) => ({ uid:i, id, dado: armar ? !armar.has(id) : false, lugar:'meta' })),
+    det:{ total:'', sexo:'', aut:undefined }
+  };
+  callarAviso();
+  tablero.className = 'tablero';
+  marcador.textContent = caso.extraCaso
+    ? `Caso extra · ${caso.titulo}`
+    : `Nivel ${caso.nivel} de ${NIVELES.length} · ${caso.titulo}`;
+  progreso();
 
   tablero.innerHTML = `
-    <div class="foto-wrap"><img class="cario" src="${r.img}" alt="Fotografía de un cariotipo"></div>
-    <p class="credito">Fuente: <a href="${r.creditoUrl}" target="_blank" rel="noopener">${r.credito}</a></p>
-    <p class="enunciado">Esta es una fotografía real de un cariotipo. ¿Cuál corresponde?</p>
-    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
-    <p class="feedback" id="feedback"></p>
-    <button class="siguiente" id="siguiente">Siguiente &rarr;</button>
-    <p class="credito" style="margin-top:1.4rem;">Un cariotipo muestra cuántos cromosomas tiene una persona y cómo son. No dice nada sobre quién es, qué puede aprender ni cómo va a ser su vida.</p>
-  `;
+    <div class="consulta"><span class="eti">Consulta</span>${caso.consulta}</div>
+    <div class="estado">
+      <span>Ubicados: <b id="st-ubic"></b></span>
+      <span id="st-crono" ${OPC.crono ? '' : 'hidden'}>Tiempo: <b id="st-t">00:00</b></span>
+      <span id="st-err" ${OPC.errores ? '' : 'hidden'}>Errores: <b id="st-e">0</b></span>
+    </div>
+    <p class="instr" id="instr">Arrastrá cada cromosoma de la metafase a su par en el cariograma. También podés tocar un cromosoma y después tocar la casilla. ${nivel.armar ? 'Los cromosomas más claros ya los ubicó el laboratorio.' : ''}</p>
+    <div class="area">
+      <section class="panel" id="panel-izq" aria-label="Metafase">
+        <h2>Metafase</h2>
+        <div class="metafase" id="meta"></div>
+      </section>
+      <section class="panel" aria-label="Cariograma">
+        <h2>Cariograma</h2>
+        <div class="kario" id="kario"></div>
+      </section>
+    </div>
+    <details class="ref"><summary>Ideograma de referencia (esquemático)</summary>
+      <p class="resumen">Un ejemplar de cada cromosoma, dibujado a la misma escala. Las bandas son una versión simplificada de las bandas G.</p>
+      <div class="ideograma">${[...AUTOSOMAS, 'X', 'Y'].map(id => `<figure><div class="cromo" style="--h:${geo(id).H}">${svgCrom(id)}</div><figcaption>${id}</figcaption></figure>`).join('')}</div>
+    </details>`;
 
-  tablero.querySelectorAll('.opciones button').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const acierto = btn.dataset.o === r.correcta;
-      tablero.querySelectorAll('.opciones button').forEach(b=>{
-        b.disabled = true;
-        if(b.dataset.o === r.correcta) b.classList.add('ok');
-        else if(b === btn) b.classList.add('mal');
-      });
-      document.getElementById('feedback').textContent = (acierto ? "¡Correcto! " : "No. ") + r.explicacion;
-      if(acierto) aciertos++;
-      marcar(ronda+1);
-      const sig = document.getElementById('siguiente');
-      sig.style.display = 'block';
-      sig.onclick = () => { ronda++; ronda < rondas.length ? dibujar() : final(); };
-    });
+  armarCariograma();
+  S.cromos.filter(c => c.dado).forEach(c => colocar(c, false));
+  ajustarEscala();
+  distribuir();
+  actualizarEstado();
+  clearInterval(reloj);
+  reloj = setInterval(() => { if(S && !S.fin && OPC.crono) el('st-t').textContent = mmss(segundos()); }, 1000);
+  window.scrollTo({ top: 0 });
+}
+
+function armarCariograma(){
+  const kario = el('kario');
+  kario.innerHTML = FILAS.map(fila => {
+    const ids = fila.flatMap(g => g.ids);
+    // Los centrómeros de una fila quedan alineados, como en un cariograma real.
+    const pmax = Math.max(...ids.map(id => geo(id).p));
+    const qmax = Math.max(...ids.map(id => geo(id).H - geo(id).p));
+    return `<div class="fila" style="--pmax:${pmax};--hmax:${pmax + qmax}">` + fila.map(g =>
+      `<div class="grupo"><span class="letra">${g.g.length === 1 ? 'Grupo ' + g.g : 'Sexuales'}</span><div class="casillas">` +
+      g.ids.map(id => `<div class="casilla" role="button" tabindex="0" data-id="${id}" aria-label="${id === 'X' || id === 'Y' ? 'Casilla del cromosoma ' + id : 'Casilla del par ' + id}"><div class="par"></div><span class="num">${id}</span></div>`).join('') +
+      `</div></div>`).join('') + `</div>`;
+  }).join('');
+  kario.querySelectorAll('.casilla').forEach(cas => {
+    cas.addEventListener('click', () => tocarCasilla(cas.dataset.id));
+    cas.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); tocarCasilla(cas.dataset.id); } });
   });
 }
 
-// Una sola vez por visita, igual que en el resto de los juegos.
-let finContado = false;
-function final(){
-  if(!finContado){
-    finContado = true;
-    window.goatcounter?.count({ path: 'fin/cariotipo-express',
-      title: 'Completó Cariotipo express', event: true });
+// Escala: que la fila más ancha del cariograma (grupo C) entre en el panel.
+function ajustarEscala(){
+  const kario = el('kario');
+  if(!kario) return;
+  const w = kario.clientWidth;
+  const k = Math.max(6, Math.min(18, w / 40));
+  document.documentElement.style.setProperty('--k', k.toFixed(2));
+  // La metafase crece con la cantidad de cromosomas que quedan por ubicar.
+  const meta = el('meta');
+  if(meta && S){
+    const enMeta = S.cromos.filter(c => c.lugar === 'meta');
+    const area = enMeta.reduce((s, c) => s + Math.pow(geo(c.id).H * k * 0.1, 2) * 1.15, 0);
+    meta.style.height = Math.round(Math.max(240, Math.min(680, area / Math.max(200, meta.clientWidth) + 60))) + 'px';
   }
-  tablero.innerHTML = `
-    <div class="final">
-      <h2 style="font-weight:300;letter-spacing:-0.01em;">Terminaste el juego</h2>
-      <p>Identificaste correctamente ${aciertos} de ${rondas.length} cariotipos.</p>
-      <button onclick="location.reload()">Jugar de nuevo</button>
-    </div>`;
 }
 
-dibujar();
+// Reparte los cromosomas al azar en la metafase, rotados, evitando que se
+// tapen demasiado (primero los grandes).
+function distribuir(){
+  const meta = el('meta');
+  const k = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--k'));
+  const W = meta.clientWidth, H = meta.clientHeight;
+  const lista = mezclar(S.cromos.filter(c => c.lugar === 'meta'))
+    .sort((a, b) => geo(b.id).H - geo(a.id).H);
+  const puestos = [];
+  lista.forEach(c => {
+    const r = geo(c.id).H * k * 0.05 + 2;
+    let mejor = null, peor = Infinity;
+    for(let t = 0; t < 150; t++){
+      const x = W > 2*r ? r + Math.random() * (W - 2*r) : W/2;
+      const y = H > 2*r ? r + Math.random() * (H - 2*r) : H/2;
+      const choque = puestos.reduce((s, p) => s + Math.max(0, p.r + r - Math.hypot(p.x - x, p.y - y)), 0);
+      if(choque < peor){ peor = choque; mejor = {x, y}; }
+      if(choque === 0) break;
+    }
+    puestos.push({ ...mejor, r });
+    c.x = mejor.x / W * 100; c.y = mejor.y / H * 100;
+    c.rot = Math.round(Math.random() * 360 - 180);
+  });
+  lista.forEach(c => meta.appendChild(nodoCromo(c)));
+  if(!lista.length) meta.innerHTML = '<p class="vacio">No quedan cromosomas en la metafase.</p>';
+}
+
+function nodoCromo(c){
+  const d = document.createElement('div');
+  d.className = 'cromo';
+  d.dataset.uid = c.uid;
+  d.style.setProperty('--h', geo(c.id).H);
+  d.style.setProperty('--p', geo(c.id).p);
+  d.innerHTML = svgCrom(c.id);
+  c.nodo = d;
+  if(c.lugar === 'meta'){
+    ubicarEnMeta(c);
+    d.tabIndex = 0;
+    d.setAttribute('role', 'button');
+    d.setAttribute('aria-label', 'Cromosoma sin ubicar');
+    d.addEventListener('pointerdown', e => tomar(e, c));
+    d.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); seleccionar(c); }
+      if(e.key === 'Escape') seleccionar(null);
+    });
+  }
+  return d;
+}
+function ubicarEnMeta(c){
+  const d = c.nodo;
+  d.style.left = c.x + '%'; d.style.top = c.y + '%';
+  d.style.setProperty('--rot', c.rot + 'deg');
+}
+
+// ---------------------------------------------------------------------------
+// Arrastrar y soltar con pointer events (mouse, dedo y lápiz). Un toque sin
+// movimiento selecciona; después se toca la casilla.
+// ---------------------------------------------------------------------------
+let arr = null;
+function tomar(e, c){
+  if(S.modo !== 'armar' || c.lugar !== 'meta' || e.button > 0) return;
+  e.preventDefault();
+  arr = { c, x0:e.clientX, y0:e.clientY, mov:false, id:e.pointerId };
+  window.addEventListener('pointermove', mover);
+  window.addEventListener('pointerup', soltar);
+  window.addEventListener('pointercancel', cancelar);
+}
+function mover(e){
+  if(!arr || e.pointerId !== arr.id) return;
+  const d = arr.c.nodo;
+  if(!arr.mov){
+    if(Math.hypot(e.clientX - arr.x0, e.clientY - arr.y0) < 6) return;
+    arr.mov = true;
+    const r = d.getBoundingClientRect();
+    arr.dx = arr.x0 - (r.left + r.width/2);
+    arr.dy = arr.y0 - (r.top + r.height/2);
+    seleccionar(null);
+    d.classList.add('arrastrando');
+    autoScroll();
+  }
+  arr.px = e.clientX; arr.py = e.clientY;
+  d.style.left = (e.clientX - arr.dx) + 'px';
+  d.style.top = (e.clientY - arr.dy) + 'px';
+  const cas = casillaEn(e.clientX, e.clientY);
+  document.querySelectorAll('.casilla.sobre').forEach(x => { if(x !== cas) x.classList.remove('sobre'); });
+  if(cas) cas.classList.add('sobre');
+}
+function casillaEn(x, y){
+  const t = document.elementFromPoint(x, y);
+  return t ? t.closest('.casilla') : null;
+}
+function terminarArrastre(){
+  window.removeEventListener('pointermove', mover);
+  window.removeEventListener('pointerup', soltar);
+  window.removeEventListener('pointercancel', cancelar);
+  document.querySelectorAll('.casilla.sobre').forEach(x => x.classList.remove('sobre'));
+  const a = arr; arr = null;
+  if(a && a.mov){ a.c.nodo.classList.remove('arrastrando'); ubicarEnMeta(a.c); }
+  return a;
+}
+function soltar(e){
+  if(!arr || e.pointerId !== arr.id) return;
+  const cas = arr.mov ? casillaEn(e.clientX, e.clientY) : null;
+  const a = terminarArrastre();
+  if(!a.mov){ seleccionar(S.sel === a.c ? null : a.c); return; }
+  if(cas) intentar(a.c, cas.dataset.id);
+}
+function cancelar(e){ if(arr && e.pointerId === arr.id) terminarArrastre(); }
+
+// Si se arrastra cerca del borde de la pantalla, la página se desplaza sola
+// (en tablets el cariograma puede quedar abajo de la metafase).
+function autoScroll(){
+  if(!arr || !arr.mov) return;
+  const m = 60, v = 12;
+  if(arr.py != null){
+    if(arr.py < m) window.scrollBy(0, -v);
+    else if(arr.py > window.innerHeight - m) window.scrollBy(0, v);
+  }
+  requestAnimationFrame(autoScroll);
+}
+
+function seleccionar(c){
+  if(S.sel) S.sel.nodo.classList.remove('sel');
+  S.sel = c;
+  if(c) c.nodo.classList.add('sel');
+  el('kario').classList.toggle('eligiendo', !!c);
+}
+
+function tocarCasilla(id){
+  if(!S) return;
+  if(S.modo === 'armar'){
+    if(!S.sel){ avisar('Primero tocá (o arrastrá) un cromosoma de la metafase.'); return; }
+    const c = S.sel;
+    seleccionar(null);
+    intentar(c, id);
+  } else if(S.modo === 'detective'){
+    marcarAutosoma(id);
+  }
+}
+
+function intentar(c, destino){
+  const cas = el('kario').querySelector(`.casilla[data-id="${destino}"]`);
+  if(c.id === destino){
+    colocar(c, true);
+    flash(cas, 'ok');
+    const quedan = S.cromos.filter(x => x.lugar === 'meta').length;
+    avisar(quedan ? '¡Bien! Va en ese lugar.' : '¡Cariograma completo!', 'ok');
+    if(!quedan) setTimeout(modoDetective, 700);
+  } else {
+    S.errores++;
+    flash(cas, 'mal');
+    c.nodo.classList.remove('rebote'); void c.nodo.offsetWidth; c.nodo.classList.add('rebote');
+    avisar(pista(c.id, destino), 'pista');
+  }
+  actualizarEstado();
+}
+function flash(nodo, clase){
+  if(!nodo) return;
+  nodo.classList.add(clase);
+  setTimeout(() => nodo.classList.remove(clase), 700);
+}
+
+function colocar(c, animar){
+  c.lugar = 'kario';
+  const par = el('kario').querySelector(`.casilla[data-id="${c.id}"] .par`);
+  const d = c.nodo || nodoCromo(c);
+  d.classList.remove('sel', 'rebote');
+  d.removeAttribute('role'); d.removeAttribute('tabindex');
+  d.setAttribute('aria-label', 'Cromosoma ' + c.id);
+  d.style.left = d.style.top = '';
+  if(c.dado) d.classList.add('dado');
+  par.appendChild(d);
+  const meta = el('meta');
+  if(animar && meta && !S.cromos.some(x => x.lugar === 'meta'))
+    meta.innerHTML = '<p class="vacio">No quedan cromosomas en la metafase.</p>';
+}
+
+function actualizarEstado(){
+  const propios = S.cromos.filter(c => !c.dado);
+  el('st-ubic').textContent = `${propios.filter(c => c.lugar === 'kario').length} de ${propios.length}`;
+  el('st-e').textContent = S.errores;
+}
+
+// ---------------------------------------------------------------------------
+// Pistas: comparan el cromosoma soltado con los de la casilla y señalan la
+// diferencia más evidente, sin decir dónde va.
+// ---------------------------------------------------------------------------
+function tipo(ci, plural){
+  const t = ci >= 0.42 ? 'metacéntrico' : ci >= 0.25 ? 'submetacéntrico' : 'acrocéntrico';
+  return plural ? t + 's' : t;
+}
+const DESC_TIPO = {
+  'metacéntrico':'el centrómero casi en el medio',
+  'submetacéntrico':'el centrómero corrido hacia un extremo',
+  'acrocéntrico':'el centrómero casi en la punta'
+};
+function pista(id, destino){
+  const a = CROM[id], b = CROM[destino];
+  const sexual = destino === 'X' || destino === 'Y';
+  const quien = sexual ? 'el cromosoma ' + destino : 'los del par ' + destino;
+  const r = a.len / b.len;
+  if(r > 1.5 || r < 1/1.5)
+    return `Fijate en el tamaño: este cromosoma es bastante más ${r > 1 ? 'grande' : 'chico'} que ${quien}.`;
+  if(tipo(a.ci) !== tipo(b.ci))
+    return `Fijate en la posición del centrómero: este cromosoma es ${tipo(a.ci)} (tiene ${DESC_TIPO[tipo(a.ci)]}), y ${quien} ${sexual ? 'es ' + tipo(b.ci) : 'son ' + tipo(b.ci, true)}.`;
+  if(Math.abs(a.ci - b.ci) > 0.08)
+    return `Fijate en la posición del centrómero: en este cromosoma está más ${a.ci < b.ci ? 'cerca de una punta' : 'cerca del medio'} que en ${quien}.`;
+  if(r > 1.2 || r < 1/1.2)
+    return `Se parecen, pero fijate en el tamaño: este cromosoma es algo más ${r > 1 ? 'grande' : 'chico'} que ${quien}.`;
+  if(!!a.sat !== !!b.sat)
+    return `Fijate en la punta del brazo corto: ¿tiene satélites (una bolita unida por un tallo fino)? ${b.sat ? 'Los del par ' + destino + ' sí tienen.' : (sexual ? 'El cromosoma ' + destino : 'Los del par ' + destino) + ' no.'}`;
+  return `Tamaño y centrómero se parecen a ${quien}, así que la diferencia está en las bandas. Compará dónde caen las bandas oscuras; si te sirve, abrí el ideograma de referencia, abajo del cariograma.`;
+}
+
+// ---------------------------------------------------------------------------
+// Modo detective: el resultado se escribe a partir de lo que se armó.
+// ---------------------------------------------------------------------------
+function modoDetective(){
+  S.modo = 'detective';
+  seleccionar(null);
+  el('instr').textContent = 'Ahora leé el cariograma que armaste. Contá con cuidado: el resultado tiene que salir de lo que ves.';
+  const panel = el('panel-izq');
+  panel.setAttribute('aria-label', 'Detective');
+  panel.innerHTML = `
+    <div class="detective">
+      <h2>Detective</h2>
+      <h3>¿Qué dice este cariotipo?</h3>
+      <p>Armá el resultado en la notación que usan los laboratorios (ISCN): número total de cromosomas, cromosomas sexuales y, si hay, el cromosoma de más.</p>
+      <div class="paso"><p><b>1.</b> ¿Cuántos cromosomas hay en total?<span class="marca" id="m1"></span></p>
+        <div class="fila-ctrl">
+          <button type="button" id="d-menos" aria-label="Uno menos">&minus;</button>
+          <input id="d-total" inputmode="numeric" maxlength="2" aria-label="Número total de cromosomas" autocomplete="off">
+          <button type="button" id="d-mas" aria-label="Uno más">+</button>
+        </div></div>
+      <div class="paso"><p><b>2.</b> ¿Qué cromosomas sexuales hay? Agregalos de a uno.<span class="marca" id="m2"></span></p>
+        <div class="fila-ctrl">
+          <button type="button" id="d-x">+ X</button>
+          <button type="button" id="d-y">+ Y</button>
+          <button type="button" id="d-borrar">Borrar</button>
+          <span class="valor" id="d-sexo">—</span>
+        </div></div>
+      <div class="paso"><p><b>3.</b> ¿Hay algún autosoma (pares 1 a 22) con más o menos de dos copias? Si hay, <b>tocá esa casilla en el cariograma</b>.<span class="marca" id="m3"></span></p>
+        <div class="fila-ctrl">
+          <button type="button" id="d-ninguno">No, todos tienen dos</button>
+          <span class="valor" id="d-aut">—</span>
+        </div></div>
+      <div class="formula"><span class="eti">Resultado</span><output id="d-formula">?</output></div>
+      <button class="primario" id="d-ok">Confirmar resultado</button>
+      <div class="d-fb" id="d-fb" aria-live="polite"></div>
+    </div>`;
+  const tot = el('d-total');
+  tot.oninput = () => { tot.value = tot.value.replace(/\D/g, ''); S.det.total = tot.value; formula(); };
+  const paso = d => { const v = parseInt(tot.value || '46', 10) + (tot.value ? d : 0); tot.value = Math.max(0, Math.min(99, v)); S.det.total = tot.value; formula(); };
+  el('d-menos').onclick = () => paso(-1);
+  el('d-mas').onclick = () => paso(1);
+  el('d-x').onclick = () => { if(S.det.sexo.length < 4){ S.det.sexo += 'X'; formula(); } };
+  el('d-y').onclick = () => { if(S.det.sexo.length < 4){ S.det.sexo += 'Y'; formula(); } };
+  el('d-borrar').onclick = () => { S.det.sexo = ''; formula(); };
+  el('d-ninguno').onclick = () => marcarAutosoma(null);
+  el('d-ok').onclick = confirmar;
+  el('kario').classList.add('eligiendo');
+  ajustarEscala();
+  formula();
+  panel.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function marcarAutosoma(id){
+  if(id === 'X' || id === 'Y'){ avisar('Los cromosomas X e Y van en el paso 2. En el paso 3 se miran solo los autosomas, del 1 al 22.'); return; }
+  S.det.aut = id;
+  document.querySelectorAll('.casilla.marcada').forEach(x => x.classList.remove('marcada'));
+  if(id) el('kario').querySelector(`.casilla[data-id="${id}"]`).classList.add('marcada');
+  formula();
+}
+
+// ISCN: los X se escriben antes que el Y.
+function sexoOrdenado(s){ return s.split('').sort().join(''); }
+function textoFormula(total, sexo, aut){
+  return `${total},${sexo}${aut ? ',+' + aut : ''}`;
+}
+function formula(){
+  const d = S.det;
+  el('d-sexo').textContent = d.sexo ? sexoOrdenado(d.sexo) : '—';
+  el('d-aut').textContent = d.aut === undefined ? '—' : d.aut === null ? 'ninguno' : 'par ' + d.aut;
+  el('d-formula').textContent = textoFormula(d.total || '?', d.sexo ? sexoOrdenado(d.sexo) : '?', d.aut);
+}
+
+function confirmar(){
+  const d = S.det, caso = S.caso, fb = el('d-fb');
+  if(!d.total || !d.sexo || d.aut === undefined){
+    fb.innerHTML = '<p>Te falta completar algún paso.</p>';
+    return;
+  }
+  // Lo "real" se cuenta sobre el cariograma armado, no sobre los datos del caso.
+  const enKario = S.cromos.filter(c => c.lugar === 'kario');
+  const total = enKario.length;
+  const sexo = sexoOrdenado(enKario.filter(c => c.id === 'X' || c.id === 'Y').map(c => c.id).join(''));
+  const raros = AUTOSOMAS.filter(a => enKario.filter(c => c.id === a).length !== 2);
+  const extra = raros.length ? raros[0] : null;
+  const ok1 = +d.total === total, ok2 = sexoOrdenado(d.sexo) === sexo, ok3 = d.aut === extra;
+  const marca = (id, ok) => { const m = el(id); m.textContent = ok ? ' ✓' : ' ✗'; m.className = 'marca ' + (ok ? 'si' : 'no'); };
+  marca('m1', ok1); marca('m2', ok2); marca('m3', ok3);
+  if(ok1 && ok2 && ok3){ resuelto(textoFormula(total, sexo, extra)); return; }
+  S.errores++; actualizarEstado();
+  const p = [];
+  if(!ok1) p.push('El total no coincide con tu cariograma. Contá grupo por grupo y sumá: ¿cuántos cromosomas hay en cada casilla?');
+  if(!ok2) p.push('Revisá los cromosomas sexuales: mirá cuántos hay en la casilla X y cuántos en la casilla Y.');
+  if(!ok3){
+    if(d.aut === null) p.push('Revisá los autosomas: ¿todos los pares tienen exactamente dos cromosomas?');
+    else if(extra) p.push(`El par ${d.aut} tiene dos cromosomas, como corresponde. ¿Hay otro par con un número distinto?`);
+    else p.push(`El par ${d.aut} tiene dos cromosomas, como corresponde. ¿Hay algún par con más o menos de dos?`);
+  }
+  fb.innerHTML = `<ul>${p.map(x => `<li>${x}</li>`).join('')}</ul>`;
+}
+
+function resuelto(f){
+  S.modo = 'resuelto'; S.fin = Date.now();
+  const caso = S.caso;
+  resultados[caso.id] = { errores:S.errores, segundos:segundos(), formula:f };
+  progreso();
+  el('kario').classList.remove('eligiendo');
+  callarAviso();
+  const sig = siguienteCaso();
+  const datos = [];
+  if(OPC.crono) datos.push('Tiempo: ' + mmss(segundos()));
+  if(OPC.errores) datos.push('Errores: ' + S.errores);
+  el('panel-izq').innerHTML = `
+    <div class="detective resultado">
+      <h2>Resultado</h2>
+      <div class="formula"><span class="eti">Cariotipo</span><output>${f}</output></div>
+      <p class="nombre">${caso.nombre}</p>
+      <p>${caso.texto}</p>
+      ${datos.length ? `<p class="resumen">${datos.join(' · ')}</p>` : ''}
+      <p class="nota">Un cariotipo muestra cuántos cromosomas hay y cómo son. No dice nada sobre quién es una persona, qué le gusta ni qué va a lograr en su vida. Un resultado así siempre se entrega con asesoramiento genético.</p>
+      <div class="botones">
+        ${sig ? `<button class="primario" id="r-sig">Siguiente caso &rarr;</button>` : `<button class="primario" id="r-fin">Ver el resumen &rarr;</button>`}
+        <button id="r-ini">Elegir otro caso</button>
+      </div>
+    </div>`;
+  if(sig) el('r-sig').onclick = () => empezar(sig.id);
+  else el('r-fin').onclick = final;
+  el('r-ini').onclick = inicio;
+  if(PRINCIPALES.every(c => resultados[c.id])) contarFin();
+  el('panel-izq').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function siguienteCaso(){
+  const lista = S.caso.extraCaso ? CASOS.filter(c => c.extraCaso) : PRINCIPALES;
+  const i = lista.indexOf(S.caso);
+  return lista[i + 1] || null;
+}
+
+// Una sola vez por visita, igual que en el resto de los juegos.
+function contarFin(){
+  if(finContado) return;
+  finContado = true;
+  window.goatcounter?.count({ path:'fin/cariotipo-express', title:'Completó Cariotipo', event:true });
+}
+
+function final(){
+  S = null; clearInterval(reloj); callarAviso();
+  tablero.className = 'tablero angosto';
+  marcador.textContent = 'Resumen';
+  const filas = CASOS.filter(c => resultados[c.id]).map(c => {
+    const r = resultados[c.id];
+    return `<tr><td>${c.extraCaso ? 'Extra' : 'Nivel ' + c.nivel}</td><td><b>${r.formula}</b> · ${c.nombre}</td>${OPC.crono ? `<td>${mmss(r.segundos)}</td>` : ''}${OPC.errores ? `<td>${r.errores}</td>` : ''}</tr>`;
+  }).join('');
+  const extrasPend = CASOS.filter(c => c.extraCaso && !resultados[c.id]);
+  tablero.innerHTML = `
+    <div class="final">
+      <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">Terminaste los casos</h2>
+      <table><tr><th>Caso</th><th>Resultado</th>${OPC.crono ? '<th>Tiempo</th>' : ''}${OPC.errores ? '<th>Errores</th>' : ''}</tr>${filas}</table>
+      ${extrasPend.length ? `<p>Quedan casos extra: ${extrasPend.map(c => c.nombre.split(' (')[0].toLowerCase()).join(' y ')}.</p>` : ''}
+      <div class="botones">
+        ${extrasPend.length ? `<button class="primario" id="f-extra">Jugar un caso extra</button>` : ''}
+        <button id="f-ini">Volver a los casos</button>
+      </div>
+    </div>`;
+  if(extrasPend.length) el('f-extra').onclick = () => empezar(extrasPend[0].id);
+  el('f-ini').onclick = inicio;
+}
+
+let tResize = null;
+window.addEventListener('resize', () => { clearTimeout(tResize); tResize = setTimeout(ajustarEscala, 120); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && S && S.sel) seleccionar(null); });
+// Tocar el fondo de la metafase cancela la selección.
+document.addEventListener('pointerdown', e => {
+  if(S && S.sel && e.target.closest('#meta') && !e.target.closest('.cromo')) seleccionar(null);
+});
+
+inicio();
 </script>
 
-<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:var(--muted);line-height:1.55;text-align:left;">
-  <summary style="cursor:pointer;font-weight:700;color:var(--ink);font-size:0.95rem;">Para el/la docente</summary>
-  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Primaria</p>
-  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Qué es un cariotipo; cromosomas homólogos y pares; cromosomas sexuales; trisomías y monosomías; la no disyunción como origen de las aneuploidías.</p>
-  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> ¿Qué información da un cariotipo y qué información no da? Un cariotipo dice cuántos cromosomas hay y cómo son; no dice nada sobre la personalidad, las capacidades ni el futuro de una persona.</p>
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Secundaria.</p>
+  <p><b>Conceptos que trabaja:</b> qué es un cariotipo y cómo se arma a partir de una metafase; cromosomas homólogos; tamaño, posición del centrómero (metacéntrico, submetacéntrico, acrocéntrico) y bandas como criterios de identificación; clasificación en grupos A–G; cromosomas sexuales; aneuploidías (trisomías y monosomías) y su origen por no disyunción; nomenclatura ISCN.</p>
+  <p><b>Cómo avanza:</b> en el nivel 1 se ubican tres pares muy distintos (1, 13 y 19) y los cromosomas sexuales; en el 2, un par de cada grupo; en el 3, los grupos C y G completos, donde hay que mirar las bandas; en el 4, los 46 o 47 cromosomas. Los que no le tocan al estudiante ya aparecen ubicados (más claros), así el cariotipo siempre está completo y el diagnóstico sale de contar sobre el cariograma.</p>
+  <p><b>Grupos (ISCN):</b> A 1–3, grandes metacéntricos y submetacéntricos · B 4–5, grandes submetacéntricos · C 6–12 y X, medianos submetacéntricos · D 13–15, medianos acrocéntricos con satélites · E 16–18, chicos (16 metacéntrico, 17 y 18 submetacéntricos) · F 19–20, chicos metacéntricos · G 21–22, chicos acrocéntricos con satélites, e Y, sin satélites.</p>
+  <p><b>Fórmulas de los casos:</b> 46,XY · 45,X · 47,XX,+21 · 47,XXY · 47,XY,+18 · 47,XX,+13. Se escribe el número total, una coma sin espacio, los cromosomas sexuales y después la alteración. Para el síndrome de Turner se usa 45,X (no "45,XO").</p>
+  <p><b>Limitaciones:</b> los dibujos son esquemáticos: los tamaños relativos y la posición del centrómero son proporcionales, pero las bandas son una simplificación, no un ideograma ISCN. El juego muestra solo alteraciones numéricas libres. No incluye mosaicos, translocaciones (por ejemplo, la trisomía 21 por translocación robertsoniana, alrededor del 4 % de los casos) ni otras alteraciones estructurales.</p>
+  <p><b>Para discutir después de jugar:</b> ¿qué información da un cariotipo y qué información no da? ¿Por qué hacen falta células en división para hacer un cariotipo? ¿Por qué las trisomías de los cromosomas 13, 18 y 21 son las únicas autosómicas que se ven en recién nacidos?</p>
+  <div class="opciones-doc">
+    <b>Opciones para la clase</b>
+    <label><input type="checkbox" id="o-crono"> Mostrar cronómetro</label>
+    <label><input type="checkbox" id="o-errores"> Mostrar contador de errores</label>
+    <p style="margin:0.4rem 0 0;font-size:0.85rem;color:var(--muted);">Enlace con esta configuración para compartir: <code id="o-link"></code></p>
+  </div>
 </details>
+
+<script>
+// Panel de opciones del docente: actualiza la URL para que se pueda compartir.
+(function(){
+  const c = document.getElementById('o-crono'), e = document.getElementById('o-errores');
+  const link = document.getElementById('o-link');
+  c.checked = OPC.crono; e.checked = OPC.errores;
+  function aplicar(){
+    OPC.crono = c.checked; OPC.errores = e.checked;
+    const p = new URLSearchParams();
+    if(OPC.crono) p.set('crono', '1');
+    if(OPC.errores) p.set('errores', '1');
+    const q = p.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
+    link.textContent = location.href;
+    const sc = document.getElementById('st-crono'), se = document.getElementById('st-err');
+    if(sc) sc.hidden = !OPC.crono;
+    if(se) se.hidden = !OPC.errores;
+    if(sc && S) document.getElementById('st-t').textContent = mmss(segundos());
+  }
+  c.onchange = aplicar; e.onchange = aplicar;
+  link.textContent = location.href;
+})();
+</script>
 
 <script data-goatcounter="https://gaa.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>

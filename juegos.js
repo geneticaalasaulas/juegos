@@ -67,15 +67,16 @@ const juegos = [
     acento: "#BC0440",
     acentoTexto: "#BC0440",
     publicado: "2026-10",
-    nivel: "primaria",
-    duracion: 6,
+    // Armar el cariograma por bandas y escribir la fórmula ISCN: secundaria.
+    nivel: "secundaria",
+    duracion: 20,
     temas: ["herencia", "salud"],
     autores: ["Genética a las Aulas"],
     es: {
-      nombre: "Cariotipo express",
-      subtitulo: "Identificá alteraciones cromosómicas",
-      resumen: "A partir de fotografías reales de cariotipos (CDC, Wikimedia Commons), identificá si es un cariotipo típico o presenta una trisomía o monosomía.",
-      aprende: ["Qué es un cariotipo", "Trisomías y monosomías", "Síndromes cromosómicos comunes"]
+      nombre: "Cariotipo: armá y diagnosticá",
+      subtitulo: "Ordená los cromosomas y leé el resultado",
+      resumen: "Arrastrá los cromosomas de una metafase a su lugar en el cariograma, emparejándolos por tamaño, centrómero y bandas. Después, como detective, escribí el resultado en notación ISCN a partir de lo que armaste.",
+      aprende: ["Cómo se arma un cariotipo", "Cromosomas homólogos y grupos A–G", "Trisomías y monosomías", "Nomenclatura ISCN"]
     }
   },
   {
