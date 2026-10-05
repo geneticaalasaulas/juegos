@@ -2,7 +2,7 @@
 
 Sitio estático, sin build, sin framework, sin dependencias: solo HTML, CSS
 y un catálogo en JavaScript. Incluye 12 juegos: Árbol genealógico: poné a prueba tu hipótesis, Punnett: de los gametos
-a la camada, Cariotipo: armá y diagnosticá, Selección natural simulada, Árbol filogenético: armalo vos,
+a la descendencia, Cariotipo: armá y diagnosticá, Selección natural simulada, Árbol filogenético: armalo vos,
 Cuello de botella, Resistencia a antibióticos, Nutrigenética (leche, genes y cultura),
 CRISPR simplificado, Farmacogenómica: ajustá la dosis, Detective de enfermedades
 genéticas y Epigenética con interruptores.

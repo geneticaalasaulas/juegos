@@ -48,7 +48,7 @@
   .estado.on{ background:#DDF1E6; color:#065E36; }
   .estado.medio{ background:#FFF1D1; color:#7A5203; }
   .estado.off{ background:#E9ECEB; color:#3F4B49; }
-  /* Promotor: la secuencia real; las C de cada CG se pueden metilar */
+  /* Región reguladora (secuencia ilustrativa): las C de cada CG se pueden metilar */
   .promotor{ font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace; font-size:1.05rem; letter-spacing:0.04em;
     margin:0.55rem 0 0.35rem; padding-top:1.1rem; overflow-x:auto; white-space:nowrap; }
   .promotor .cpg{ min-height:auto; padding:0 0.1rem; border:1.5px dashed var(--metilo); border-radius:4px; font:inherit; color:var(--metilo);
@@ -88,14 +88,14 @@
 <body>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
 <h1>Epigenética con interruptores</h1>
-<p class="bajada"><b>Epigenética:</b> cambios en la expresión de los genes — qué genes se prenden y qué genes se apagan — sin que cambie la secuencia del ADN.</p>
+<p class="bajada"><b>Epigenética:</b> cambios en la expresión de los genes — qué genes se prenden y qué genes se apagan — que no se deben a cambios en la secuencia del ADN y que se mantienen cuando la célula se divide.</p>
 <p class="marcador" id="marcador">Ronda 1 de 5</p>
 <div class="progreso" aria-hidden="true"><i id="barra"></i></div>
 <div class="tablero" id="tablero"></div>
 
 <script>
 // ---------------------------------------------------------------------------
-// Modelo de un gen (simplificado): el promotor tiene cuatro sitios CG. Cuantas
+// Modelo de un gen (simplificado): la región reguladora tiene cuatro sitios CG. Cuantas
 // más citosinas metiladas, menos se expresa el gen; y con la cromatina cerrada
 // (histonas sin acetilar) se expresa todavía menos.
 //   expresión = (1 - metilados/4)^2 × (cromatina abierta ? 1 : 0,35)
@@ -118,7 +118,7 @@ const gen = (id, nm, abierta, fijo) => { const n = sitiosCG(PROMOTORES[id]).leng
 // tiene que cumplir, y después la pregunta conceptual.
 const RONDAS = [
   { titulo:'Ratones agutí',
-    escenario:'Ratones genéticamente idénticos llevan una variante del gen agutí. Según cuánto se metile su promotor, el gen se expresa más o menos: si se expresa mucho, el pelaje sale amarillo (y el ratón tiende a la obesidad); si está silenciado, sale marrón. Las crías de madres con una dieta rica en donantes de metilo (ácido fólico, vitamina B12) tienden a nacer marrones.',
+    escenario:'Ratones genéticamente idénticos llevan una variante del gen agutí: un fragmento de ADN móvil (un retrotransposón) insertado delante del gen. Según cuánto se metile ese fragmento, el gen se expresa más o menos: si se expresa mucho, el pelaje sale amarillo (y el ratón tiende a la obesidad); si está silenciado, sale marrón. Las crías de madres con una dieta rica en donantes de metilo (ácido fólico, vitamina B12) tienden a nacer marrones.',
     objetivo:'Configurá el gen agutí de una cría que nace <b>marrón</b>.',
     individuos:[{ nombre:'Cría', raton:true, genes:[gen('agouti', 0, true)] }],
     meta:[{ ind:0, gen:0, quiere:'off' }],
@@ -127,7 +127,7 @@ const RONDAS = [
     distractores:['La dieta de la madre produjo mutaciones nuevas en el gen del pelaje', 'Las crías heredaron una versión del gen del pelaje distinta de la de su madre'],
     explicacion:'Es un experimento real: la dieta de la madre aumentó la metilación del gen agutí en las crías, que nacieron con pelaje distinto y menor tendencia a la obesidad, sin que cambie ni una letra del ADN.' },
   { titulo:'Gemelos',
-    escenario:'Gemelos idénticos (mismo ADN) de 50 años: uno fumó toda su vida y el otro nunca. El gen AHRR participa en la respuesta del cuerpo a sustancias del humo, y en las personas que fuman su promotor pierde metilación: es una de las marcas epigenéticas del tabaco mejor estudiadas.',
+    escenario:'Gemelos idénticos (mismo ADN) de 50 años: uno fumó toda su vida y el otro nunca. El gen AHRR participa en la respuesta del cuerpo a sustancias del humo, y en las personas que fuman una región de ese gen pierde metilación: es una de las marcas epigenéticas del tabaco mejor estudiadas.',
     objetivo:'El gemelo que no fumó ya está configurado. Configurá el gen AHRR del gemelo que fumó: tiene que tener <b>menos metilación</b> que su hermano.',
     individuos:[{ nombre:'Gemelo que nunca fumó', genes:[gen('ahrr', 3, true, true)] }, { nombre:'Gemelo que fumó', genes:[gen('ahrr', 3, true)] }],
     meta:[{ ind:1, gen:0, menosQue:{ ind:0, gen:0 } }],
@@ -136,16 +136,16 @@ const RONDAS = [
     distractores:['Con los años, el ADN de los dos gemelos dejó de ser idéntico', 'Las diferencias se explican solo por el azar, no por el ambiente'],
     explicacion:'Estudios en gemelos muestran que factores ambientales como el tabaco, la dieta o el estrés dejan marcas epigenéticas distintas a lo largo de la vida, aunque el ADN de base sea el mismo.' },
   { titulo:'Abejas',
-    escenario:'En las abejas, cualquier larva hembra puede llegar a ser reina u obrera: lo que decide su destino no es su genotipo, sino cómo la alimentan. Las que reciben jalea real se convierten en reinas. En experimentos en los que se bajó la metilación del ADN de las larvas, muchas se desarrollaron como reinas.',
-    objetivo:'Configurá los genes del desarrollo de reina: <b>encendidos</b> en la larva alimentada con jalea real y <b>apagados</b> en la obrera.',
-    individuos:[{ nombre:'Larva con jalea real', genes:[gen('reina', 2, true)] }, { nombre:'Larva obrera', genes:[gen('reina', 2, true)] }],
+    escenario:'En las abejas, cualquier larva hembra puede llegar a ser reina u obrera: lo que decide su destino no es su genotipo, sino cómo la alimentan. Todas las larvas reciben jalea real los primeros días, pero solo las que la siguen recibiendo durante todo su desarrollo se convierten en reinas; a las demás se les cambia la dieta y se desarrollan como obreras. En experimentos en los que se bajó la metilación del ADN de las larvas, muchas se desarrollaron como reinas.',
+    objetivo:'Configurá los genes del desarrollo de reina: <b>encendidos</b> en la larva que sigue recibiendo jalea real y <b>apagados</b> en la obrera.',
+    individuos:[{ nombre:'Larva que sigue con jalea real', genes:[gen('reina', 2, true)] }, { nombre:'Larva obrera', genes:[gen('reina', 2, true)] }],
     meta:[{ ind:0, gen:0, quiere:'on' }, { ind:1, gen:0, quiere:'off' }],
     pregunta:'¿Qué concepto ilustra mejor este caso?',
     correcta:'La alimentación activa o silencia genes que definen el destino de la larva',
     distractores:['Las futuras reinas ya nacen con un gen de reina que las obreras no tienen', 'La jalea real le aporta a la larva los genes que necesita para ser reina'],
     explicacion:'La dieta cambia la expresión de los genes de la larva —la metilación del ADN es uno de los mecanismos, junto con otras señales— y eso define si se desarrolla como reina u obrera, con el mismo genoma.' },
   { titulo:'Piel y neurona',
-    escenario:'Una célula de la piel y una neurona de la misma persona tienen exactamente el mismo ADN, pero funciones completamente distintas.',
+    escenario:'Una célula de la piel y una neurona de la misma persona tienen el mismo ADN, pero funciones completamente distintas.',
     objetivo:'Configurá las dos células: cada una tiene que <b>encender</b> los genes propios de su función y el gen de mantenimiento, y <b>apagar</b> el de la otra.',
     individuos:[{ nombre:'Célula de la piel', genes:[gen('queratina', 2, true), gen('neuro', 2, true), gen('mant', 2, true)] },
                 { nombre:'Neurona', genes:[gen('queratina', 2, true), gen('neuro', 2, true), gen('mant', 2, true)] }],
@@ -156,7 +156,7 @@ const RONDAS = [
     distractores:['Cada tipo de célula conserva solo los genes que necesita y pierde el resto', 'La neurona y la célula de la piel tienen secuencias de ADN distintas'],
     explicacion:'Casi todas las células del cuerpo comparten el mismo ADN; lo que las diferencia es qué genes están activos. Eso lo definen las proteínas que regulan los genes junto con las marcas epigenéticas que fijan ese estado, no cambios en la secuencia.' },
   { titulo:'Hambruna',
-    escenario:'Personas que estuvieron en el útero durante una hambruna severa (Países Bajos, 1944-45) mostraron, seis décadas después, menos metilación en el gen IGF2 que sus propios hermanos y hermanas que no estuvieron expuestos.',
+    escenario:'Personas cuya gestación empezó durante una hambruna severa (Países Bajos, 1944-45), es decir, expuestas al comienzo del embarazo, mostraron, seis décadas después, menos metilación en el gen IGF2 que sus propios hermanos y hermanas que no estuvieron expuestos.',
     objetivo:'El hermano no expuesto ya está configurado. Configurá el gen IGF2 de la persona expuesta: tiene que tener <b>menos metilación</b>.',
     individuos:[{ nombre:'Hermano no expuesto', genes:[gen('igf2', 3, true, true)] }, { nombre:'Persona expuesta en el útero', genes:[gen('igf2', 3, true)] }],
     meta:[{ ind:1, gen:0, menosQue:{ ind:0, gen:0 } }],
@@ -206,7 +206,7 @@ function genHTML(gi, ii, g, editable){
   }
   return `<div class="gen">
     <div class="gen-cab"><span>${NOMBRES[g.id]}</span><span class="estado ${cl}">${txt} · ${Math.round(e * 100)}%</span></div>
-    <div class="promotor" aria-label="Secuencia del promotor">${prom}</div>
+    <div class="promotor" aria-label="Secuencia de la región reguladora">${prom}</div>
     <div class="controles-gen">
       <button data-cr="${ii}-${gi}" ${editable ? '' : 'disabled'} aria-pressed="${!g.abierta}">${g.abierta ? 'Cromatina abierta' : 'Cromatina cerrada'}</button>
       <div class="barra" aria-hidden="true"><i style="width:${Math.round(e * 100)}%"></i></div>
@@ -261,7 +261,7 @@ function comprobar(){
       const ref = S.ind[m.menosQue.ind].genes[m.menosQue.gen];
       if(nMet(g) >= nMet(ref)){
         S.errores++;
-        S.msg = { tipo:'pista', texto:`${ind.nombre} tiene que tener menos sitios metilados que ${S.ind[m.menosQue.ind].nombre.toLowerCase()} (${nMet(ref)} de ${ref.met.length}). Sacale grupos metilo al promotor.` };
+        S.msg = { tipo:'pista', texto:`${ind.nombre} tiene que tener menos sitios metilados que ${S.ind[m.menosQue.ind].nombre.toLowerCase()} (${nMet(ref)} de ${ref.met.length}). Sacale grupos metilo a la región reguladora.` };
         dibujar(); return;
       }
     }
@@ -309,8 +309,8 @@ empezar(0);
   <summary>Para el/la docente</summary>
   <p><b>Nivel sugerido:</b> Docentes.</p>
   <p><b>Conceptos que trabaja:</b> regulación de la expresión génica; metilación del ADN en sitios CG; estructura de la cromatina; plasticidad del desarrollo; hasta dónde llega la evidencia sobre herencia epigenética.</p>
-  <p><b>El modelo:</b> cada gen muestra la secuencia de su promotor; las citosinas de los sitios CG se pueden metilar, y un botón abre o cierra la cromatina. La expresión se calcula con una regla simple (más metilación y cromatina cerrada, menos expresión). Es una simplificación: en la célula la relación depende del gen, del lugar de la metilación y de muchas otras proteínas. Las secuencias son ilustrativas, no las reales.</p>
-  <p><b>Los casos son reales:</b> ratones con la variante agutí viable (Waterland y Jirtle, 2003); hipometilación de AHRR en fumadores; reducción de la metilación y desarrollo de reinas en abejas (Kucharski y colaboradores, 2008), aunque el papel de la metilación en las castas sigue en discusión; hambruna holandesa e IGF2 (Heijmans y colaboradores, 2008).</p>
+  <p><b>El modelo:</b> cada gen muestra una secuencia de su región reguladora; las citosinas de los sitios CG se pueden metilar, y un botón abre o cierra la cromatina. La expresión se calcula con una regla simple (más metilación y cromatina cerrada, menos expresión). Es una simplificación: en la célula la relación depende del gen, del lugar de la metilación y de muchas otras proteínas. Las secuencias son ilustrativas, no las reales.</p>
+  <p><b>Los casos son reales:</b> ratones con la variante agutí viable (Waterland y Jirtle, 2003), en la que se metila un retrotransposón (IAP) insertado delante del gen, que lo hace expresarse fuera de lugar; hipometilación de un sitio dentro del gen AHRR en fumadores, uno de los marcadores epigenéticos del tabaco más replicados; reducción de la metilación y desarrollo de reinas en abejas (Kucharski y colaboradores, 2008), aunque el papel de la metilación en las castas sigue en discusión; hambruna holandesa e IGF2 (Heijmans y colaboradores, 2008): la diferencia se vio en quienes estuvieron expuestos al comienzo de la gestación, no al final.</p>
   <p><b>Para discutir después de jugar:</b> ¿por qué la epigenética aparece tanto en los titulares de prensa? Vale separar lo que está bien establecido —el ambiente modula la expresión de los genes, y una exposición durante el desarrollo puede dejar marcas duraderas— de lo que sigue en estudio: si esas marcas se transmiten a generaciones que nunca estuvieron expuestas.</p>
 </details>
 

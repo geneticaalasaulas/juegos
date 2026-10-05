@@ -77,7 +77,7 @@
 <body>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
 <h1>CRISPR simplificado</h1>
-<p style="max-width:34em;margin:0 auto 1.2rem;font-size:0.95rem;line-height:1.55;color:var(--muted);text-align:center;padding:0 1rem;">CRISPR/Cas9 es una herramienta que corta el ADN en un sitio elegido: un ARN guía lleva a la enzima Cas9 hasta la secuencia que coincide con él. En cada ronda vas a elegir el ARN guía que apunta a una mutación.</p>
+<p style="max-width:34em;margin:0 auto 1.2rem;font-size:0.95rem;line-height:1.55;color:var(--muted);text-align:center;padding:0 1rem;">CRISPR/Cas9 es una herramienta que corta el ADN en un sitio elegido: un ARN guía lleva a la enzima Cas9 hasta el tramo de ADN que tiene su misma secuencia, y se aparea con la hebra complementaria. En cada ronda vas a elegir el ARN guía que apunta a una mutación.</p>
 <p class="marcador" id="marcador">Ronda 1 de 5 · Aciertos: 0</p>
 <div class="progreso" aria-hidden="true"><i id="barra"></i></div>
 <div class="tablero" id="tablero"></div>
@@ -122,7 +122,7 @@ function porQueMal(elegida, r){
   if(elegida === r.proto)
     return "Es la región correcta, pero está escrita como ADN. Un ARN guía es ARN: lleva U donde el ADN lleva T.";
   if(elegida === aARN(r.despues.slice(0,12)))
-    return "Esa secuencia está después del PAM. El guía tiene que corresponder a las bases que están justo antes del PAM, que es donde Cas9 corta.";
+    return "Esa secuencia está después del PAM. El guía tiene que corresponder a las bases que están justo antes del PAM: Cas9 corta dentro de ese tramo, unas 3 bases antes del PAM.";
   return "Esa secuencia está corrida: toma bases de más a la izquierda y no llega hasta el PAM. Si el guía no termina pegado al PAM, Cas9 no corta ahí.";
 }
 
@@ -162,7 +162,7 @@ function dibujar(){
         else if(b === btn) b.classList.add('mal');
       });
       document.getElementById('feedback').textContent = acierto
-        ? "¡Correcto! Ese guía se aparea con las 12 bases que están justo antes del PAM, así que Cas9 corta el ADN exactamente ahí. Importante: Cas9 corta, no corrige. Para cambiar la base hace falta además darle a la célula un molde con la secuencia correcta, o usar un editor de bases."
+        ? "¡Correcto! Ese guía tiene la misma secuencia que las 12 bases que están justo antes del PAM, así que se aparea con la hebra complementaria de ese tramo y Cas9 corta las dos hebras unas 3 bases antes del PAM. Importante: Cas9 corta, no corrige. Para cambiar la base hace falta además darle a la célula un molde con la secuencia correcta, o usar un editor de bases."
         : `${porQueMal(elegida, r)} El ARN guía correcto era ${correcta}.`;
       if(acierto) aciertos++;
       marcar(ronda+1);
@@ -188,7 +188,10 @@ function final(){
       <div style="font-size:0.9rem;color:#5B6E6B;max-width:38em;margin:1.4rem auto;line-height:1.6;text-align:left;border-top:1px solid #E6E9E8;padding-top:1rem;">
         <b>Para el/la docente:</b> tres simplificaciones de este juego, que dan
         para conversar en clase.
-        <br>1. Los ARN guía reales tienen unos 20 nucleótidos, no 12.
+        <br>1. Los ARN guía reales tienen unos 20 nucleótidos, no 12. El guía
+        tiene la misma secuencia que la hebra que muestra el juego y se aparea con
+        la otra, la complementaria; Cas9 corta las dos hebras unas 3 bases antes
+        del PAM.
         <br>2. En un gen de verdad hay muchas secuencias N-G-G posibles. Elegir
         entre ellas — buscando la que corte más cerca de la mutación y la que se
         parezca menos a otros sitios del genoma — es buena parte del trabajo de

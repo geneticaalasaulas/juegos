@@ -69,7 +69,7 @@
   .pob .dietas button{ min-height:40px; padding:0.4rem 0.7rem; font-size:0.85rem; }
   .gente{ display:grid; grid-template-columns:repeat(20,1fr); gap:2px; }
   .gente svg{ display:block; width:100%; height:auto; aspect-ratio:3/4; }
-  /* Quien digiere la lactosa va lleno y en el color de su población; quien no,
+  /* Quien tiene persistencia va lleno y en el color de su población; quien no,
      solo con contorno: la diferencia se ve aunque no se distingan los colores. */
   .gente .si{ color:var(--c); }
   .gente .si use{ fill:currentColor; stroke:currentColor; }
@@ -134,7 +134,7 @@
       </div>
     </div>
     <p class="reloj">Estamos <b id="reloj">hace 10.000 años</b></p>
-    <svg class="grafico" id="grafico" viewBox="0 0 600 260" role="img" aria-label="Gráfico: porcentaje de adultos que digieren la lactosa a lo largo del tiempo"></svg>
+    <svg class="grafico" id="grafico" viewBox="0 0 600 260" role="img" aria-label="Gráfico: porcentaje de adultos con persistencia de lactasa a lo largo del tiempo"></svg>
     <p class="pie" id="leyenda"></p>
     <div class="controles">
       <button class="primario" id="b-200">Avanzar 200 años</button>
@@ -155,6 +155,11 @@
   ellas dejaba más descendencia: donde se tomaba leche fresca, la que mantenía la lactasa
   encendida tuvo ventaja. Los genes cambiaron por la cultura, y la cultura (seguir criando
   ganado lechero) se apoyó en esos genes. Eso se llama <b>coevolución gen-cultura</b>.</p>
+  <p><b>Tres cosas que no son lo mismo.</b> La <b>no persistencia</b> es producir poca
+  lactasa de adulto (depende del genotipo). La <b>malabsorción</b> es que parte de la
+  lactosa llegue sin digerir al intestino grueso. La <b>intolerancia</b> son los síntomas
+  que eso puede causar (gases, dolor, diarrea). Una persona sin persistencia puede
+  malabsorber lactosa y no tener síntomas, según cuánto coma y según sus bacterias intestinales.</p>
   <p><b>Y no producir lactasa tampoco quiere decir no poder comer lácteos.</b> El yogur y
   los quesos maduros tienen poca lactosa, y muchas personas sin persistencia toleran
   cantidades moderadas de leche. Lo que se siente depende del genotipo, pero también de
@@ -163,9 +168,10 @@
   <div class="tabla-wrap"><table>
     <tr><th>Región o pueblo</th><th>Adultos con persistencia</th></tr>
     <tr><td>Norte de Europa (Escandinavia, Islas Británicas)</td><td>alrededor de 9 de cada 10</td></tr>
-    <tr><td>Pueblos pastores de África oriental y de la península arábiga</td><td>de la mitad a la gran mayoría, según el pueblo</td></tr>
-    <tr><td>Sur de Europa</td><td>entre un cuarto y la mitad, aproximadamente</td></tr>
-    <tr><td>Asia oriental, África occidental, pueblos originarios de América</td><td>pocos: en general menos de 2 de cada 10</td></tr>
+    <tr><td>Pueblos pastores de África oriental y de la península arábiga</td><td>frecuente en muchos de ellos, con grandes diferencias entre pueblos</td></tr>
+    <tr><td>Sur de Europa</td><td>muy variable: de un cuarto a dos tercios, según la región</td></tr>
+    <tr><td>Pastores de Mongolia y Kazajistán</td><td>entre 1 y 3 de cada 10</td></tr>
+    <tr><td>Asia oriental, la mayor parte de África occidental, pueblos originarios de América</td><td>pocos: en general menos de 2 de cada 10 (con excepciones, como los fulani, pastores de África occidental)</td></tr>
   </table></div>
 </section>
 
@@ -174,9 +180,9 @@
   <p><b>Nivel sugerido:</b> Secundaria. Unos 12 minutos para las cuatro misiones.</p>
   <p><b>Conceptos que trabaja:</b> persistencia de lactasa; selección natural en humanos; coevolución gen-cultura; las mutaciones no son dirigidas por el ambiente; evolución convergente; regiones reguladoras; condición ancestral y derivada; ADN antiguo como evidencia.</p>
   <p><b>Las misiones:</b> (1) predecir qué pasa en un pueblo que toma leche y en uno que no; (2) explicar por qué en Mongolia, con miles de años de lácteos, la persistencia es rara; (3) armar una historia que pase por el dato del ADN antiguo de Europa y por el valor de hoy; (4) interpretar las variantes de distintas regiones. En las misiones 2 y 3 se puede fallar y volver a probar: el juego da pistas sin dar la respuesta. Al terminar queda un modo libre con dos poblaciones.</p>
-  <p><b>El modelo:</b> un gen, con la variante de persistencia dominante. Cada generación dura 25 años. Quien digiere la lactosa deja un 2&nbsp;% más de descendencia por generación si en su pueblo se toma leche fresca; con lácteos fermentados la ventaja es la quinta parte, y sin lácteos no hay ventaja. Con hambrunas y epidemias frecuentes la ventaja se multiplica por cuatro. La variante arranca en 0,5&nbsp;% de las copias del gen (1&nbsp;% de los adultos): el modelo supone que ya apareció por mutación y no simula el azar (la deriva), así que da siempre lo mismo. Los números son ilustrativos; las estimaciones reales de la ventaja van de alrededor de 1&nbsp;% a más de 10&nbsp;% por generación.</p>
-  <p><b>Los casos son reales:</b> el ADN de los combatientes de la batalla del valle del Tollense (Alemania, hace unos 3200 años) mostró que la variante europea era todavía rara (Burger y colegas, 2020). La relación con hambrunas y epidemias es una hipótesis reciente (Evershed y colegas, 2022), no la única: también se discute el aporte de calcio, de calorías o de agua. Los pastores de Mongolia consumen muchos lácteos, sobre todo fermentados, y la persistencia es rara (Ségurel y colegas, 2020). Las variantes de África oriental fueron descriptas por Tishkoff y colegas (2007) y la europea (−13910 C&gt;T) por Enattah y colegas (2002). Algunos pueblos pastores de África occidental, como los fulani, llevan la variante europea, probablemente por un antiguo contacto con poblaciones de Eurasia.</p>
-  <p><b>Para discutir después de jugar:</b> si no producir lactasa es lo más común en el mundo, ¿por qué se la suele presentar como un problema o una "intolerancia"? ¿Qué pasa con las recomendaciones de "tomar leche" cuando la mayoría de los adultos no la digiere? Y en Uruguay, con una población de orígenes muy mezclados, ¿qué esperarían encontrar?</p>
+  <p><b>El modelo:</b> un gen, con la variante de persistencia dominante. Cada generación dura 25 años. Quien tiene persistencia deja un 2,5&nbsp;% más de descendencia por generación si en su pueblo se toma leche fresca; con lácteos fermentados la ventaja es la quinta parte, y sin lácteos no hay ventaja. Con hambrunas y epidemias frecuentes la ventaja se multiplica por cuatro. La variante arranca en 0,5&nbsp;% de las copias del gen (1&nbsp;% de los adultos): el modelo supone que ya apareció por mutación y no simula el azar (la deriva), así que da siempre lo mismo. Los números son ilustrativos; las estimaciones reales de la ventaja van de alrededor de 1&nbsp;% a más de 10&nbsp;% por generación.</p>
+  <p><b>Los casos son reales:</b> el ADN de los combatientes de la batalla del valle del Tollense (Alemania, hace unos 3200 años) mostró que la variante europea era todavía rara: menos del 10&nbsp;% de las copias del gen, o sea que más de 8 de cada 10 adultos no tenían persistencia. Los autores estiman una ventaja de alrededor de 6&nbsp;% por generación desde entonces (Burger y colegas, 2020). La relación con hambrunas y epidemias es una hipótesis reciente (Evershed y colegas, 2022), no la única: también se discute el aporte de calcio, de calorías o de agua. En los pastores de Mongolia y Kazajistán, que obtienen de los lácteos hasta un tercio de la energía en verano, la persistencia es de 12 a 30&nbsp;%; los autores lo explican por el consumo de lácteos fermentados y por la adaptación de la microbiota del colon (Ségurel y colegas, 2020). Las variantes de África oriental fueron descriptas por Tishkoff y colegas (2007) y la europea (−13910 C&gt;T) por Enattah y colegas (2002). Algunos pueblos pastores de África occidental, como los fulani, llevan la variante europea, probablemente por un antiguo contacto con poblaciones de Eurasia.</p>
+  <p><b>Para discutir después de jugar:</b> si no producir lactasa es lo más común en el mundo, ¿por qué se la suele presentar como un problema o una "intolerancia"? ¿Qué pasa con las recomendaciones de "tomar leche" cuando la mayoría de los adultos del mundo no tiene persistencia? Conviene separar no persistencia, malabsorción e intolerancia (ver "Lo que hay detrás"). Y en Uruguay, con una población de orígenes muy mezclados, ¿qué esperarían encontrar?</p>
   <div class="opciones-doc">
     <b>Opciones para la clase</b>
     <label><input type="checkbox" id="o-crono"> Mostrar cronómetro</label>
@@ -192,7 +198,7 @@ const OPC = { crono: params.get('crono') === '1', errores: params.get('errores')
 
 // ---------- Modelo ----------
 // p = frecuencia de la variante de persistencia (dominante).
-// Quien tiene al menos una copia digiere la lactosa de adulto: 1 - q².
+// Quien tiene al menos una copia mantiene la lactasa de adulto: 1 - q².
 // Su eficacia es 1 + s, con s = exposición a la lactosa × perjuicio de no digerirla.
 const GEN = 25;                 // años por generación
 const P0 = 0.005;               // 0,5 % de las copias → 1 % de los adultos
@@ -201,7 +207,7 @@ const DIETA = {
   ferm:   { nombre:'Lácteos fermentados (yogur, queso)', corto:'lácteos fermentados', exp:0.2, trazo:'7 4' },
   fresca: { nombre:'Leche fresca',                      corto:'leche fresca',         exp:1,   trazo:'' }
 };
-const DANO = { normal:0.02, crisis:0.08 };
+const DANO = { normal:0.025, crisis:0.08 };
 const fen = p => 1 - (1 - p) * (1 - p);
 function generacion(p, dieta, tiempos){
   const s = DIETA[dieta].exp * DANO[tiempos], q = 1 - p;
@@ -240,7 +246,7 @@ const MISIONES = [
     zonas:[] },
   { id:'m2', titulo:'El misterio de Mongolia', inicio:-5000, tiempos:false,
     pobs:[ { nombre:'Pastores de Mongolia', dieta:null, opciones:['fresca','ferm'] } ],
-    zonas:[ { a:0, min:0, max:0.20, et:'hoy' } ] },
+    zonas:[ { a:0, min:0, max:0.30, et:'hoy' } ] },
   { id:'m3', titulo:'Lo que dicen los esqueletos', inicio:-8000, tiempos:true,
     pobs:[ { nombre:'Centro y norte de Europa', dieta:null, opciones:['ferm','fresca'] } ],
     zonas:[ { a:-3200, min:0, max:0.20, et:'ADN antiguo' }, { a:0, min:0.80, max:1, et:'hoy' } ] },
@@ -289,7 +295,7 @@ function montarSim(){
   el('pobs').innerHTML = S.pobs.map((P, i) => `
     <div class="pob" style="--c:${P.color}">
       <h3>${P.nombre}</h3>
-      <p class="lect"><b id="lec-${i}"></b> de los adultos digiere la lactosa</p>
+      <p class="lect"><b id="lec-${i}"></b> de los adultos tiene persistencia de lactasa</p>
       ${P.opciones
         ? `<div class="dietas" role="group" aria-label="Qué lácteos se consumen en ${P.nombre}">${P.opciones.map(d =>
             `<button data-p="${i}" data-d="${d}" aria-pressed="false">${DIETA[d].nombre}</button>`).join('')}</div>`
@@ -387,7 +393,7 @@ function grafico(){
   for(let a = M.inicio; a <= 0; a += paso)
     s += `<text x="${x(a)}" y="${H-MB+15}" text-anchor="middle" font-size="10" fill="#5B6E6B">${a === 0 ? 'hoy' : miles(-a)}</text>`;
   s += `<text x="${(ML+W-MR)/2}" y="${H-6}" text-anchor="middle" font-size="10.5" fill="#16211F">años atrás</text>`;
-  s += `<text x="14" y="${MT+(H-MT-MB)/2}" font-size="10.5" fill="#16211F" text-anchor="middle" transform="rotate(-90 14 ${MT+(H-MT-MB)/2})">adultos que digieren la lactosa</text>`;
+  s += `<text x="14" y="${MT+(H-MT-MB)/2}" font-size="10.5" fill="#16211F" text-anchor="middle" transform="rotate(-90 14 ${MT+(H-MT-MB)/2})">adultos con persistencia de lactasa</text>`;
   s += `<line x1="${ML}" y1="${MT}" x2="${ML}" y2="${H-MB}" stroke="#16211F" stroke-width="1.2"/>`
      + `<line x1="${ML}" y1="${H-MB}" x2="${W-MR}" y2="${H-MB}" stroke="#16211F" stroke-width="1.2"/>`;
   // Zonas con datos reales
@@ -454,7 +460,7 @@ function pintarDesafio(){
   }
 
   if(M.id === 'm1'){
-    h += `<p>Hace 10.000 años, dos pueblos vecinos. Uno empieza a criar vacas y cabras y a tomar su leche; el otro cultiva la tierra y no tiene ganado lechero. En los dos, <b>1 de cada 100 adultos</b> tiene una variante genética que mantiene encendido el gen de la lactasa toda la vida. Los demás, como casi todos los mamíferos, dejan de producirla después de la infancia.</p>`;
+    h += `<p>Hace 10.000 años, dos pueblos vecinos. Uno empieza a criar vacas y cabras y a tomar su leche; el otro cultiva la tierra y no tiene ganado lechero. En los dos, <b>1 de cada 100 adultos</b> tiene una variante genética que mantiene encendido el gen de la lactasa toda la vida. En los demás, como en casi todos los mamíferos, la producción baja mucho después del destete.</p>`;
     if(S.etapa === 'predecir'){
       h += `<p><b>Antes de hacer correr el tiempo:</b> ¿qué esperás que pase en el pueblo ganadero a lo largo de los siglos?</p>
         <div class="opciones">${PRED_M1.map(o => `<button data-o="${o.id}">${o.txt}</button>`).join('')}</div>`;
@@ -466,14 +472,14 @@ function pintarDesafio(){
   }
 
   if(M.id === 'm2'){
-    h += `<p>En las estepas de Mongolia se crían vacas, yeguas, cabras, ovejas y camellos, y se consumen lácteos en cantidad desde hace unos 5000 años. Sin embargo, hoy son <b>pocos los adultos con persistencia de lactasa: alrededor de 1 de cada 10</b>. ¿Cómo puede ser?</p>
+    h += `<p>En las estepas de Mongolia se crían vacas, yeguas, cabras, ovejas y camellos, y se consumen lácteos en cantidad desde hace unos 5000 años. Sin embargo, hoy son <b>pocos los adultos con persistencia de lactasa: entre 1 y 3 de cada 10</b> en los pastores de Mongolia y de Kazajistán. ¿Cómo puede ser?</p>
       <p>Elegí qué tipo de lácteos se consume en la población (podés cambiarlo en el camino) y hacé correr el tiempo hasta hoy. La historia tiene que terminar dentro de la barra ámbar.</p>`;
     if(S.resultado) h += S.resultado;
     else if(!S.pobs[0].dieta) h += `<p class="res info">Primero elegí qué se consume.</p>`;
   }
 
   if(M.id === 'm3'){
-    h += `<p>En el norte y el centro de Europa hoy cerca de <b>9 de cada 10 adultos</b> digieren la lactosa, y se crían animales para leche desde hace unos 8000 años. Pero el ADN de esqueletos de hace unos 3200 años muestra que en ese momento la variante <b>todavía era rara</b>: cerca de 1 de cada 10 adultos.</p>
+    h += `<p>En el centro y el norte de Europa hoy <b>entre 8 y 9 de cada 10 adultos</b> tienen persistencia de lactasa (más todavía en Escandinavia), y se crían animales para leche desde hace unos 8000 años. Pero el ADN de esqueletos de hace unos 3200 años muestra que en ese momento la variante <b>todavía era rara</b>: la tenía alrededor de 1 de cada 8 adultos.</p>
       <p>Armá una historia que pase por los dos datos (las dos barras ámbar). Podés elegir qué se consume y cómo son los tiempos, y cambiarlos en el camino.</p>`;
     if(S.resultado) h += S.resultado;
     else if(S.nota) h += S.nota;
@@ -504,7 +510,7 @@ function resultadoM1(){
   if(S.pred === 'sube') t += `<p class="res cerca"><b>Bien predicho.</b> `;
   else if(S.pred === 'cambian') t += `<p class="res lejos"><b>No fue eso.</b> En la simulación nadie cambió: quien nació sin la variante siguió sin producir lactasa de adulto, tomara la leche que tomara. `;
   else t += `<p class="res lejos"><b>Casi.</b> Es cierto que tomar leche no cambia los genes de nadie. Pero la dieta sí cambia <i>cuáles</i> variantes dejan más descendencia. `;
-  t += `En el pueblo ganadero la variante pasó de 1 de cada 100 adultos al <b>${pct(A.p)}</b>. Quien digiere la leche de adulto aprovecha un alimento más (calorías, proteínas, agua) y en promedio deja un poco más de descendencia: en el modelo, un 2&nbsp;% más por generación. Parece poco, pero en 400 generaciones se acumula.</p>
+  t += `En el pueblo ganadero la variante pasó de 1 de cada 100 adultos al <b>${pct(A.p)}</b>. Quien mantiene la lactasa de adulto aprovecha mejor un alimento más (calorías, proteínas, agua) y en promedio deja un poco más de descendencia: en el modelo, un 2,5&nbsp;% más por generación. Parece poco, pero en 400 generaciones se acumula.</p>
     <p>En el pueblo sin ganado lechero quedó en <b>${pct(B.p)}</b>: ahí la variante no da ninguna ventaja. Y nadie tiene un problema: sin leche en la dieta, no producir lactasa no le cambia nada a nadie.</p>
     <div class="botones"><button class="primario" id="d-sig">Siguiente misión &rarr;</button></div>`;
   return t;
@@ -523,7 +529,7 @@ function alDetenerse(){
     if(S.a === -3200){
       const v = fen(S.pobs[0].p);
       S.nota = v <= 0.20
-        ? `<p class="res cerca">Llegaste a la fecha de los esqueletos con <b>${pct(S.pobs[0].p)}</b>: coincide con el dato. Ahora te quedan 3200 años para llegar a cerca de 9 de cada 10.</p>`
+        ? `<p class="res cerca">Llegaste a la fecha de los esqueletos con <b>${pct(S.pobs[0].p)}</b>: coincide con el dato. Ahora te quedan 3200 años para llegar a entre 8 y 9 de cada 10.</p>`
         : `<p class="res lejos">Llegaste a la fecha de los esqueletos con <b>${pct(S.pobs[0].p)}</b>, y el ADN antiguo dice que la variante todavía era rara. Podés seguir para ver el final, o volver a empezar y probar otra historia para los primeros milenios.</p>`;
     }
     if(S.a === 0) evaluarM3();
@@ -536,7 +542,7 @@ function evaluarM2(){
   const usoFresca = P.hist.some((h, i) => i > 0 && h.dieta === 'fresca');
   S.etapa = 'resultado';
   if(v <= 0.20){
-    S.resultado = `<p class="res cerca"><b>Eso es.</b> La población llegó a hoy con ${pct(P.p)}. En el yogur, el queso y el airag (leche de yegua fermentada, muy consumida en Mongolia) las bacterias se comen buena parte de la lactosa antes que nosotros. Si casi todo lo que se consume está fermentado, no producir lactasa casi no molesta y la variante tiene poca ventaja. Es una solución <b>cultural</b> al mismo problema: en vez de cambiar las personas, se cambia la leche.</p>
+    S.resultado = `<p class="res cerca"><b>Con eso se reproduce el dato.</b> La población llegó a hoy con ${pct(P.p)}. En el yogur, el queso y el airag (leche de yegua fermentada, muy consumida en Mongolia) las bacterias se comen buena parte de la lactosa antes que nosotros. Si casi todo lo que se consume está fermentado, no producir lactasa casi no molesta y la variante tiene poca ventaja. Es una solución <b>cultural</b> al mismo problema: en vez de cambiar las personas, se cambia la leche. Los investigadores suman otra explicación que el modelo no incluye: con una dieta rica en lácteos cambian las bacterias del intestino grueso, que ayudan a aprovechar la lactosa y reducen las molestias. El caso se sigue estudiando.</p>
       <div class="botones"><button class="primario" id="d-sig">Siguiente misión &rarr;</button></div>`;
   } else {
     errores++;
@@ -553,14 +559,14 @@ function evaluarM3(){
   const okAntes = antes <= 0.20, okHoy = hoy >= 0.80;
   S.etapa = 'resultado'; S.nota = null;
   if(okAntes && okHoy){
-    S.resultado = `<p class="res cerca"><b>Lo lograste:</b> casi nada de cambio durante cinco milenios (${pct(valorEn(P, -3200))} hace 3200 años) y después una subida enorme, hasta el ${pct(P.p)} de hoy. Para eso, en los últimos milenios no digerir la leche tuvo que ser muy perjudicial. Una hipótesis actual es justamente esa: en una persona desnutrida o con una infección, la diarrea que provoca la lactosa puede ser mortal. Hay otras explicaciones en discusión, pero algo es seguro: la persistencia de lactasa es uno de los casos de <b>selección natural más fuertes</b> que se conocen en humanos, y muy reciente.</p>
+    S.resultado = `<p class="res cerca"><b>Lo lograste:</b> casi nada de cambio durante cinco milenios (${pct(valorEn(P, -3200))} hace 3200 años) y después una subida enorme, hasta el ${pct(P.p)} de hoy. Para eso, en los últimos milenios tomar leche sin lactasa tuvo que ser muy perjudicial. Una hipótesis actual es justamente esa: en una persona desnutrida o con una infección, la diarrea que provoca la lactosa puede ser mortal. Hay otras explicaciones en discusión, pero algo es seguro: la persistencia de lactasa es uno de los casos de <b>selección natural más fuertes</b> que se conocen en humanos, y muy reciente.</p>
       <div class="botones"><button class="primario" id="d-sig">Siguiente misión &rarr;</button></div>`;
     return;
   }
   errores++;
   let t = '<p class="res lejos">';
   if(!okAntes) t += `Hace 3200 años tu población ya tenía <b>${pct(valorEn(P, -3200))}</b>, y los esqueletos dicen que la variante era rara. En los primeros milenios la ventaja tuvo que ser chica. Pista: en vasijas de los primeros agricultores de Europa se encontraron restos de <b>queso</b>. `;
-  if(!okHoy) t += `Hoy tu población tiene <b>${pct(P.p)}</b>, lejos de los 9 de cada 10 del norte de Europa. Para subir tanto en solo 3200 años, tomar leche sin digerirla tuvo que ser mucho más grave que una molestia. ¿En qué situaciones una diarrea se vuelve peligrosa? Mirá las opciones de «¿Cómo son los tiempos?».`;
+  if(!okHoy) t += `Hoy tu población tiene <b>${pct(P.p)}</b>, lejos de los 8 a 9 de cada 10 de hoy. Para subir tanto en solo 3200 años, tomar leche sin digerirla tuvo que ser mucho más grave que una molestia. ¿En qué situaciones una diarrea se vuelve peligrosa? Mirá las opciones de «¿Cómo son los tiempos?».`;
   t += `</p><div class="botones"><button class="primario" id="d-otra">Probar otra historia</button></div>`;
   S.resultado = t;
 }

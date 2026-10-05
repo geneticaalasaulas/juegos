@@ -149,7 +149,7 @@ const CASOS = [
   { nombre:'Bruno',   g:['*2','*3'],   farmaco:'geno',
     cierre:'Bruno elimina el fármaco más despacio, así que se acumula: con la dosis estándar los picos serían tóxicos. Le alcanza una dosis menor.' },
   { nombre:'Carla',   g:['*3','*3'],   farmaco:'geno',
-    cierre:'Sin enzima funcional, el fármaco casi no se elimina: con una dosis muy baja ya alcanza. Fijate también que el nivel tarda varios días en estabilizarse: cuanto más lenta la eliminación, más tarda en llegar al estado estable.' },
+    cierre:'Sin enzima funcional, el fármaco se elimina mucho más despacio, solo por otras vías: con una dosis muy baja ya alcanza. Fijate también que el nivel tarda varios días en estabilizarse: cuanto más lenta la eliminación, más tarda en llegar al estado estable.' },
   { nombre:'Diego',   g:['*1','*1×2'], farmaco:'geno',
     cierre:'Diego tiene tres copias funcionales del gen y elimina el fármaco tan rápido que entre dosis el nivel cae por debajo de la ventana, y si se sube la dosis los picos se vuelven tóxicos. Ninguna dosis cada 12 horas sirve: conviene otro fármaco que no dependa de esta enzima.' },
   { nombre:'Elena',   g:['*3','*3'],   farmaco:'pro',
@@ -363,7 +363,7 @@ inicio();
   <summary>Para el/la docente</summary>
   <p><b>Nivel sugerido:</b> Docentes.</p>
   <p><b>Conceptos que trabaja:</b> variantes en enzimas que metabolizan fármacos; del genotipo al fenotipo con un puntaje de actividad; fenotipos de metabolización (lento, intermedio, normal, ultrarrápido); ventana terapéutica; acumulación y estado estable; fármaco activo frente a profármaco; medicina de precisión.</p>
-  <p><b>El modelo:</b> el gen MET1 y los fármacos son ficticios, pero el esquema sigue el que usan las guías CPIC para CYP2D6: cada alelo tiene un valor de actividad (1 normal, 0,5 reducida, 0 sin función; las duplicaciones cuentan doble) y la suma define el fenotipo. El nivel en sangre se calcula con un modelo de un compartimento, dosis intravenosas cada 12 horas y una vida media normal de 12 horas. En el fármaco activo, la enzima acelera su eliminación; en el profármaco, define cuánta forma activa se produce.</p>
+  <p><b>El modelo:</b> el gen MET1, sus alelos y los fármacos son ficticios (ojo: los nombres de alelos no corresponden a los de CYP2D6, donde por ejemplo *2 tiene función normal), pero el esquema sigue el que usan las guías CPIC para CYP2D6: cada alelo tiene un valor de actividad (1 normal, 0,5 reducida, 0 sin función; las duplicaciones cuentan doble) y la suma define el fenotipo. El nivel en sangre se calcula con un modelo de un compartimento, dosis intravenosas cada 12 horas y una vida media normal de 12 horas. En el fármaco activo, la enzima acelera su eliminación; en el profármaco, define cuánta forma activa se produce.</p>
   <p><b>Qué conviene mirar en el gráfico:</b> en metabolizadores lentos el nivel tarda días en estabilizarse (se necesitan unas cinco vidas medias); en ultrarrápidos los picos y valles quedan tan separados que ninguna dosis cada 12 horas los mete en la ventana.</p>
   <p><b>Para discutir después de jugar:</b> si el genotipo permite anticipar qué dosis va a funcionar, ¿por qué no se estudia de rutina antes de cada tratamiento? Conviene poner sobre la mesa el costo, el tiempo de respuesta y para qué fármacos hay evidencia suficiente. ¿Qué otras cosas, además de los genes, cambian cómo una persona procesa un fármaco (edad, función del hígado y del riñón, otros medicamentos)?</p>
   <div class="opciones-doc">

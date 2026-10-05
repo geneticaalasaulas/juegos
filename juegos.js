@@ -53,9 +53,9 @@ const juegos = [
     temas: ["herencia"],
     autores: ["Genética a las Aulas"],
     es: {
-      nombre: "Punnett: de los gametos a la camada",
+      nombre: "Punnett: de los gametos a la descendencia",
       subtitulo: "Armá la cruza, predecí y simulá",
-      resumen: "Separá los alelos en gametos, llená el cuadro de Punnett y marcá qué crías muestran el rasgo. Después simulá camadas para comparar lo esperado con lo observado. Incluye un modo contrarreloj para repasar.",
+      resumen: "Separá los alelos en gametos, llená el cuadro de Punnett y marcá qué descendientes muestran el rasgo. Después simulá la descendencia para comparar lo esperado con lo observado. Incluye un modo contrarreloj para repasar.",
       aprende: ["Segregación de alelos en los gametos", "Cuadros de Punnett", "Proporciones genotípicas y fenotípicas", "Probabilidad y azar en muestras chicas"]
     }
   },

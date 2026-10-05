@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Punnett: de los gametos a la camada · Genética a las Aulas</title>
+<title>Punnett: de los gametos a la descendencia · Genética a las Aulas</title>
 <style>
   :root{
     --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B;
@@ -175,7 +175,7 @@
 </head>
 <body>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
-<h1>Punnett: de los gametos a la camada</h1>
+<h1>Punnett: de los gametos a la descendencia</h1>
 <p class="marcador" id="marcador">Armá la cruza, predecí y comprobalo</p>
 <div class="franja" id="franja" hidden></div>
 <div class="progreso" id="progreso" aria-hidden="true"><i id="barra"></i></div>
@@ -196,15 +196,15 @@ const rasgos = [
   {nombre:"persistencia de lactasa (regulador del gen LCT)",
    dominante:"sigue produciendo lactasa de adulto", recesivo:"deja de producir lactasa de adulto"},
   {nombre:"forma de la semilla de arveja (uno de los caracteres de Mendel)",
-   dominante:"semilla lisa", recesivo:"semilla rugosa"},
+   dominante:"semilla lisa", recesivo:"semilla rugosa", planta:true},
   {nombre:"color de la semilla de arveja (uno de los caracteres de Mendel)",
-   dominante:"semilla amarilla", recesivo:"semilla verde"}
+   dominante:"semilla amarilla", recesivo:"semilla verde", planta:true}
 ];
 
 // Rondas. En el nivel 3 los genotipos no se dan: hay que deducirlos de los
 // fenotipos y de un dato de la familia.
 const NIVELES = [
-  {n:1, desc:'Genotipos dados: armá gametos, cuadro, predicción y camada.'},
+  {n:1, desc:'Genotipos dados: armá gametos, cuadro, predicción y descendencia simulada.'},
   {n:2, desc:'Todas las combinaciones: a veces se pregunta por el rasgo dominante y otras por el recesivo.'},
   {n:3, desc:'Primero deducí los genotipos a partir de la familia.'}
 ];
@@ -274,8 +274,8 @@ function inicio(){
   progreso();
   tablero.innerHTML = `
     <div class="inicio">
-      <p>Cada progenitor tiene dos copias de un gen y le pasa <b>una sola</b> a cada gameto. El <b>cuadro de Punnett</b> combina los gametos de los dos y muestra qué crías son posibles y con qué probabilidad.</p>
-      <p>En cada cruza vas a <b>armar los gametos</b>, <b>llenar el cuadro</b>, predecir qué proporción de la descendencia muestra un rasgo y después <b>simular camadas</b> para comparar lo esperado con lo que pasa de verdad.</p>
+      <p>Cada progenitor tiene dos copias de un gen y le pasa <b>una sola</b> a cada gameto. El <b>cuadro de Punnett</b> combina los gametos de los dos y muestra qué descendientes son posibles y con qué probabilidad.</p>
+      <p>En cada cruza vas a <b>armar los gametos</b>, <b>llenar el cuadro</b>, predecir qué proporción de la descendencia muestra un rasgo y después <b>simular la descendencia</b> para comparar lo esperado con lo que pasa de verdad.</p>
       <ul class="niveles">${NIVELES.map(nv => {
         const idx = RONDAS.map((r, i) => i).filter(i => RONDAS[i].nivel === nv.n);
         return `<li><button data-r="${idx[0]}" class="${idx.every(i => resultados[i]) ? 'hecho' : ''}"><span class="n">Nivel ${nv.n}</span><span class="d">${nv.desc}</span></button></li>`;
@@ -343,7 +343,7 @@ function dibujar(){
 
   if(['cuadro','fenotipo','camada'].includes(S.etapa)){
     html += `<h2 class="etapa"><span class="n">${n++}</span>Cuadro de Punnett</h2>`;
-    if(S.etapa === 'cuadro') html += `<p class="instr">Llená cada casilla con los alelos que reciben las crías: uno del gameto de la columna y uno del gameto de la fila. Tocá un alelo de abajo y después los huecos, o arrastralo.</p>`;
+    if(S.etapa === 'cuadro') html += `<p class="instr">Llená cada casilla con los alelos que reciben los descendientes: uno del gameto de la columna y uno del gameto de la fila. Tocá un alelo de abajo y después los huecos, o arrastralo.</p>`;
     html += `<div class="cuadro" id="cuadro"><div></div>` +
       [0,1].map(j => `<div class="cab"><div class="gameto lleno" aria-label="Gameto ${gametoTxt(1, j)} de la columna">${S.gam[1][j].map(a => alelo(a)).join('')}</div></div>`).join('') +
       [0,1].map(i => `<div class="cab"><div class="gameto lleno" aria-label="Gameto ${gametoTxt(2, i)} de la fila">${S.gam[2][i].map(a => alelo(a)).join('')}</div></div>` +
@@ -359,12 +359,12 @@ function dibujar(){
   }
   if(S.etapa === 'fenotipo'){
     html += `<h2 class="etapa"><span class="n">${n++}</span>Predicción</h2>
-      <p class="instr">Tocá en el cuadro <b>todas</b> las casillas de crías con <b>${fenTexto(r.pide)}</b> (el rasgo ${r.pide}). Si no hay ninguna, no marques nada.</p>
+      <p class="instr">Tocá en el cuadro <b>todas</b> las casillas de descendientes con <b>${fenTexto(r.pide)}</b> (el rasgo ${r.pide}). Si no hay ninguna, no marques nada.</p>
       <div class="acciones"><button class="primario" id="listo-fen">Listo</button></div>`;
   }
   if(S.etapa === 'camada'){
     html += `<div class="resultado-cuadro" id="res-cuadro">${resumenCuadro()}</div>`;
-    html += `<h2 class="etapa"><span class="n">${n++}</span>Camada</h2><div id="camada-zona"></div>`;
+    html += `<h2 class="etapa"><span class="n">${n++}</span>Descendencia</h2><div id="camada-zona"></div>`;
   }
   tablero.innerHTML = html;
   conectar();
@@ -555,7 +555,20 @@ function verificarFenotipo(){
   }
 }
 
-// --- Camada: lo esperado frente a lo observado ---
+// --- Descendencia: lo esperado frente a lo observado ---
+// En personas se habla de hijos e hijas; en arvejas, de semillas. Las 200 no
+// son de una sola pareja: son descendientes de muchas con los mismos genotipos.
+function voc(){
+  return S.rasgo.planta
+    ? { pred:'Si esta cruza diera <b>8 semillas</b>, ¿cuántas esperás que tengan', aria:'Cantidad de semillas',
+        cuadro:'las semillas con', si8:'Si fueran 8 semillas', uno:'cada semilla',
+        sim8:'Simular 8 semillas', otra8:'Otras 8 semillas', sim200:'Simular 200 semillas', g200:'200 semillas',
+        todos:'todas las semillas salen iguales', cuantos:'cuántas', vez:'de un grupo de 8 a otro', prim:'las primeras' }
+    : { pred:'Si esta pareja tuviera <b>8 hijos e hijas</b>, ¿cuántos esperás que tengan', aria:'Cantidad de hijos e hijas',
+        cuadro:'los descendientes con', si8:'Si fueran 8 hijos e hijas', uno:'cada hijo o hija',
+        sim8:'Simular una familia de 8', otra8:'Otra familia de 8', sim200:'Simular 200 descendientes', g200:'200 descendientes de parejas con los mismos genotipos',
+        todos:'todos los descendientes salen iguales', cuantos:'cuántos', vez:'de una familia a otra', prim:'los primeros' };
+}
 function cria(){
   const a = S.r.g1[Math.floor(Math.random() * 2)], b = S.r.g2[Math.floor(Math.random() * 2)];
   return ordenar([a, b]);
@@ -567,10 +580,11 @@ function simular(n){
 function dibujarCamada(){
   const z = el('camada-zona'), esp = conteo().pide * 2, fen = fenTexto(S.r.pide);
   if(S.pred === null){
-    z.innerHTML = `<p class="instr">Si esta pareja tuviera <b>8 crías</b>, ¿cuántas esperás que tengan <b>${fen}</b>?</p>
+    const V = voc();
+    z.innerHTML = `<p class="instr">${V.pred} <b>${fen}</b>?</p>
       <div class="fila-ctrl">
         <button id="p-menos" aria-label="Una menos">&minus;</button>
-        <input id="p-n" inputmode="numeric" maxlength="1" value="" aria-label="Cantidad de crías">
+        <input id="p-n" inputmode="numeric" maxlength="1" value="" aria-label="${V.aria}">
         <button id="p-mas" aria-label="Una más">+</button>
         <button class="primario" id="p-ok">Confirmar</button>
       </div>`;
@@ -581,34 +595,34 @@ function dibujarCamada(){
     el('p-ok').onclick = () => {
       if(inp.value === ''){ avisar('Escribí un número de 0 a 8.'); return; }
       const v = +inp.value;
-      if(v !== esp){ error(`En el cuadro, las crías con ${fen} son ${deCada4(conteo().pide)}. Si fueran 8 crías, ¿cuántas serían?`); return; }
+      if(v !== esp){ error(`En el cuadro, ${V.cuadro} ${fen} son ${deCada4(conteo().pide)}. ${V.si8}, ¿${V.cuantos} serían?`); return; }
       S.pred = v;
       dibujarCamada();
     };
     return;
   }
-  const ultima = S.ultima;
+  const ultima = S.ultima, V = voc();
   const ver8 = S.sims8.length, ver200 = S.sims200.length;
-  let html = `<p class="instr">Esperás <b>${S.pred} de 8</b> con ${fen}. Pero cada cría es un sorteo: simulá y fijate qué pasa.</p>
+  let html = `<p class="instr">Esperás <b>${S.pred} de 8</b> con ${fen}. Pero ${V.uno} es un sorteo: simulá y fijate qué pasa.</p>
     <div class="acciones">
-      <button class="primario" id="s8">${ver8 ? 'Otra camada de 8' : 'Simular una camada de 8'}</button>
-      <button id="s200" ${ver8 ? '' : 'disabled'}>Simular 200 crías</button>
+      <button class="primario" id="s8">${ver8 ? V.otra8 : V.sim8}</button>
+      <button id="s200" ${ver8 ? '' : 'disabled'}>${V.sim200}</button>
     </div>`;
   if(ultima){
     html += `<div class="leyenda" style="margin-top:0.8rem;"><span><i style="background:var(--dom)"></i>${S.rasgo.dominante}</span><span><i style="background:var(--rec)"></i>${S.rasgo.recesivo}</span></div>`;
     if(ultima.n <= 8) html += `<div class="camada">${ultima.crias.map((g, i) => `<span class="cria ${fenotipo(g) === 'dominante' ? 'dom' : 'rec'}" style="animation-delay:${i * 0.08}s" title="${g}">${g}</span>`).join('')}</div>`;
-    else html += `<p class="obs" style="margin:0.8rem 0 0;">200 crías: ${['AA','Aa','aa'].map(g => `${ultima.crias.filter(x => x === g).length} ${g}`).join(' · ')}</p>`;
+    else html += `<p class="obs" style="margin:0.8rem 0 0;">${V.g200}: ${['AA','Aa','aa'].map(g => `${ultima.crias.filter(x => x === g).length} ${g}`).join(' · ')}</p>`;
     html += `<p class="obs">Observado: <b>${ultima.k} de ${ultima.n}</b> con ${fen} (${pct(ultima.k / ultima.n * 100)}). Esperado: <b>${pct(esp / 8 * 100)}</b>.</p>`;
     html += puntosSVG(esp / 8 * 100);
   }
   if(ver8 && ver200){
     const p = esp / 8;
     html += `<div class="explica">${p === 0 || p === 1
-      ? `Cuando la probabilidad es ${p === 0 ? '0 %' : '100 %'}, el azar no cambia nada: todas las crías salen iguales, sea la camada chica o grande.`
-      : `Lo esperado es una <b>probabilidad</b>. Con 8 crías el resultado varía mucho de una camada a otra; con 200 se acerca a ${pct(p * 100)}. Cada cría es un sorteo independiente: que las primeras salgan de un tipo no cambia la probabilidad de la siguiente.`}</div>
+      ? `Cuando la probabilidad es ${p === 0 ? '0 %' : '100 %'}, el azar no cambia nada: ${V.todos}, sean 8 o 200.`
+      : `Lo esperado es una <b>probabilidad</b>. Con 8 el resultado varía mucho ${V.vez}; con 200 se acerca a ${pct(p * 100)}. ${V.uno[0].toUpperCase() + V.uno.slice(1)} es un sorteo independiente: que ${V.prim} salgan de un tipo no cambia la probabilidad de la siguiente.`}</div>
       <div class="acciones"><button class="primario" id="sig-cruza">${S.i + 1 < RONDAS.length ? 'Siguiente cruza' : 'Ver el resumen'} &rarr;</button><button id="ini">Elegir otro nivel</button></div>`;
   } else if(ver8){
-    html += `<p class="instr" style="margin-top:0.8rem;">Simulá varias camadas de 8 y después 200 crías juntas. ¿Qué cambia?</p>`;
+    html += `<p class="instr" style="margin-top:0.8rem;">Simulá varios grupos de 8 y después 200 juntos. ¿Qué cambia?</p>`;
   }
   z.innerHTML = html;
   el('s8').onclick = () => { S.ultima = simular(8); S.sims8.push(S.ultima.k / 8 * 100); dibujarCamada(); };
@@ -630,7 +644,7 @@ function puntosSVG(esperado){
   };
   const marcas = [0,25,50,75,100].map(v => `<line x1="${x(v)}" y1="112" x2="${x(v)}" y2="116" stroke="#9AA9A6"/><text x="${x(v)}" y="128" text-anchor="middle">${v} %</text>`).join('');
   return `<svg class="puntos" viewBox="0 0 540 134" role="img" aria-label="Resultados de las simulaciones comparados con lo esperado">
-    <text x="0" y="52">camadas</text><text x="0" y="64">de 8</text>
+    <text x="0" y="52">grupos</text><text x="0" y="64">de 8</text>
     <text x="0" y="98">grupos</text><text x="0" y="110">de 200</text>
     <line x1="${x(0)}" y1="112" x2="${x(100)}" y2="112" stroke="#9AA9A6"/>${marcas}
     <line x1="${x(esperado)}" y1="6" x2="${x(esperado)}" y2="112" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3"/>
@@ -811,8 +825,8 @@ inicio();
   <summary>Para el/la docente</summary>
   <p><b>Nivel sugerido:</b> Secundaria.</p>
   <p><b>Conceptos que trabaja:</b> segregación de los alelos al formarse los gametos (primera ley de Mendel); cruza monohíbrida y cuadro de Punnett; genotipo y fenotipo; dominancia completa; proporciones 1:2:1 (genotipos) y 3:1 (fenotipos); probabilidad y variación por azar en muestras chicas.</p>
-  <p><b>Cómo avanza:</b> en cada cruza se arman los gametos, se llena el cuadro, se marca en él qué crías muestran el rasgo pedido y se simulan camadas. El nivel 1 tiene dos cruzas fijas; el 2 sortea tres combinaciones; en el 3 los genotipos de los progenitores no se dan y hay que deducirlos a partir del fenotipo y de un familiar. El modo rápido es el contrarreloj original, para repasar.</p>
-  <p><b>Sobre la simulación:</b> cada cría recibe un alelo al azar de cada progenitor, de forma independiente. Por eso una camada de 8 casi nunca da exactamente lo esperado, y 200 crías juntas se acercan mucho más. Es un buen momento para hablar de la "falacia del jugador": si ya nacieron tres crías con el rasgo recesivo, la siguiente sigue teniendo la misma probabilidad.</p>
+  <p><b>Cómo avanza:</b> en cada cruza se arman los gametos, se llena el cuadro, se marca en él qué descendientes muestran el rasgo pedido y se simula la descendencia. El nivel 1 tiene dos cruzas fijas; el 2 sortea tres combinaciones; en el 3 los genotipos de los progenitores no se dan y hay que deducirlos a partir del fenotipo y de un familiar. El modo rápido es el contrarreloj original, para repasar.</p>
+  <p><b>Sobre la simulación:</b> cada descendiente recibe un alelo al azar de cada progenitor, de forma independiente. Por eso un grupo de 8 casi nunca da exactamente lo esperado, y 200 juntos se acercan mucho más. En los rasgos humanos, los 200 no son de una sola pareja sino de muchas con los mismos genotipos. Es un buen momento para hablar de la "falacia del jugador": si una pareja ya tuvo tres hijos con el rasgo recesivo, el siguiente sigue teniendo la misma probabilidad.</p>
   <p><b>Para discutir después de jugar:</b> los cinco rasgos de este juego son monogénicos de verdad. Varios de los que aparecen en los libros de texto — lóbulo de la oreja, pico de viuda, pulgar de autoestopista, pecas — resultaron ser poligénicos cuando se los estudió con datos genómicos. ¿Cómo se podría averiguar si un rasgo se hereda de forma mendeliana simple? En el caso del Rh, el alelo "a" corresponde a la ausencia del gen RHD: ¿un alelo recesivo puede ser la falta de un gen?</p>
   <div class="opciones-doc">
     <b>Opciones para la clase</b>
