@@ -203,14 +203,14 @@ const juegos = [
     acentoTexto: "#A06C04",
     publicado: "2026-10",
     nivel: "docentes",
-    duracion: 5,
+    duracion: 12,
     temas: ["salud"],
     autores: ["Genética a las Aulas"],
     es: {
-      nombre: "Farmacogenómica exprés",
-      subtitulo: "Dosis según genotipo, contrarreloj",
-      resumen: "Elegí la dosis correcta de un fármaco ficticio según el perfil de metabolización del paciente, antes de que se acabe el tiempo.",
-      aprende: ["Farmacogenómica", "Metabolizadores lentos, normales y rápidos", "Medicina de precisión"]
+      nombre: "Farmacogenómica: ajustá la dosis",
+      subtitulo: "Del genotipo a la dosis",
+      resumen: "Calculá el puntaje de actividad de una enzima a partir del genotipo, deducí el fenotipo de metabolización y ajustá la dosis mirando el nivel del fármaco en sangre. Con un profármaco, todo se da vuelta.",
+      aprende: ["Del genotipo al fenotipo de metabolización", "Ventana terapéutica", "Fármaco activo frente a profármaco", "Medicina de precisión"]
     }
   },
   {

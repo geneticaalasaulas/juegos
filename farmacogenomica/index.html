@@ -3,211 +3,397 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Farmacogenómica exprés · Genética a las Aulas</title>
+<title>Farmacogenómica: ajustá la dosis · Genética a las Aulas</title>
 <style>
   :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
-    /* Una sola paleta de texto: --ink y --muted sirven tanto sobre la
-       pagina como sobre el tablero, porque los dos son claros. */
-    --enfasis:#986704;        /* enfasis del texto, en el color del juego */
+    --enfasis:#986704;
     --juego:#C88705;          /* amarillo del logo — ver capas/farmacogenomica.svg */
-    --juego-texto:#986704;    /* misma familia, oscurecido hasta 4.5:1 sobre blanco */
-    --juego-tinte:#FEF5E4;    /* fondo del boton al pasar el mouse */
-    --pista:#E2E8E6;             /* pista de la barra de progreso */
-    --foco:#16211F;              /* anillo de foco: igual en todo el sitio, maxima visibilidad */
+    --juego-texto:#986704;
+    --juego-tinte:#FEF5E4;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
     --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
   *{box-sizing:border-box;}
   body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
   a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
   a.volver:hover{ color:var(--juego-texto); }
-  h1{
-    font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem);
-    letter-spacing:-0.01em; line-height:1.2;
-    margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem;
-  }
-  .franja{ display:flex; gap:1.4rem; color:var(--muted); font-size:0.92rem; margin-bottom:1rem; }
-  .franja b{ color:var(--enfasis); }
-  .tablero{ background:var(--card); color:var(--ink); border-radius:8px;
-    border:1px solid #E1E7E5;
-    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.6rem; width:min(520px,92vw); margin-bottom:1.4rem; text-align:center; }
-  .gen{ font-size:1.1rem; font-weight:700; margin-bottom:0.3rem; }
-  .rasgo{ color:var(--muted); font-size:0.92rem; margin-bottom:1.1rem; }
-  .opciones{ display:grid; grid-template-columns:1fr; gap:0.6rem; }
-  .opciones button{
-    min-height:44px; padding:0.75rem 0.5rem; border-radius:4px; border:1.5px solid var(--juego); background:#fff; color:var(--ink); font-size:0.95rem; cursor:pointer;
-    transition:background-color .15s ease, border-color .15s ease, opacity .15s ease; }
-  .opciones button:hover{ background:var(--juego-tinte); }
-  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
-  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
-  .inicio, .final{ text-align:center; }
-  .inicio button, .final button{ margin-top:0.8rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
+  h1{ font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem); letter-spacing:-0.01em; line-height:1.2; margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem; }
+  .bajada{ max-width:34em; margin:0 auto 1rem; font-size:0.95rem; line-height:1.55; color:var(--muted); text-align:center; padding:0 1rem; }
+  .marcador{ color:var(--muted); font-size:0.95rem; margin:0 0 1rem; text-align:center; padding:0 1rem; }
+  .progreso{ width:min(720px,94vw); height:5px; margin:0 0 1.1rem; background:var(--pista); border-radius:999px; overflow:hidden; }
+  .progreso > i{ display:block; height:100%; width:0; border-radius:999px; background:var(--juego-texto); transition:width .3s ease; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05);
+    padding:1.5rem; width:min(720px,94vw); margin-bottom:1.2rem; }
 
-  /* --- I1 · foco visible para navegacion con teclado --- */
-  .opciones button:focus-visible, .siguiente:focus-visible,
-  a.volver:focus-visible, summary:focus-visible, #seguir:focus-visible{
-    outline:3px solid var(--foco); outline-offset:2px;
-  }
-  /* --- I2 · senal de acierto/error que no depende del color ---
-     verde y rojo son indistinguibles en la forma mas frecuente de daltonismo */
-  .opciones button.ok::before{  content:"\2713\00a0"; font-weight:700; }
-  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
-  /* --- I3 · los botones ya respondidos dejan de parecer clickeables --- */
-  .opciones button:disabled{ cursor:default; }
-  .opciones button:disabled:not(.ok):not(.mal){ opacity:0.45; border-color:#C9CFCE; }
-  /* --- I4 · en pantallas chicas, una sola columna de opciones --- */
-  @media (max-width:520px){ .opciones{ grid-template-columns:1fr; } }
+  button{ min-height:44px; padding:0.6rem 1rem; border-radius:6px; font-size:0.95rem; cursor:pointer; font-family:inherit;
+    border:1.5px solid var(--juego); background:#fff; color:var(--ink); transition:background-color .15s ease; }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible, input:focus-visible, tr[tabindex]:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
 
-  /* --- V1 · el verde del logo como color de estructura, compartido con la portada.
-     El ambar queda reservado para la accion principal y el enfasis del texto. --- */
-  /* --- V2 · barra de progreso --- */
-  .progreso{
-    width:min(560px,92vw); height:5px; margin:0 0 1.1rem;
-    background:var(--pista); border-radius:999px; overflow:hidden;
-  }
-  .progreso > i{
-    display:block; height:100%; width:0; border-radius:999px;
-    background:var(--juego-texto); transition:width .3s ease;
-  }
-  /* en los juegos contrarreloj la barra se vacia, y va en ambar (urgencia) */
-  .progreso.tiempo > i{ background:var(--enfasis); width:100%; }
+  .paciente{ background:var(--juego-tinte); border-left:4px solid var(--juego); padding:0.8rem 1rem; border-radius:0 6px 6px 0; line-height:1.55; margin:0 0 1rem; }
+  .paciente .eti{ display:block; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; font-weight:700; color:var(--juego-texto); }
+  .geno{ font-size:1.35rem; font-weight:700; letter-spacing:0.02em; }
+  h2.etapa{ font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); font-weight:700; margin:1.3rem 0 0.5rem; }
+  h2.etapa .n{ display:inline-block; min-width:1.4em; height:1.4em; line-height:1.4em; text-align:center; border-radius:50%; background:var(--juego-texto); color:#fff; margin-right:0.4rem; }
+  .instr{ font-size:0.97rem; line-height:1.5; margin:0 0 0.7rem; }
+  table.tabla{ border-collapse:collapse; font-size:0.92rem; margin:0 0 0.8rem; min-width:100%; }
+  table.tabla th, table.tabla td{ border:1px solid #E1E7E5; padding:0.45rem 0.6rem; text-align:left; }
+  table.tabla th{ background:#FBF6EA; }
+  table.tabla tr.elegible{ cursor:pointer; }
+  table.tabla tr.elegible:hover td{ background:var(--juego-tinte); }
+  table.tabla tr.sel td{ background:#FFE7B0; font-weight:600; }
+  .tabla-wrap{ overflow-x:auto; }
+  .fila-ctrl{ display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; margin:0 0 0.6rem; }
+  .fila-ctrl output{ font-size:1.3rem; font-weight:700; min-width:3ch; text-align:center; }
+  .dosis{ display:flex; gap:0.8rem; align-items:center; flex-wrap:wrap; margin:0.4rem 0 0.6rem; }
+  .dosis input{ flex:1 1 220px; accent-color:var(--juego-texto); }
+  .dosis output{ font-size:1.35rem; font-weight:700; min-width:6ch; }
+  svg.curva{ width:100%; height:auto; display:block; }
+  svg.curva text{ font-family:var(--fuente); }
+  .lectura{ display:flex; gap:1.2rem; flex-wrap:wrap; font-size:0.92rem; margin:0.4rem 0 0; color:var(--muted); }
+  .lectura b{ color:var(--ink); }
+  .chip{ display:inline-block; padding:0.1rem 0.5rem; border-radius:999px; font-size:0.85rem; font-weight:600; }
+  .chip.ok{ background:#DDF1E6; color:#065E36; }
+  .chip.bajo{ background:#E6ECF5; color:#24467A; }
+  .chip.alto{ background:#FBDADB; color:#9C0A12; }
+  .acciones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.8rem; }
+  .fb{ font-size:0.97rem; line-height:1.5; margin:0.8rem 0 0; padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; }
+  .fb:empty{ display:none; }
+  .fb.pista{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .fb.ok{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .nota{ font-size:0.82rem; color:var(--muted); margin-top:1.2rem; }
+
+  .inicio p{ line-height:1.6; margin:0 0 0.9rem; }
+  .final{ text-align:center; }
+  .final .acciones{ justify-content:center; }
+  .final table{ border-collapse:collapse; margin:1rem auto; font-size:0.92rem; }
+  .final td, .final th{ padding:0.35rem 0.8rem; border-bottom:1px solid #E6E9E8; text-align:left; }
+
+  details.docente{ max-width:38em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  .opciones-doc{ background:#fff; border:1px solid #E1E7E5; border-radius:6px; padding:0.7rem 0.9rem; margin-top:0.8rem; color:var(--ink); }
+  .opciones-doc label{ display:flex; gap:0.5rem; align-items:center; min-height:36px; cursor:pointer; }
+  .opciones-doc input{ width:20px; height:20px; }
+  .opciones-doc code{ font-size:0.85rem; word-break:break-all; }
+  @media (prefers-reduced-motion:reduce){ .progreso > i{ transition:none; } }
 </style>
 </head>
 <body>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
-<h1>Farmacogenómica exprés</h1>
-<div class="franja" id="franja"></div>
-<div class="progreso tiempo" aria-hidden="true"><i id="barra"></i></div>
+<h1>Farmacogenómica: ajustá la dosis</h1>
+<p class="bajada">La misma dosis de un fármaco puede ser justa para una persona, insuficiente para otra y tóxica para una tercera. Parte de esa diferencia está en los genes de las enzimas que lo procesan.</p>
+<p class="marcador" id="marcador"></p>
+<div class="progreso" aria-hidden="true"><i id="barra"></i></div>
 <div class="tablero" id="tablero"></div>
 
 <script>
-// Fármaco ficticio "Genoprilol": un fármaco ACTIVO que la enzima INACTIVA.
-// Ese detalle es el que hace deducible la respuesta (ver la nota final del juego).
-const perfiles = [
-  { genotipo:"metabolizador lento", correcta:"Dosis baja", explicacion:"Metaboliza el fármaco despacio: con una dosis normal se acumula en sangre y puede volverse tóxico." },
-  { genotipo:"metabolizador normal", correcta:"Dosis estándar", explicacion:"Procesa el fármaco al ritmo esperado — la dosis de referencia funciona bien." },
-  { genotipo:"metabolizador rápido", correcta:"Dosis alta", explicacion:"Metaboliza el fármaco muy rápido: con la dosis estándar el nivel en sangre puede quedar por debajo del efecto buscado." },
-  { genotipo:"metabolizador ultrarrápido", correcta:"Dosis alta o cambiar de fármaco", explicacion:"Metaboliza tan rápido que incluso una dosis alta puede no alcanzar niveles terapéuticos — a veces conviene otro fármaco." }
+// ---------------------------------------------------------------------------
+// Gen y fármacos ficticios. MET1 está inspirado en el sistema de "puntaje de
+// actividad" que se usa para CYP2D6 (guías CPIC), simplificado.
+// ---------------------------------------------------------------------------
+const ALELOS = [
+  { nombre:'*1', funcion:'normal', act:1 },
+  { nombre:'*2', funcion:'reducida', act:0.5 },
+  { nombre:'*3', funcion:'sin función', act:0 }
 ];
+const FENOTIPOS = [
+  { id:'lento',  nombre:'Metabolizador lento',       rango:'0',          desde:0,   hasta:0,   fk:0.25 },
+  { id:'inter',  nombre:'Metabolizador intermedio',  rango:'0,5 a 1',    desde:0.5, hasta:1,   fk:0.6 },
+  { id:'normal', nombre:'Metabolizador normal',      rango:'1,5 a 2',    desde:1.5, hasta:2,   fk:1 },
+  { id:'ultra',  nombre:'Metabolizador ultrarrápido', rango:'más de 2',  desde:2.5, hasta:99,  fk:2.5 }
+];
+const fenotipoDe = as => FENOTIPOS.find(f => as >= f.desde && as <= f.hasta);
 
-const TIEMPO_TOTAL = 60;
-let tiempo, timer, puntaje = 0, racha = 0, jugando = false, errores = [];
-
-const tablero = document.getElementById('tablero');
-const franja = document.getElementById('franja');
-
-function nuevaPregunta(){
-  const perfil = perfiles[Math.floor(Math.random()*perfiles.length)];
-  const todas = ["Dosis baja","Dosis estándar","Dosis alta","Dosis alta o cambiar de fármaco"];
-  const opciones = [perfil.correcta, ...todas.filter(o=>o!==perfil.correcta).sort(()=>Math.random()-0.5).slice(0,2)]
-    .sort(()=>Math.random()-0.5);
-
-  tablero.innerHTML = `
-    <p class="gen">Paciente: ${perfil.genotipo}</p>
-    <p class="rasgo">Fármaco: <b>Genoprilol</b> — un fármaco <b>activo</b> que esta enzima <b>inactiva</b>: cuanto más rápido lo metaboliza el paciente, menos efecto tiene.</p>
-    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
-    <p id="explica" style="font-size:0.92rem;line-height:1.55;color:#16211F;background:#F4F6F5;border-left:3px solid #E1A73B;padding:0.7rem 0.9rem;margin-top:1rem;text-align:left;display:none;"></p>
-    <button id="seguir" style="display:none;width:fit-content;margin-left:auto;margin-top:1rem;padding:0.55rem 1.4rem;border:1px solid #16211F;background:#16211F;color:#fff;border-radius:6px;font-size:0.95rem;cursor:pointer;">Seguir &rarr;</button>
-    <p style="font-size:0.82rem;color:#5B6E6B;margin-top:1.4rem;">Fármaco ficticio, con fines educativos. Las decisiones de dosis reales las toma un profesional de la salud.</p>
-  `;
-
-  tablero.querySelectorAll('.opciones button').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      if(!jugando) return;
-      const acierto = btn.dataset.o === perfil.correcta;
-      tablero.querySelectorAll('.opciones button').forEach(b=>{
-        b.disabled = true;
-        if(b.dataset.o === perfil.correcta) b.classList.add('ok');
-        else if(b === btn) b.classList.add('mal');
-      });
-      if(acierto){ racha++; puntaje += 10 + (racha>=3 ? 5 : 0); }
-      else { racha = 0; }
-      actualizarFranja();
-
-      if(acierto){
-        setTimeout(()=>{ if(jugando) nuevaPregunta(); }, 700);
-      } else {
-        // El reloj sigue corriendo: la pausa para leer la decide quien juega.
-        errores.push({genotipo:perfil.genotipo, correcta:perfil.correcta,
-                      elegida:btn.dataset.o, exp:perfil.explicacion});
-        const e = document.getElementById('explica');
-        e.style.display = 'block';
-        e.innerHTML = `Era <b>${perfil.correcta}</b>. ${perfil.explicacion}`;
-        const sig = document.getElementById('seguir');
-        sig.style.display = 'block';
-        sig.onclick = () => { if(jugando) nuevaPregunta(); };
-      }
-    });
-  });
+// Farmacocinética de un compartimento, dosis cada 12 h (bolo intravenoso).
+const V = 50, TAU = 12, K_NORMAL = Math.LN2 / 12;           // vida media normal: 12 h
+const VENTANA = { min:2, max:5 };                             // mg/L
+const DOSIS = { min:25, max:400, paso:25, estandar:100 };
+const FARMACOS = {
+  geno:{ nombre:'Genoprilol', tipo:'activo', texto:'Es un fármaco <b>activo</b>: la enzima MET1 lo <b>inactiva</b>. Cuanto más rápido lo procesa el paciente, menos dura en sangre.' },
+  pro: { nombre:'Profenol',   tipo:'pro',    texto:'Es un <b>profármaco</b>: no hace nada hasta que la enzima MET1 lo <b>convierte</b> en su forma activa. El gráfico muestra la forma activa.' }
+};
+// Para el fármaco activo, la enzima acelera la eliminación. Para el
+// profármaco, la enzima define cuánta forma activa se produce (que después se
+// elimina por otra vía, a ritmo normal).
+function parametros(caso, fen){
+  if(FARMACOS[caso.farmaco].tipo === 'activo') return { k:K_NORMAL * fen.fk, a:1 };
+  return { k:K_NORMAL, a:caso.as / 2 };
 }
-
-function actualizarFranja(){
-  franja.innerHTML = `<span>Tiempo: <b>${tiempo}s</b></span><span>Puntaje: <b>${puntaje}</b></span><span>Racha: <b>${racha}</b></span>`;
-  // La barra se vacia a medida que corre el reloj.
-  const b = document.getElementById('barra');
-  if(b) b.style.width = Math.max(0, tiempo / TIEMPO_TOTAL * 100) + '%';
+function concentracion(D, p, t){
+  let c = 0;
+  for(let td = 0; td <= t; td += TAU) c += D * p.a / V * Math.exp(-p.k * (t - td));
+  return c;
 }
-
-function iniciar(){
-  puntaje = 0; racha = 0; errores = []; tiempo = TIEMPO_TOTAL; jugando = true;
-  actualizarFranja();
-  nuevaPregunta();
-  timer = setInterval(()=>{
-    tiempo--;
-    actualizarFranja();
-    if(tiempo <= 0){ clearInterval(timer); jugando=false; final(); }
-  },1000);
+function estable(D, p){
+  const r = Math.exp(-p.k * TAU), pico = D * p.a / V / (1 - r);
+  return { pico, valle:pico * r };
 }
-
-function repaso(){
-  if(errores.length === 0) return "";
-  const filas = errores.map(e =>
-    `<li style="margin-bottom:0.6rem;"><b>${e.genotipo}</b> — respondiste <i>${e.elegida}</i>; era <b>${e.correcta}</b>.<br>${e.exp}</li>`).join('');
-  return `<div style="font-size:0.88rem;color:#5B6E6B;max-width:36em;margin:1.4rem auto;line-height:1.55;text-align:left;border-top:1px solid #E6E9E8;padding-top:1rem;"><b>Para repasar — las que erraste:</b><ul style="margin:0.7rem 0 0;padding-left:1.2rem;">${filas}</ul></div>`;
-}
-
-// Aca final() la llama el reloj, y "Jugar de nuevo" reinicia sin recargar la
-// pagina: sin la bandera, cada partida terminada contaria de nuevo.
-let finContado = false;
-function final(){
-  if(!finContado){
-    finContado = true;
-    window.goatcounter?.count({ path: 'fin/farmacogenomica',
-      title: 'Completó Farmacogenómica exprés', event: true });
+function dosisQueFuncionan(caso){
+  const fen = fenotipoDe(caso.as), p = parametros(caso, fen), out = [];
+  for(let D = DOSIS.min; D <= DOSIS.max; D += DOSIS.paso){
+    const e = estable(D, p);
+    if(e.valle >= VENTANA.min && e.pico <= VENTANA.max) out.push(D);
   }
-  const mejor = Math.max(puntaje, parseInt(localStorage.getItem('farmaco-mejor')||"0"));
-  localStorage.setItem('farmaco-mejor', mejor);
+  return out;
+}
+
+const CASOS = [
+  { nombre:'Ana',     g:['*1','*1'],   farmaco:'geno',
+    cierre:'Con actividad normal, la dosis de referencia funciona. Para eso se calculan las dosis estándar: para la mayoría de las personas.' },
+  { nombre:'Bruno',   g:['*2','*3'],   farmaco:'geno',
+    cierre:'Bruno elimina el fármaco más despacio, así que se acumula: con la dosis estándar los picos serían tóxicos. Le alcanza una dosis menor.' },
+  { nombre:'Carla',   g:['*3','*3'],   farmaco:'geno',
+    cierre:'Sin enzima funcional, el fármaco casi no se elimina: con una dosis muy baja ya alcanza. Fijate también que el nivel tarda varios días en estabilizarse: cuanto más lenta la eliminación, más tarda en llegar al estado estable.' },
+  { nombre:'Diego',   g:['*1','*1×2'], farmaco:'geno',
+    cierre:'Diego tiene tres copias funcionales del gen y elimina el fármaco tan rápido que entre dosis el nivel cae por debajo de la ventana, y si se sube la dosis los picos se vuelven tóxicos. Ninguna dosis cada 12 horas sirve: conviene otro fármaco que no dependa de esta enzima.' },
+  { nombre:'Elena',   g:['*3','*3'],   farmaco:'pro',
+    cierre:'Con un profármaco todo se da vuelta: Elena no tiene enzima para activarlo, así que no le hace efecto con ninguna dosis. Hay que elegir otro fármaco.' },
+  { nombre:'Facundo', g:['*1','*1×2'], farmaco:'pro',
+    cierre:'Facundo activa el profármaco más rápido que lo normal: con la dosis estándar la forma activa llegaría a niveles tóxicos. Con este profármaco ficticio alcanza con bajar la dosis; para algunos profármacos reales, en metabolizadores ultrarrápidos las guías recomiendan directamente evitarlos.' }
+];
+CASOS.forEach(c => {
+  const val = n => { const base = ALELOS.find(a => n.startsWith(a.nombre)); return n.includes('×2') ? base.act * 2 : base.act; };
+  c.as = val(c.g[0]) + val(c.g[1]);
+});
+
+const params = new URLSearchParams(location.search);
+const OPC = { crono: params.get('crono') === '1', errores: params.get('errores') === '1' };
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+let S = null, reloj = null, finContado = false;
+const resultados = {};
+function el(id){ return document.getElementById(id); }
+function mmss(s){ return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+function segundos(){ return S ? Math.round(((S.fin || Date.now()) - S.inicio) / 1000) : 0; }
+const num = v => (Math.round(v * 10) / 10).toString().replace('.', ',');
+
+function inicio(){
+  S = null; clearInterval(reloj);
+  marcador.textContent = '';
+  el('barra').style.width = (Object.keys(resultados).length / CASOS.length * 100) + '%';
+  tablero.innerHTML = `
+    <div class="inicio">
+      <p>Vas a atender a seis pacientes. Para cada uno, primero leés su genotipo para la enzima <b>MET1</b> y deducís qué tan rápido la enzima procesa el fármaco. Después ajustás la dosis mirando cómo queda el nivel del fármaco en sangre.</p>
+      <p>El objetivo es que el nivel quede siempre dentro de la <b>ventana terapéutica</b>: por debajo no hace efecto; por encima es tóxico.</p>
+      <div class="acciones"><button class="primario" id="empezar">Empezar</button></div>
+      <p class="nota">Gen y fármacos ficticios, con fines educativos. Las decisiones de dosis reales las toma un equipo de salud.</p>
+    </div>`;
+  el('empezar').onclick = () => empezar(0);
+}
+
+function empezar(i){
+  const c = CASOS[i];
+  S = { i, c, fen:fenotipoDe(c.as), etapa:'as', as:null, fenElegido:null, dosis:DOSIS.estandar, errores:0,
+        inicio:Date.now(), fin:null, msg:null };
+  marcador.textContent = `Paciente ${i + 1} de ${CASOS.length}`;
+  clearInterval(reloj);
+  reloj = setInterval(() => { if(S && !S.fin && OPC.crono && el('st-t')) el('st-t').textContent = mmss(segundos()); }, 1000);
+  dibujar();
+  window.scrollTo({ top:0 });
+}
+
+function dibujar(){
+  const c = S.c, f = FARMACOS[c.farmaco];
+  let html = `
+    <div class="paciente"><span class="eti">Paciente</span>
+      <b>${c.nombre}</b> va a recibir <b>${f.nombre}</b>. ${f.texto}<br>
+      Genotipo de MET1: <span class="geno">${c.g.join(' / ')}</span></div>
+    <p class="instr" style="color:var(--muted);font-size:0.9rem;">
+      ${OPC.crono ? `Tiempo: <b id="st-t">${mmss(segundos())}</b> &nbsp;` : ''}${OPC.errores ? `Errores: <b>${S.errores}</b>` : ''}</p>
+    <h2 class="etapa"><span class="n">1</span>Del genotipo al fenotipo</h2>
+    <div class="tabla-wrap"><table class="tabla">
+      <tr><th>Alelo</th><th>Función de la enzima</th><th>Valor de actividad</th></tr>
+      ${ALELOS.map(a => `<tr><td>${a.nombre}</td><td>${a.funcion}</td><td>${num(a.act)}</td></tr>`).join('')}
+      <tr><td colspan="3" style="color:var(--muted)"><b>×2</b> = dos copias del mismo alelo en un cromosoma (duplicación): su valor cuenta doble.</td></tr>
+    </table></div>`;
+  if(S.etapa === 'as'){
+    html += `<p class="instr">Sumá el valor de actividad de los dos alelos de ${c.nombre}: ese es su <b>puntaje de actividad</b>.</p>
+      <div class="fila-ctrl">
+        <button id="as-menos" aria-label="Restar 0,5">&minus;</button>
+        <output id="as-val">${S.as === null ? '?' : num(S.as)}</output>
+        <button id="as-mas" aria-label="Sumar 0,5">+</button>
+        <button class="primario" id="as-ok">Comprobar</button>
+      </div>`;
+  } else {
+    html += `<p class="instr">Puntaje de actividad de ${c.nombre}: <b>${num(c.as)}</b>. ${S.etapa === 'fen' ? '¿Qué fenotipo le corresponde? Tocá la fila.' : ''}</p>
+      <div class="tabla-wrap"><table class="tabla">
+        <tr><th>Puntaje de actividad</th><th>Fenotipo</th></tr>
+        ${FENOTIPOS.map(fe => `<tr data-f="${fe.id}" class="${S.etapa === 'fen' ? 'elegible' : ''} ${S.fenElegido === fe.id ? 'sel' : ''}" ${S.etapa === 'fen' ? 'tabindex="0" role="button"' : ''}><td>${fe.rango}</td><td>${fe.nombre}</td></tr>`).join('')}
+      </table></div>`;
+  }
+  if(S.etapa === 'dosis' || S.etapa === 'listo'){
+    const p = parametros(c, S.fen), e = estable(S.dosis, p);
+    const est = e.valle < VENTANA.min && e.pico > VENTANA.max ? ['alto', 'Picos tóxicos y valles sin efecto']
+      : e.pico > VENTANA.max ? ['alto', 'Picos tóxicos'] : e.valle < VENTANA.min ? ['bajo', 'Valles por debajo de la ventana'] : ['ok', 'Dentro de la ventana'];
+    html += `<h2 class="etapa"><span class="n">2</span>La dosis</h2>
+      <p class="instr">${c.nombre} es <b>${S.fen.nombre.toLowerCase()}</b>. Elegí la dosis que se le da cada 12 horas y mirá el nivel en sangre durante una semana.</p>
+      <div class="dosis"><label for="dosis">Dosis:</label>
+        <input type="range" id="dosis" min="${DOSIS.min}" max="${DOSIS.max}" step="${DOSIS.paso}" value="${S.dosis}" ${S.etapa === 'listo' ? 'disabled' : ''}>
+        <output id="dosis-val">${S.dosis} mg</output></div>
+      ${curvaSVG(S.dosis, p)}
+      <div class="lectura"><span>Cuando se estabiliza: pico <b>${num(e.pico)}</b> mg/L · valle <b>${num(e.valle)}</b> mg/L</span>
+        <span class="chip ${est[0]}">${est[1]}</span></div>
+      ${S.etapa === 'dosis' ? `<div class="acciones"><button class="primario" id="conf">Indicar ${S.dosis} mg cada 12 h</button><button id="cambiar">Ninguna dosis sirve: cambiar de fármaco</button></div>` : ''}`;
+  }
+  html += `<p class="fb ${S.msg ? S.msg.tipo : ''}" aria-live="polite">${S.msg ? S.msg.texto : ''}</p>`;
+  if(S.etapa === 'listo')
+    html += `<div class="acciones"><button class="primario" id="sig">${S.i + 1 < CASOS.length ? 'Siguiente paciente' : 'Ver el resumen'} &rarr;</button></div>`;
+  html += `<p class="nota">Gen y fármacos ficticios, con fines educativos. Las decisiones de dosis reales las toma un equipo de salud.</p>`;
+  tablero.innerHTML = html;
+  conectar();
+}
+
+function curvaSVG(D, p){
+  // La escala se agranda si los picos se pasan, para que se vea cuánto se pasan.
+  const W = 560, H = 230, ML = 46, MR = 12, MT = 12, MB = 34, T = 168;
+  const CMAX = Math.min(40, Math.max(8, Math.ceil(estable(D, p).pico / 2) * 2 + 2));
+  const x = t => ML + t / T * (W - ML - MR), y = c => MT + (1 - Math.min(c, CMAX) / CMAX) * (H - MT - MB);
+  let s = `<rect x="${ML}" y="${y(CMAX)}" width="${W - ML - MR}" height="${y(VENTANA.max) - y(CMAX)}" fill="#FBE3E4"/>
+    <rect x="${ML}" y="${y(VENTANA.max)}" width="${W - ML - MR}" height="${y(VENTANA.min) - y(VENTANA.max)}" fill="#DDF1E6"/>
+    <rect x="${ML}" y="${y(VENTANA.min)}" width="${W - ML - MR}" height="${y(0) - y(VENTANA.min)}" fill="#EDF1F7"/>
+    <text x="${W - MR - 6}" y="${y(CMAX) + 14}" text-anchor="end" font-size="11" fill="#9C0A12">tóxico</text>
+    <text x="${W - MR - 6}" y="${(y(VENTANA.max) + y(VENTANA.min)) / 2 + 4}" text-anchor="end" font-size="11" fill="#065E36" font-weight="700">ventana terapéutica</text>
+    <text x="${W - MR - 6}" y="${y(0) - 6}" text-anchor="end" font-size="11" fill="#24467A">sin efecto</text>`;
+  const marcas = []; for(let v = 0; v <= CMAX; v += CMAX > 16 ? 8 : CMAX > 8 ? 4 : 2) marcas.push(v);
+  marcas.forEach(v => { s += `<text x="${ML - 6}" y="${y(v) + 4}" text-anchor="end" font-size="10" fill="#5B6E6B">${v}</text>`; });
+  for(let d = 0; d <= 7; d++) s += `<text x="${x(d * 24)}" y="${H - MB + 15}" text-anchor="middle" font-size="10" fill="#5B6E6B">${d}</text>`;
+  s += `<text x="${(ML + W - MR) / 2}" y="${H - 4}" text-anchor="middle" font-size="10.5" fill="#16211F">días</text>
+    <text x="12" y="${(MT + H - MB) / 2}" text-anchor="middle" font-size="10.5" fill="#16211F" transform="rotate(-90 12 ${(MT + H - MB) / 2})">mg/L en sangre</text>
+    <line x1="${ML}" y1="${MT}" x2="${ML}" y2="${H - MB}" stroke="#16211F"/><line x1="${ML}" y1="${H - MB}" x2="${W - MR}" y2="${H - MB}" stroke="#16211F"/>`;
+  // Curva: justo después de cada dosis hay un salto (bolo).
+  const pts = [];
+  for(let t = 0; t <= T; t += 0.5){
+    if(t % TAU === 0 && t > 0) pts.push([x(t), y(concentracion(D, p, t - 0.001))]);
+    pts.push([x(t), y(concentracion(D, p, t))]);
+  }
+  s += `<polyline points="${pts.map(q => q.join(',')).join(' ')}" fill="none" stroke="#986704" stroke-width="2.2" stroke-linejoin="round"/>`;
+  return `<svg class="curva" viewBox="0 0 ${W} ${H}" role="img" aria-label="Nivel del fármaco en sangre durante una semana, con la ventana terapéutica">${s}</svg>`;
+}
+
+function conectar(){
+  const on = (id, f) => { const b = el(id); if(b) b.onclick = f; };
+  on('as-menos', () => { S.as = Math.max(0, (S.as ?? 1) - (S.as === null ? 0 : 0.5)); dibujar(); });
+  on('as-mas',   () => { S.as = Math.min(4, (S.as ?? 1) + (S.as === null ? 0 : 0.5)); dibujar(); });
+  on('as-ok', comprobarAS);
+  tablero.querySelectorAll('tr.elegible').forEach(tr => {
+    const go = () => elegirFenotipo(tr.dataset.f);
+    tr.onclick = go;
+    tr.onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } };
+  });
+  const r = el('dosis');
+  if(r) r.oninput = () => { S.dosis = +r.value; S.msg = null; dibujar(); el('dosis').focus(); };
+  on('conf', confirmar);
+  on('cambiar', cambiar);
+  on('sig', () => S.i + 1 < CASOS.length ? empezar(S.i + 1) : final());
+}
+
+function comprobarAS(){
+  const c = S.c;
+  if(S.as === null){ S.msg = { tipo:'pista', texto:'Usá los botones − y + para escribir el puntaje.' }; dibujar(); return; }
+  if(Math.abs(S.as - c.as) < 1e-9){ S.etapa = 'fen'; S.msg = { tipo:'ok', texto:`Sí: ${c.g.join(' + ')} da un puntaje de ${num(c.as)}.` }; dibujar(); return; }
+  S.errores++;
+  const dup = c.g.some(a => a.includes('×2'));
+  S.msg = { tipo:'pista', texto: 'Buscá cada alelo en la tabla y sumá sus valores.' + (dup ? ' Ojo: <b>×2</b> significa dos copias de ese alelo en el mismo cromosoma, así que su valor cuenta doble.' : '') };
+  dibujar();
+}
+function elegirFenotipo(id){
+  S.fenElegido = id;
+  if(id === S.fen.id){ S.etapa = 'dosis'; S.msg = null; dibujar(); return; }
+  S.errores++;
+  S.msg = { tipo:'pista', texto:`Fijate en qué rango de la tabla cae un puntaje de ${num(S.c.as)}.` };
+  dibujar();
+}
+function confirmar(){
+  const p = parametros(S.c, S.fen), e = estable(S.dosis, p), sirven = dosisQueFuncionan(S.c);
+  if(e.valle >= VENTANA.min && e.pico <= VENTANA.max){ cerrar(`<b>¡Bien!</b> Con ${S.dosis} mg cada 12 horas el nivel queda dentro de la ventana. ${S.c.cierre}`); return; }
+  S.errores++;
+  S.intentosDosis = (S.intentosDosis || 0) + 1;
+  let t;
+  if(e.pico > VENTANA.max && e.valle < VENTANA.min) t = 'Hay picos tóxicos y valles sin efecto a la vez: subir la dosis empeora los picos y bajarla empeora los valles.';
+  else if(e.pico > VENTANA.max) t = 'Después de cada dosis el nivel pasa el límite de toxicidad. Bajá la dosis.';
+  else t = e.pico < 0.01 ? 'El nivel de la forma activa no sube nada, ni siquiera con dosis altas. ¿Qué tiene que pasar para que este fármaco haga efecto?'
+    : 'Entre una dosis y la siguiente el nivel baja de la ventana: durante esas horas el fármaco no hace efecto. Subí la dosis.';
+  if(!sirven.length && S.intentosDosis >= 2) t += ' Si probaste dosis de punta a punta y ninguna sirve, pensá qué otra opción hay.';
+  S.msg = { tipo:'pista', texto:t };
+  dibujar();
+}
+function cambiar(){
+  if(!dosisQueFuncionan(S.c).length){ cerrar(`<b>¡Bien!</b> Ninguna dosis funciona. ${S.c.cierre}`); return; }
+  S.errores++;
+  S.msg = { tipo:'pista', texto:'Todavía no: hay al menos una dosis que deja el nivel dentro de la ventana. Buscala moviendo la barra.' };
+  dibujar();
+}
+function cerrar(texto){
+  S.etapa = 'listo'; S.fin = Date.now();
+  resultados[S.i] = { errores:S.errores, segundos:segundos() };
+  el('barra').style.width = (Object.keys(resultados).length / CASOS.length * 100) + '%';
+  S.msg = { tipo:'ok', texto };
+  if(Object.keys(resultados).length === CASOS.length) contarFin();
+  dibujar();
+}
+// Una sola vez por visita, igual que en el resto de los juegos.
+function contarFin(){
+  if(finContado) return;
+  finContado = true;
+  window.goatcounter?.count({ path:'fin/farmacogenomica', title:'Completó Farmacogenómica', event:true });
+}
+function final(){
+  S = null; clearInterval(reloj);
+  marcador.textContent = 'Resumen';
+  const filas = CASOS.map((c, i) => resultados[i] ? `<tr><td>${c.nombre}</td><td>${c.g.join(' / ')}</td><td>${fenotipoDe(c.as).nombre}</td><td>${FARMACOS[c.farmaco].nombre}</td><td>${dosisQueFuncionan(c).length ? dosisQueFuncionan(c).join(' o ') + ' mg' : 'otro fármaco'}</td>${OPC.errores ? `<td>${resultados[i].errores}</td>` : ''}</tr>` : '').join('');
   tablero.innerHTML = `
     <div class="final">
-      <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">¡Se acabó el tiempo!</h2>
-      <p>Puntaje: ${puntaje}<br>Mejor puntaje en este dispositivo: ${mejor}</p>
-      ${repaso()}
-      <div style="font-size:0.88rem;color:#5B6E6B;max-width:36em;margin:1.4rem auto;line-height:1.55;text-align:left;border-top:1px solid #E6E9E8;padding-top:1rem;">
-        <b>Para el/la docente:</b> la lógica de este juego (metaboliza rápido &rarr; hace falta más dosis)
-        vale porque el Genoprilol es un fármaco activo que la enzima <i>inactiva</i>. Con los
-        <b>profármacos</b> pasa lo contrario: la codeína, por ejemplo, necesita que la enzima CYP2D6
-        la convierta en morfina, así que un metabolizador ultrarrápido genera demasiada morfina y
-        tiene riesgo de toxicidad, mientras que un metabolizador lento casi no siente el efecto
-        analgésico. Antes de ajustar una dosis por genotipo hay que saber si la enzima
-        <i>activa</i> o <i>inactiva</i> al fármaco.
-      </div>
-      <button onclick="iniciar()">Jugar de nuevo</button>
+      <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">Atendiste a todos los pacientes</h2>
+      <div class="tabla-wrap"><table><tr><th>Paciente</th><th>Genotipo</th><th>Fenotipo</th><th>Fármaco</th><th>Indicación</th>${OPC.errores ? '<th>Errores</th>' : ''}</tr>${filas}</table></div>
+      <p style="max-width:36em;margin:0 auto;line-height:1.55;">El mismo genotipo puede pedir menos dosis con un fármaco y no servir con otro: depende de si la enzima <b>inactiva</b> el fármaco o lo <b>activa</b>.</p>
+      <div class="acciones"><button class="primario" id="ini">Volver a empezar</button></div>
     </div>`;
+  el('ini').onclick = inicio;
 }
-
-tablero.innerHTML = `
-  <div class="inicio">
-    <p>Un fármaco ficticio, cuatro perfiles de metabolización posibles. Elegí la dosis correcta antes de que se acabe el tiempo.</p>
-    <button onclick="iniciar()">Empezar (60s)</button>
-  </div>`;
-franja.innerHTML = `<span>Tiempo: <b>${TIEMPO_TOTAL}s</b></span><span>Puntaje: <b>0</b></span><span>Racha: <b>0</b></span>`;
+inicio();
 </script>
 
-<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:var(--muted);line-height:1.55;text-align:left;">
-  <summary style="cursor:pointer;font-weight:700;color:var(--ink);font-size:0.95rem;">Para el/la docente</summary>
-  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Docentes</p>
-  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Variantes en enzimas que metabolizan fármacos; fenotipos de metabolización (lento, normal, rápido, ultrarrápido); fármaco activo frente a profármaco; medicina de precisión.</p>
-  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> Si el genotipo permite anticipar qué dosis va a funcionar, ¿por qué no se estudia de rutina antes de cada tratamiento? Conviene poner sobre la mesa el costo, el tiempo de respuesta y para qué fármacos hay evidencia suficiente.</p>
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Docentes.</p>
+  <p><b>Conceptos que trabaja:</b> variantes en enzimas que metabolizan fármacos; del genotipo al fenotipo con un puntaje de actividad; fenotipos de metabolización (lento, intermedio, normal, ultrarrápido); ventana terapéutica; acumulación y estado estable; fármaco activo frente a profármaco; medicina de precisión.</p>
+  <p><b>El modelo:</b> el gen MET1 y los fármacos son ficticios, pero el esquema sigue el que usan las guías CPIC para CYP2D6: cada alelo tiene un valor de actividad (1 normal, 0,5 reducida, 0 sin función; las duplicaciones cuentan doble) y la suma define el fenotipo. El nivel en sangre se calcula con un modelo de un compartimento, dosis intravenosas cada 12 horas y una vida media normal de 12 horas. En el fármaco activo, la enzima acelera su eliminación; en el profármaco, define cuánta forma activa se produce.</p>
+  <p><b>Qué conviene mirar en el gráfico:</b> en metabolizadores lentos el nivel tarda días en estabilizarse (se necesitan unas cinco vidas medias); en ultrarrápidos los picos y valles quedan tan separados que ninguna dosis cada 12 horas los mete en la ventana.</p>
+  <p><b>Para discutir después de jugar:</b> si el genotipo permite anticipar qué dosis va a funcionar, ¿por qué no se estudia de rutina antes de cada tratamiento? Conviene poner sobre la mesa el costo, el tiempo de respuesta y para qué fármacos hay evidencia suficiente. ¿Qué otras cosas, además de los genes, cambian cómo una persona procesa un fármaco (edad, función del hígado y del riñón, otros medicamentos)?</p>
+  <div class="opciones-doc">
+    <b>Opciones para la clase</b>
+    <label><input type="checkbox" id="o-crono"> Mostrar cronómetro</label>
+    <label><input type="checkbox" id="o-errores"> Mostrar contador de errores</label>
+    <p style="margin:0.4rem 0 0;font-size:0.85rem;color:var(--muted);">Enlace con esta configuración para compartir: <code id="o-link"></code></p>
+  </div>
 </details>
+
+<script>
+// Panel de opciones del docente: actualiza la URL para que se pueda compartir.
+(function(){
+  const c = document.getElementById('o-crono'), e = document.getElementById('o-errores');
+  const link = document.getElementById('o-link');
+  c.checked = OPC.crono; e.checked = OPC.errores;
+  function aplicar(){
+    OPC.crono = c.checked; OPC.errores = e.checked;
+    const p = new URLSearchParams();
+    if(OPC.crono) p.set('crono', '1');
+    if(OPC.errores) p.set('errores', '1');
+    const q = p.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
+    link.textContent = location.href;
+    if(S) dibujar();
+  }
+  c.onchange = aplicar; e.onchange = aplicar;
+  link.textContent = location.href;
+})();
+</script>
 
 <script data-goatcounter="https://gaa.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
