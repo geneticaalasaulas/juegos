@@ -165,14 +165,14 @@ const juegos = [
     acentoTexto: "#2F8183",
     publicado: "2026-10",
     nivel: "secundaria",
-    duracion: 5,
-    temas: ["salud", "herencia"],
+    duracion: 12,
+    temas: ["evolucion", "salud"],
     autores: ["Genética a las Aulas"],
     es: {
-      nombre: "Nutrigenética: lactosa",
-      subtitulo: "Genotipo, fenotipo y dieta",
-      resumen: "A partir del genotipo para persistencia de lactasa, predecí si una persona sigue produciendo lactasa en la adultez o deja de hacerlo.",
-      aprende: ["Persistencia de lactasa", "Genotipo vs. fenotipo", "Nutrigenética"]
+      nombre: "Nutrigenética: leche, genes y cultura",
+      subtitulo: "Simulador de coevolución gen-cultura",
+      resumen: "Hacé correr miles de años en pueblos con y sin leche en la dieta y descubrí por qué la persistencia de lactasa es frecuente en unos lugares y rara en otros. Cuatro misiones: predecir, explicar el caso de Mongolia, ajustar la historia al ADN antiguo y comparar variantes de distintos continentes.",
+      aprende: ["Persistencia de lactasa", "Coevolución gen-cultura", "Selección natural en humanos", "Evolución convergente"]
     }
   },
   {

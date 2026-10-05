@@ -3,212 +3,668 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nutrigenética: lactosa · Genética a las Aulas</title>
+<title>Nutrigenética: leche, genes y cultura · Genética a las Aulas</title>
 <style>
   :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
-    /* Una sola paleta de texto: --ink y --muted sirven tanto sobre la
-       pagina como sobre el tablero, porque los dos son claros. */
-    --enfasis:#2D7B7E;        /* enfasis del texto, en el color del juego */
+    --enfasis:#2D7B7E;
     --juego:#3BA2A5;          /* cian del logo — ver capas/nutrigenetica.svg */
     --juego-texto:#2D7B7E;    /* misma familia, oscurecido hasta 4.5:1 sobre blanco */
-    --juego-tinte:#EFF9F9;    /* fondo del boton al pasar el mouse */
-    --pista:#E2E8E6;             /* pista de la barra de progreso */
-    --foco:#16211F;              /* anillo de foco: igual en todo el sitio, maxima visibilidad */
+    --juego-tinte:#EFF9F9;
+    --pista:#E2E8E6;
+    --foco:#16211F;
+    --pobA:#2D7B7E; --pobB:#A35C00;
     --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
   *{box-sizing:border-box;}
   body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
   a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
   a.volver:hover{ color:var(--juego-texto); }
-  h1{
-    font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem);
-    letter-spacing:-0.01em; line-height:1.2;
-    margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem;
-  }
-  .marcador{ color:var(--muted); font-size:0.9rem; margin-bottom:1rem; }
-  .tablero{ background:var(--card); color:var(--ink); border-radius:8px;
-    border:1px solid #E1E7E5;
-    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem; }
-  .enunciado{ font-size:0.98rem; margin:0 0 1rem; line-height:1.5; }
-  .gen{ font-size:1.4rem; font-weight:700; text-align:center; margin-bottom:1rem; }
-  .opciones{ display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; }
-  .opciones button{
-    min-height:44px; padding:0.7rem 0.5rem; border-radius:4px; border:1.5px solid var(--juego); background:#fff; color:var(--ink); font-size:0.92rem; cursor:pointer;
+  a.volver:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  h1{ font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem); letter-spacing:-0.01em; line-height:1.2;
+    margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem; }
+  .bajada{ color:var(--muted); font-size:0.95rem; margin:0 0 1.2rem; text-align:center; max-width:34em; padding:0 1rem; line-height:1.55; }
+  .tablero, .balance{ background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05);
+    padding:1.4rem 1.5rem; width:min(680px,94vw); margin-bottom:1.2rem; }
+  .estado{ font-size:0.85rem; color:var(--muted); margin:0 0 0.6rem; text-align:right; }
+  .estado:empty{ display:none; }
+
+  /* --- Panel de la misión --- */
+  .desafio{ border:2px solid var(--juego); border-radius:8px; padding:1rem 1.1rem; margin:0 0 1.2rem; background:#fff; }
+  .desafio .eti{ font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; font-weight:700; color:var(--juego-texto); }
+  .desafio h2{ font-size:1.1rem; font-weight:600; margin:0.2rem 0 0.5rem; letter-spacing:-0.01em; }
+  .desafio p{ margin:0.4rem 0 0.7rem; line-height:1.55; font-size:0.95rem; }
+  .desafio .opciones{ display:flex; flex-direction:column; gap:0.5rem; margin:0.4rem 0 0.4rem; }
+  .desafio .opciones button{ text-align:left; }
+  .desafio .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .desafio .opciones button.mal{ background:#FBE3E4; border-color:var(--mal); color:var(--ink); }
+  .desafio .opciones button.ok::before{ content:"\2713\00a0"; font-weight:700; }
+  .desafio .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
+  .desafio .opciones button.elegida{ background:var(--juego-texto); border-color:var(--juego-texto); color:#fff; font-weight:600; }
+  .res{ padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; margin:0.6rem 0 0; font-size:0.93rem; line-height:1.55; }
+  .res.cerca{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .res.lejos{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .res.info{ background:var(--juego-tinte); border-left:3px solid var(--juego); }
+  .botones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.7rem; }
+
+  button{ min-height:44px; padding:0.6rem 1rem; border-radius:6px; font-size:0.93rem; cursor:pointer; font-family:inherit;
+    border:1.5px solid var(--juego); background:#fff; color:var(--ink);
     transition:background-color .15s ease, border-color .15s ease, opacity .15s ease; }
-  .opciones button:hover{ background:var(--juego-tinte); }
-  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
-  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
-  .feedback{ min-height:2.6rem; margin-top:0.9rem; font-size:0.92rem; }
-  .siguiente{ margin-top:0.6rem; width:fit-content; margin-left:auto; background:var(--accent); color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px; font-weight:600; cursor:pointer; display:none; }
-  .final{ text-align:center; }
-  .final button{ margin-top:1rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button[aria-pressed="true"]{ background:var(--juego-texto); border-color:var(--juego-texto); color:#fff; font-weight:600; }
+  button:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button:disabled:hover{ background:#fff; }
 
-  /* --- I1 · foco visible para navegacion con teclado --- */
-  .opciones button:focus-visible, .siguiente:focus-visible,
-  a.volver:focus-visible, summary:focus-visible, #seguir:focus-visible{
-    outline:3px solid var(--foco); outline-offset:2px;
-  }
-  /* --- I2 · senal de acierto/error que no depende del color ---
-     verde y rojo son indistinguibles en la forma mas frecuente de daltonismo */
-  .opciones button.ok::before{  content:"\2713\00a0"; font-weight:700; }
-  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
-  /* --- I3 · los botones ya respondidos dejan de parecer clickeables --- */
-  .opciones button:disabled{ cursor:default; }
-  .opciones button:disabled:not(.ok):not(.mal){ opacity:0.45; border-color:#C9CFCE; }
-  /* --- I4 · en pantallas chicas, una sola columna de opciones --- */
-  @media (max-width:520px){ .opciones{ grid-template-columns:1fr; } }
+  /* --- Poblaciones --- */
+  .pobs{ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:0.9rem; }
+  .pob{ border:1px solid #E1E7E5; border-top:4px solid var(--c); border-radius:8px; padding:0.8rem 0.9rem; }
+  .pob h3{ margin:0 0 0.3rem; font-size:0.98rem; font-weight:600; }
+  .pob .lect{ font-size:0.88rem; color:var(--muted); margin:0 0 0.5rem; }
+  .pob .lect b{ font-size:1.3rem; color:var(--ink); letter-spacing:-0.01em; }
+  .pob .dieta-fija{ font-size:0.85rem; margin:0 0 0.5rem; }
+  .pob .dietas{ display:flex; flex-wrap:wrap; gap:0.4rem; margin:0 0 0.6rem; }
+  .pob .dietas button{ min-height:40px; padding:0.4rem 0.7rem; font-size:0.85rem; }
+  .gente{ display:grid; grid-template-columns:repeat(20,1fr); gap:2px; }
+  .gente svg{ display:block; width:100%; height:auto; aspect-ratio:3/4; }
+  /* Quien digiere la lactosa va lleno y en el color de su población; quien no,
+     solo con contorno: la diferencia se ve aunque no se distingan los colores. */
+  .gente .si{ color:var(--c); }
+  .gente .si use{ fill:currentColor; stroke:currentColor; }
+  .gente .no use{ fill:#fff; stroke:#9AA8A5; }
 
-  /* --- V1 · el verde del logo como color de estructura, compartido con la portada.
-     El ambar queda reservado para la accion principal y el enfasis del texto. --- */
-  /* --- V2 · barra de progreso --- */
-  .progreso{
-    width:min(560px,92vw); height:5px; margin:0 0 1.1rem;
-    background:var(--pista); border-radius:999px; overflow:hidden;
-  }
-  .progreso > i{
-    display:block; height:100%; width:0; border-radius:999px;
-    background:var(--juego-texto); transition:width .3s ease;
-  }
-  /* en los juegos contrarreloj la barra se vacia, y va en ambar (urgencia) */
-  .progreso.tiempo > i{ background:var(--enfasis); width:100%; }
+  .tiempos{ margin:1rem 0 0; font-size:0.88rem; }
+  .tiempos .grupo{ display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.35rem; }
+  .tiempos .grupo button{ min-height:40px; padding:0.4rem 0.7rem; font-size:0.85rem; }
+  .reloj{ font-size:0.95rem; margin:1.1rem 0 0.2rem; }
+  .reloj b{ font-size:1.15rem; }
+  svg.grafico{ width:100%; height:auto; display:block; margin:0.3rem 0 0.2rem; }
+  .pie{ font-size:0.8rem; color:var(--muted); margin:0.2rem 0 0; line-height:1.5; }
+  .controles{ display:flex; gap:0.6rem; flex-wrap:wrap; margin:0.9rem 0 0; }
+  @media (max-width:520px){ .controles button{ flex:1 1 40%; } .tablero, .balance{ padding:1.1rem 1rem; } }
+
+  /* --- Mapa de la región reguladora (misión 4) --- */
+  .mapa-wrap{ overflow-x:auto; margin:0.6rem 0; }
+  svg.mapa{ display:block; width:100%; height:auto; }
+
+  .balance{ font-size:0.93rem; line-height:1.6; }
+  .balance h2{ font-size:1.1rem; font-weight:600; letter-spacing:-0.01em; margin:0 0 0.7rem; }
+  .balance p{ margin:0 0 0.8rem; }
+  .balance ul{ margin:0 0 0.9rem; padding-left:1.2rem; }
+  .balance li{ margin:0 0 0.5rem; }
+  .tabla-wrap{ overflow-x:auto; }
+  table{ border-collapse:collapse; font-size:0.88rem; width:100%; margin:0.3rem 0 0.8rem; }
+  th, td{ text-align:left; padding:0.35rem 0.5rem; border-bottom:1px solid #E6E9E8; }
+  th{ color:var(--muted); font-weight:600; }
+
+  details.docente{ max-width:38em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente summary:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+  details.docente p{ margin:0.6rem 0 0; }
+  .opciones-doc{ background:#fff; border:1px solid #E1E7E5; border-radius:6px; padding:0.7rem 0.9rem; margin-top:0.8rem; color:var(--ink); }
+  .opciones-doc label{ display:flex; gap:0.5rem; align-items:center; min-height:36px; cursor:pointer; }
+  .opciones-doc input{ width:20px; height:20px; }
+  .opciones-doc code{ font-size:0.85rem; word-break:break-all; }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="persona" viewBox="0 0 12 16">
+    <circle cx="6" cy="3.6" r="2.6" stroke-width="1.1"/>
+    <path d="M1.4 15.2 V11 C1.4 8.3 3.3 7 6 7 C8.7 7 10.6 8.3 10.6 11 V15.2 Z" stroke-width="1.1" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+
 <a class="volver" href="../">&larr; Volver al catálogo</a>
-<h1>Nutrigenética: lactosa</h1>
-<p style="max-width:34em;margin:0 auto 1.2rem;font-size:0.95rem;line-height:1.55;color:var(--muted);text-align:center;padding:0 1rem;">La lactasa es la enzima que digiere la lactosa, el azúcar de la leche, y en la mayoría de las personas deja de producirse después de la niñez. Algunas variantes genéticas hacen que se siga produciendo en la adultez: a partir del genotipo, vas a predecir qué pasa.</p>
-<p class="marcador" id="marcador">Ronda 1 de 5 · Aciertos: 0</p>
-<div class="progreso" aria-hidden="true"><i id="barra"></i></div>
-<div class="tablero" id="tablero"></div>
+<h1>Nutrigenética: leche, genes y cultura</h1>
+<p class="bajada">Casi todos los mamíferos dejan de producir lactasa, la enzima que digiere el azúcar de la leche, después del destete. En algunos pueblos se volvió frecuente una variante que la mantiene toda la vida: acá vas a hacer correr miles de años para ver cómo la cultura decidió dónde.</p>
+
+<div class="tablero">
+  <p class="estado" id="estado"></p>
+  <div class="desafio" id="desafio" aria-live="polite"></div>
+  <div id="sim">
+    <div class="pobs" id="pobs"></div>
+    <div class="tiempos" id="tiempos" hidden>
+      <b>¿Cómo son los tiempos?</b>
+      <div class="grupo">
+        <button data-t="normal">Tiempos normales</button>
+        <button data-t="crisis">Hambrunas y epidemias frecuentes</button>
+      </div>
+    </div>
+    <p class="reloj">Estamos <b id="reloj">hace 10.000 años</b></p>
+    <svg class="grafico" id="grafico" viewBox="0 0 600 260" role="img" aria-label="Gráfico: porcentaje de adultos que digieren la lactosa a lo largo del tiempo"></svg>
+    <p class="pie" id="leyenda"></p>
+    <div class="controles">
+      <button class="primario" id="b-200">Avanzar 200 años</button>
+      <button id="b-1000">Avanzar 1000 años</button>
+      <button id="b-hoy">Hasta hoy</button>
+      <button id="b-reset">Volver a empezar</button>
+    </div>
+  </div>
+</div>
+
+<section class="balance">
+  <h2>Lo que hay detrás</h2>
+  <p><b>No producir lactasa de adulto no es una enfermedad.</b> Es la condición ancestral
+  de nuestra especie y la más común hoy: alrededor de 2 de cada 3 adultos del mundo no
+  la producen. La persistencia de lactasa es la novedad, y apareció hace solo unos miles de años.</p>
+  <p><b>La leche no cambia los genes de quien la toma.</b> Las variantes aparecen por
+  mutación, al azar, en cualquier población. Lo que hizo la cultura fue cambiar cuál de
+  ellas dejaba más descendencia: donde se tomaba leche fresca, la que mantenía la lactasa
+  encendida tuvo ventaja. Los genes cambiaron por la cultura, y la cultura (seguir criando
+  ganado lechero) se apoyó en esos genes. Eso se llama <b>coevolución gen-cultura</b>.</p>
+  <p><b>Y no producir lactasa tampoco quiere decir no poder comer lácteos.</b> El yogur y
+  los quesos maduros tienen poca lactosa, y muchas personas sin persistencia toleran
+  cantidades moderadas de leche. Lo que se siente depende del genotipo, pero también de
+  cuánto, qué y con qué se come.</p>
+  <p>Cómo está hoy el mundo (valores aproximados de adultos con persistencia; varían mucho entre estudios y dentro de cada región):</p>
+  <div class="tabla-wrap"><table>
+    <tr><th>Región o pueblo</th><th>Adultos con persistencia</th></tr>
+    <tr><td>Norte de Europa (Escandinavia, Islas Británicas)</td><td>alrededor de 9 de cada 10</td></tr>
+    <tr><td>Pueblos pastores de África oriental y de la península arábiga</td><td>de la mitad a la gran mayoría, según el pueblo</td></tr>
+    <tr><td>Sur de Europa</td><td>entre un cuarto y la mitad, aproximadamente</td></tr>
+    <tr><td>Asia oriental, África occidental, pueblos originarios de América</td><td>pocos: en general menos de 2 de cada 10</td></tr>
+  </table></div>
+</section>
+
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Secundaria. Unos 12 minutos para las cuatro misiones.</p>
+  <p><b>Conceptos que trabaja:</b> persistencia de lactasa; selección natural en humanos; coevolución gen-cultura; las mutaciones no son dirigidas por el ambiente; evolución convergente; regiones reguladoras; condición ancestral y derivada; ADN antiguo como evidencia.</p>
+  <p><b>Las misiones:</b> (1) predecir qué pasa en un pueblo que toma leche y en uno que no; (2) explicar por qué en Mongolia, con miles de años de lácteos, la persistencia es rara; (3) armar una historia que pase por el dato del ADN antiguo de Europa y por el valor de hoy; (4) interpretar las variantes de distintas regiones. En las misiones 2 y 3 se puede fallar y volver a probar: el juego da pistas sin dar la respuesta. Al terminar queda un modo libre con dos poblaciones.</p>
+  <p><b>El modelo:</b> un gen, con la variante de persistencia dominante. Cada generación dura 25 años. Quien digiere la lactosa deja un 2&nbsp;% más de descendencia por generación si en su pueblo se toma leche fresca; con lácteos fermentados la ventaja es la quinta parte, y sin lácteos no hay ventaja. Con hambrunas y epidemias frecuentes la ventaja se multiplica por cuatro. La variante arranca en 0,5&nbsp;% de las copias del gen (1&nbsp;% de los adultos): el modelo supone que ya apareció por mutación y no simula el azar (la deriva), así que da siempre lo mismo. Los números son ilustrativos; las estimaciones reales de la ventaja van de alrededor de 1&nbsp;% a más de 10&nbsp;% por generación.</p>
+  <p><b>Los casos son reales:</b> el ADN de los combatientes de la batalla del valle del Tollense (Alemania, hace unos 3200 años) mostró que la variante europea era todavía rara (Burger y colegas, 2020). La relación con hambrunas y epidemias es una hipótesis reciente (Evershed y colegas, 2022), no la única: también se discute el aporte de calcio, de calorías o de agua. Los pastores de Mongolia consumen muchos lácteos, sobre todo fermentados, y la persistencia es rara (Ségurel y colegas, 2020). Las variantes de África oriental fueron descriptas por Tishkoff y colegas (2007) y la europea (−13910 C&gt;T) por Enattah y colegas (2002). Algunos pueblos pastores de África occidental, como los fulani, llevan la variante europea, probablemente por un antiguo contacto con poblaciones de Eurasia.</p>
+  <p><b>Para discutir después de jugar:</b> si no producir lactasa es lo más común en el mundo, ¿por qué se la suele presentar como un problema o una "intolerancia"? ¿Qué pasa con las recomendaciones de "tomar leche" cuando la mayoría de los adultos no la digiere? Y en Uruguay, con una población de orígenes muy mezclados, ¿qué esperarían encontrar?</p>
+  <div class="opciones-doc">
+    <b>Opciones para la clase</b>
+    <label><input type="checkbox" id="o-crono"> Mostrar cronómetro</label>
+    <label><input type="checkbox" id="o-errores"> Mostrar contador de errores</label>
+    <p style="margin:0.4rem 0 0;font-size:0.85rem;color:var(--muted);">Enlace con esta configuración para compartir: <code id="o-link"></code></p>
+  </div>
+</details>
 
 <script>
-// L = alelo de persistencia de lactasa (dominante); l = alelo ancestral (recesivo).
-// Persiste la produccion de lactasa salvo en el homocigoto ll.
-function persisteLactasa(g){ return g !== "ll"; }
+const el = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const OPC = { crono: params.get('crono') === '1', errores: params.get('errores') === '1' };
 
-const PERSISTE    = "Sigue produciendo lactasa en la adultez";
-const NO_PERSISTE = "Deja de producir lactasa después de la niñez";
+// ---------- Modelo ----------
+// p = frecuencia de la variante de persistencia (dominante).
+// Quien tiene al menos una copia digiere la lactosa de adulto: 1 - q².
+// Su eficacia es 1 + s, con s = exposición a la lactosa × perjuicio de no digerirla.
+const GEN = 25;                 // años por generación
+const P0 = 0.005;               // 0,5 % de las copias → 1 % de los adultos
+const DIETA = {
+  no:     { nombre:'Sin ganado lechero',               corto:'sin lácteos',          exp:0,   trazo:'2 4' },
+  ferm:   { nombre:'Lácteos fermentados (yogur, queso)', corto:'lácteos fermentados', exp:0.2, trazo:'7 4' },
+  fresca: { nombre:'Leche fresca',                      corto:'leche fresca',         exp:1,   trazo:'' }
+};
+const DANO = { normal:0.02, crisis:0.08 };
+const fen = p => 1 - (1 - p) * (1 - p);
+function generacion(p, dieta, tiempos){
+  const s = DIETA[dieta].exp * DANO[tiempos], q = 1 - p;
+  // p' = [p²(1+s) + pq(1+s)] / w̄  =  p(1+s) / w̄
+  return p * (1 + s) / ((1 - q * q) * (1 + s) + q * q);
+}
 
-const rondas = [
-  { tipo:"directa", genotipo:"LL" },
-  { tipo:"directa", genotipo:"Ll" },
-  { tipo:"directa", genotipo:"ll" },
-  { tipo:"inversa",
-    enunciado:"Una persona adulta <b>dejó de producir lactasa</b> después de la niñez. ¿Qué genotipo tiene?",
-    opciones:["Solo ll","LL o Ll","Cualquiera de los tres"],
-    correcta:"Solo ll",
-    nota:"El alelo L es dominante: con una sola copia se mantiene la producción. Para que no persista hacen falta las dos copias del alelo ancestral, o sea ll." },
-  { tipo:"inversa",
-    enunciado:"Una persona adulta <b>sigue produciendo lactasa</b>. ¿Qué genotipos son posibles?",
-    opciones:["Solo LL","LL o Ll","Solo Ll"],
-    correcta:"LL o Ll",
-    nota:"Desde el fenotipo no se puede distinguir al homocigoto LL del heterocigoto Ll: los dos tienen al menos una copia de L, y con una alcanza." },
-  { tipo:"cruza",
-    enunciado:"Dos personas con genotipo <b>Ll</b> tienen descendencia. ¿Qué proporción va a <b>seguir produciendo lactasa</b> de adulta?",
-    opciones:["1 de cada 4","1 de cada 2","3 de cada 4","Todos"],
-    correcta:"3 de cada 4",
-    nota:"El cuadro de Punnett de Ll × Ll da LL, Ll, Ll, ll. Los tres primeros tienen al menos una L y mantienen la producción; solo el ll deja de producirla." }
+function pct(p){
+  const v = fen(p) * 100;
+  if(v > 0 && v < 1) return v.toFixed(1).replace('.', ',') + '%';
+  if(v > 99 && v < 100) return v.toFixed(1).replace('.', ',') + '%';
+  return Math.round(v) + '%';
+}
+function miles(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+function hace(a){ return a >= 0 ? 'hoy' : `hace ${miles(-a)} años`; }
+function mmss(s){ return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+
+// A cada persona del dibujo le toca un puesto fijo, sorteado una vez: cuando la
+// proporción sube, se "enciende" una más en vez de reordenarse todas.
+const PUESTO = (() => {
+  const idx = Array.from({ length:100 }, (_, i) => i);
+  let s = 20261005;
+  for(let i = idx.length - 1; i > 0; i--){
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const j = s % (i + 1); [idx[i], idx[j]] = [idx[j], idx[i]];
+  }
+  const puesto = new Array(100); idx.forEach((pos, r) => { puesto[pos] = r; });
+  return puesto;
+})();
+
+// ---------- Misiones ----------
+const MISIONES = [
+  { id:'m1', titulo:'¿La leche cambia los genes?', inicio:-10000, tiempos:false,
+    pobs:[ { nombre:'Pueblo ganadero', dieta:'fresca', opciones:null },
+           { nombre:'Pueblo sin ganado lechero', dieta:'no', opciones:null } ],
+    zonas:[] },
+  { id:'m2', titulo:'El misterio de Mongolia', inicio:-5000, tiempos:false,
+    pobs:[ { nombre:'Pastores de Mongolia', dieta:null, opciones:['fresca','ferm'] } ],
+    zonas:[ { a:0, min:0, max:0.20, et:'hoy' } ] },
+  { id:'m3', titulo:'Lo que dicen los esqueletos', inicio:-8000, tiempos:true,
+    pobs:[ { nombre:'Centro y norte de Europa', dieta:null, opciones:['ferm','fresca'] } ],
+    zonas:[ { a:-3200, min:0, max:0.20, et:'ADN antiguo' }, { a:0, min:0.80, max:1, et:'hoy' } ] },
+  { id:'m4', titulo:'Una vez o varias' }
+];
+const LIBRE = { id:'libre', titulo:'Modo libre', inicio:-10000, tiempos:true,
+  pobs:[ { nombre:'Población A', dieta:'fresca', opciones:['no','ferm','fresca'] },
+         { nombre:'Población B', dieta:'no', opciones:['no','ferm','fresca'] } ],
+  zonas:[] };
+const COLORES = ['#2D7B7E', '#A35C00'];
+
+let S = null;              // estado de la misión actual
+let errores = 0, t0 = Date.now(), tFin = null, finContado = false;
+let animando = null;
+
+function mision(){ return S.libre ? LIBRE : MISIONES[S.m]; }
+
+function arrancar(m, libre){
+  if(animando){ clearInterval(animando); animando = null; }
+  S = { m, libre:!!libre, etapa:'inicio', pred:null };
+  const M = mision();
+  el('sim').hidden = (M.id === 'm4');
+  if(M.id !== 'm4'){
+    S.a = M.inicio;
+    S.tiempos = 'normal';
+    S.pobs = M.pobs.map((d, i) => ({ ...d, color:COLORES[i], p:P0, hist:[{ a:M.inicio, p:P0, dieta:d.dieta, t:'normal' }] }));
+    S.pausas = M.zonas.filter(z => z.a < 0).map(z => z.a);
+    montarSim();
+  }
+  if(M.id === 'm1') S.etapa = 'predecir';
+  pintarDesafio();
+  actualizar();
+}
+
+function volverAEmpezar(){
+  if(S.libre){ arrancar(0, true); return; }
+  const pred = S.pred;
+  arrancar(S.m);
+  // En la misión 1 la predicción ya está hecha: no se vuelve a preguntar.
+  if(pred){ S.pred = pred; S.etapa = 'quieto'; pintarDesafio(); actualizar(); }
+}
+
+// ---------- Simulación ----------
+function montarSim(){
+  const M = mision();
+  el('pobs').innerHTML = S.pobs.map((P, i) => `
+    <div class="pob" style="--c:${P.color}">
+      <h3>${P.nombre}</h3>
+      <p class="lect"><b id="lec-${i}"></b> de los adultos digiere la lactosa</p>
+      ${P.opciones
+        ? `<div class="dietas" role="group" aria-label="Qué lácteos se consumen en ${P.nombre}">${P.opciones.map(d =>
+            `<button data-p="${i}" data-d="${d}" aria-pressed="false">${DIETA[d].nombre}</button>`).join('')}</div>`
+        : `<p class="dieta-fija">Consumo: <b>${DIETA[P.dieta].nombre.toLowerCase()}</b></p>`}
+      <div class="gente" id="gente-${i}" aria-hidden="true">${PUESTO.map(() =>
+        `<svg viewBox="0 0 12 16" class="no"><use href="#persona"/></svg>`).join('')}</div>
+    </div>`).join('');
+  el('pobs').querySelectorAll('.dietas button').forEach(b => b.onclick = () => {
+    const P = S.pobs[+b.dataset.p];
+    P.dieta = b.dataset.d;
+    if(S.a === mision().inicio) P.hist[0].dieta = P.dieta;
+    actualizar(); pintarDesafio();
+  });
+  el('tiempos').hidden = !M.tiempos;
+}
+
+el('tiempos').querySelectorAll('button').forEach(b => b.onclick = () => {
+  S.tiempos = b.dataset.t;
+  if(S.a === mision().inicio) S.pobs.forEach(P => P.hist[0].t = S.tiempos);
+  actualizar();
+});
+
+function puedeCorrer(){
+  if(!S || mision().id === 'm4' || S.a >= 0) return false;
+  if(S.etapa === 'predecir' || S.etapa === 'resultado') return false;
+  return S.pobs.every(P => P.dieta);
+}
+
+function avanzar(anios){
+  if(!puedeCorrer() || animando) return;
+  let destino = Math.min(0, S.a + anios);
+  // Se detiene en la fecha de un dato, para poder compararlo.
+  const pausa = S.pausas.find(a => a > S.a && a < destino);
+  if(pausa !== undefined) destino = pausa;
+  const total = Math.round((destino - S.a) / GEN);
+  const porCuadro = Math.max(1, Math.ceil(total / 90));
+  S.etapa = 'corriendo';
+  pintarDesafio();
+  animando = setInterval(() => {
+    for(let k = 0; k < porCuadro && S.a < destino; k++){
+      S.a += GEN;
+      S.pobs.forEach(P => { P.p = generacion(P.p, P.dieta, S.tiempos); P.hist.push({ a:S.a, p:P.p, dieta:P.dieta, t:S.tiempos }); });
+    }
+    actualizar();
+    if(S.a >= destino){
+      clearInterval(animando); animando = null;
+      S.etapa = 'quieto';
+      alDetenerse();
+    }
+  }, 25);
+}
+el('b-200').onclick = () => avanzar(200);
+el('b-1000').onclick = () => avanzar(1000);
+el('b-hoy').onclick = () => avanzar(100000);
+el('b-reset').onclick = () => volverAEmpezar();
+
+function valorEn(P, a){ const h = P.hist.find(x => x.a === a); return h ? h.p : null; }
+
+function actualizar(){
+  pintarEstado();
+  if(mision().id === 'm4') return;
+  el('reloj').textContent = hace(S.a);
+  S.pobs.forEach((P, i) => {
+    el('lec-' + i).textContent = pct(P.p);
+    const n = Math.round(fen(P.p) * 100);
+    el('gente-' + i).querySelectorAll('svg').forEach((s, j) => s.setAttribute('class', PUESTO[j] < n ? 'si' : 'no'));
+    el('pobs').querySelectorAll(`.dietas button[data-p="${i}"]`).forEach(b => b.setAttribute('aria-pressed', b.dataset.d === P.dieta));
+  });
+  el('tiempos').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === S.tiempos));
+  const ok = puedeCorrer() && !animando;
+  ['b-200', 'b-1000', 'b-hoy'].forEach(id => el(id).disabled = !ok);
+  el('b-reset').disabled = !!animando || S.etapa === 'predecir';
+  el('grafico').innerHTML = grafico();
+  el('leyenda').innerHTML = leyenda();
+}
+
+function grafico(){
+  const M = mision();
+  // En pantallas angostas se dibuja con menos ancho, para que el texto no quede diminuto.
+  const angosto = el('grafico').clientWidth > 0 && el('grafico').clientWidth < 480;
+  const W = angosto ? 380 : 600, H = angosto ? 250 : 260, ML = 58, MR = 16, MT = 22, MB = 40;
+  el('grafico').setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const x = a => ML + (a - M.inicio) / (0 - M.inicio) * (W - ML - MR);
+  const y = v => MT + (1 - v) * (H - MT - MB);
+  let s = '';
+  // Franjas de hambrunas y epidemias
+  const h0 = S.pobs[0].hist;
+  for(let i = 1; i < h0.length; i++)
+    if(h0[i].t === 'crisis') s += `<rect x="${x(h0[i-1].a)}" y="${MT}" width="${x(h0[i].a) - x(h0[i-1].a) + 0.3}" height="${H-MT-MB}" fill="#F6E7E2"/>`;
+  [0, 0.25, 0.5, 0.75, 1].forEach(v => {
+    s += `<line x1="${ML}" y1="${y(v)}" x2="${W-MR}" y2="${y(v)}" stroke="#E6E9E8"/>`
+       + `<text x="${ML-7}" y="${y(v)+3.5}" text-anchor="end" font-size="10" fill="#5B6E6B">${v*100}%</text>`;
+  });
+  const paso = (0 - M.inicio) / 1000 > (angosto ? 4 : 6) ? 2000 : 1000;
+  for(let a = M.inicio; a <= 0; a += paso)
+    s += `<text x="${x(a)}" y="${H-MB+15}" text-anchor="middle" font-size="10" fill="#5B6E6B">${a === 0 ? 'hoy' : miles(-a)}</text>`;
+  s += `<text x="${(ML+W-MR)/2}" y="${H-6}" text-anchor="middle" font-size="10.5" fill="#16211F">años atrás</text>`;
+  s += `<text x="14" y="${MT+(H-MT-MB)/2}" font-size="10.5" fill="#16211F" text-anchor="middle" transform="rotate(-90 14 ${MT+(H-MT-MB)/2})">adultos que digieren la lactosa</text>`;
+  s += `<line x1="${ML}" y1="${MT}" x2="${ML}" y2="${H-MB}" stroke="#16211F" stroke-width="1.2"/>`
+     + `<line x1="${ML}" y1="${H-MB}" x2="${W-MR}" y2="${H-MB}" stroke="#16211F" stroke-width="1.2"/>`;
+  // Zonas con datos reales
+  M.zonas.forEach(z => {
+    const xx = Math.min(x(z.a), W - MR - 7);
+    s += `<rect x="${xx-7}" y="${y(z.max)}" width="14" height="${y(z.min)-y(z.max)}" fill="#F2A406" fill-opacity="0.35" stroke="#B87A00" stroke-width="1.2" rx="2"/>`
+       + `<text x="${z.a === 0 ? xx : xx + 2}" y="${Math.max(y(z.max)-5, 10)}" text-anchor="end" font-size="10" font-weight="700" fill="#16211F">${z.et}</text>`;
+  });
+  // Curvas: el trazo cambia según lo que se consumía en cada tramo
+  S.pobs.forEach(P => {
+    // Cada tramo entre dos generaciones lleva la dieta de la generación que llega.
+    const pt = h => `${x(h.a).toFixed(1)},${y(fen(h.p)).toFixed(1)}`;
+    let i = 1;
+    while(i < P.hist.length){
+      const dieta = P.hist[i].dieta, puntos = [pt(P.hist[i-1])];
+      while(i < P.hist.length && P.hist[i].dieta === dieta){ puntos.push(pt(P.hist[i])); i++; }
+      s += `<polyline points="${puntos.join(' ')}" fill="none" stroke="${P.color}" stroke-width="2.6" stroke-linejoin="round" ${DIETA[dieta].trazo ? `stroke-dasharray="${DIETA[dieta].trazo}"` : ''}/>`;
+    }
+    const u = P.hist[P.hist.length-1];
+    s += `<circle cx="${x(u.a)}" cy="${y(fen(u.p))}" r="4" fill="${P.color}" stroke="#fff" stroke-width="1.5"/>`;
+  });
+  return s;
+}
+
+function leyenda(){
+  const M = mision();
+  let t = 'Línea llena: leche fresca · rayas largas: lácteos fermentados · puntos: sin lácteos.';
+  if(M.tiempos) t += ' El fondo rosado marca los períodos con hambrunas y epidemias.';
+  if(M.zonas.length) t += ' Las barras ámbar marcan lo que se midió en la población real.';
+  return t;
+}
+
+// ---------- Panel de la misión ----------
+function pintarEstado(){
+  const partes = [];
+  if(OPC.crono) partes.push(`Tiempo: <b id="st-t">${mmss(Math.round(((tFin || Date.now()) - t0) / 1000))}</b>`);
+  if(OPC.errores) partes.push(`Errores: <b>${errores}</b>`);
+  el('estado').innerHTML = partes.join(' &nbsp; ');
+}
+setInterval(() => { if(OPC.crono && !tFin && el('st-t')) el('st-t').textContent = mmss(Math.round((Date.now() - t0) / 1000)); }, 1000);
+
+function cabecera(){
+  const M = mision();
+  return S.libre ? `<div class="eti">Modo libre</div>`
+                 : `<div class="eti">Misión ${S.m + 1} de ${MISIONES.length}</div><h2>${M.titulo}</h2>`;
+}
+
+const PRED_M1 = [
+  { id:'cambian', txt:'Los adultos que toman leche empiezan a producir lactasa, de tanto tomarla' },
+  { id:'sube',    txt:'La variante que mantiene la lactasa se vuelve más frecuente, generación tras generación' },
+  { id:'igual',   txt:'Nada cambia: los genes no tienen que ver con lo que se come' }
 ];
 
-let ronda = 0, aciertos = 0;
-const tablero = document.getElementById('tablero');
-const marcador = document.getElementById('marcador');
+function pintarDesafio(){
+  const M = mision(), caja = el('desafio');
+  let h = cabecera();
 
-// Actualiza el marcador y la barra de progreso. `hechas` = rondas ya respondidas.
-function marcar(hechas){
-  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
-  const b = document.getElementById('barra');
-  if(b) b.style.width = (hechas / rondas.length * 100) + '%';
+  if(S.libre){
+    h += `<p>Dos poblaciones que arrancan igual, con 1 de cada 100 adultos con la variante. Elegí qué se consume en cada una, cambiá los tiempos cuando quieras y hacé correr la historia. Probá, por ejemplo, empezar con lácteos fermentados y pasar a leche fresca, o cortar la leche a mitad de camino.</p>
+      <div class="botones"><button id="d-misiones">Volver a las misiones</button></div>`;
+    caja.innerHTML = h;
+    el('d-misiones').onclick = () => arrancar(0);
+    return;
+  }
+
+  if(M.id === 'm1'){
+    h += `<p>Hace 10.000 años, dos pueblos vecinos. Uno empieza a criar vacas y cabras y a tomar su leche; el otro cultiva la tierra y no tiene ganado lechero. En los dos, <b>1 de cada 100 adultos</b> tiene una variante genética que mantiene encendido el gen de la lactasa toda la vida. Los demás, como casi todos los mamíferos, dejan de producirla después de la infancia.</p>`;
+    if(S.etapa === 'predecir'){
+      h += `<p><b>Antes de hacer correr el tiempo:</b> ¿qué esperás que pase en el pueblo ganadero a lo largo de los siglos?</p>
+        <div class="opciones">${PRED_M1.map(o => `<button data-o="${o.id}">${o.txt}</button>`).join('')}</div>`;
+    } else {
+      h += `<p class="res info">Tu predicción: <b>${PRED_M1.find(o => o.id === S.pred).txt.toLowerCase()}</b>.</p>`;
+      if(S.etapa !== 'resultado') h += `<p>Ahora hacé correr el tiempo hasta hoy con los botones de abajo y mirá las dos poblaciones.</p>`;
+      else h += resultadoM1();
+    }
+  }
+
+  if(M.id === 'm2'){
+    h += `<p>En las estepas de Mongolia se crían vacas, yeguas, cabras, ovejas y camellos, y se consumen lácteos en cantidad desde hace unos 5000 años. Sin embargo, hoy son <b>pocos los adultos con persistencia de lactasa: alrededor de 1 de cada 10</b>. ¿Cómo puede ser?</p>
+      <p>Elegí qué tipo de lácteos se consume en la población (podés cambiarlo en el camino) y hacé correr el tiempo hasta hoy. La historia tiene que terminar dentro de la barra ámbar.</p>`;
+    if(S.resultado) h += S.resultado;
+    else if(!S.pobs[0].dieta) h += `<p class="res info">Primero elegí qué se consume.</p>`;
+  }
+
+  if(M.id === 'm3'){
+    h += `<p>En el norte y el centro de Europa hoy cerca de <b>9 de cada 10 adultos</b> digieren la lactosa, y se crían animales para leche desde hace unos 8000 años. Pero el ADN de esqueletos de hace unos 3200 años muestra que en ese momento la variante <b>todavía era rara</b>: cerca de 1 de cada 10 adultos.</p>
+      <p>Armá una historia que pase por los dos datos (las dos barras ámbar). Podés elegir qué se consume y cómo son los tiempos, y cambiarlos en el camino.</p>`;
+    if(S.resultado) h += S.resultado;
+    else if(S.nota) h += S.nota;
+    else if(!S.pobs[0].dieta) h += `<p class="res info">Primero elegí qué se consume.</p>`;
+  }
+
+  if(M.id === 'm4'){
+    h += m4HTML();
+  }
+
+  caja.innerHTML = h;
+  caja.querySelectorAll('[data-o]').forEach(b => b.onclick = () => elegirM1(b.dataset.o));
+  caja.querySelectorAll('[data-r]').forEach(b => b.onclick = () => responderM4(b.dataset.r));
+  const sig = el('d-sig'); if(sig) sig.onclick = () => arrancar(S.m + 1);
+  const otra = el('d-otra'); if(otra) otra.onclick = () => volverAEmpezar();
+  const lib = el('d-libre'); if(lib) lib.onclick = () => { arrancar(0, true); el('desafio').scrollIntoView({ block:'start' }); };
 }
 
-const NOTA_PIE = `
-    <p style="font-size:0.88rem;color:#5B6E6B;line-height:1.55;margin-top:1.6rem;border-top:1px solid #E6E9E8;padding-top:1rem;">
-      <b>Ojo:</b> dejar de producir lactasa no es una enfermedad. Es la condición
-      ancestral y la más frecuente en el mundo — la persistencia de lactasa es la
-      variante más nueva. Y producir menos lactasa no significa tener síntomas con
-      todos los lácteos: muchas personas sin persistencia digieren bien el yogur o
-      los quesos maduros.
-    </p>`;
+function elegirM1(o){
+  S.pred = o;
+  S.etapa = 'quieto';
+  pintarDesafio(); actualizar();
+}
 
-function dibujar(){
-  const r = rondas[ronda];
-  marcar(ronda);
+function resultadoM1(){
+  const [A, B] = S.pobs;
+  let t = '';
+  if(S.pred === 'sube') t += `<p class="res cerca"><b>Bien predicho.</b> `;
+  else if(S.pred === 'cambian') t += `<p class="res lejos"><b>No fue eso.</b> En la simulación nadie cambió: quien nació sin la variante siguió sin producir lactasa de adulto, tomara la leche que tomara. `;
+  else t += `<p class="res lejos"><b>Casi.</b> Es cierto que tomar leche no cambia los genes de nadie. Pero la dieta sí cambia <i>cuáles</i> variantes dejan más descendencia. `;
+  t += `En el pueblo ganadero la variante pasó de 1 de cada 100 adultos al <b>${pct(A.p)}</b>. Quien digiere la leche de adulto aprovecha un alimento más (calorías, proteínas, agua) y en promedio deja un poco más de descendencia: en el modelo, un 2&nbsp;% más por generación. Parece poco, pero en 400 generaciones se acumula.</p>
+    <p>En el pueblo sin ganado lechero quedó en <b>${pct(B.p)}</b>: ahí la variante no da ninguna ventaja. Y nadie tiene un problema: sin leche en la dieta, no producir lactasa no le cambia nada a nadie.</p>
+    <div class="botones"><button class="primario" id="d-sig">Siguiente misión &rarr;</button></div>`;
+  return t;
+}
 
-  let correcta, cuerpo, opciones;
+// Se llama cada vez que la animación se detiene.
+function alDetenerse(){
+  const M = mision();
+  if(S.libre){ actualizar(); return; }
+  if(M.id === 'm1' && S.a === 0){
+    if(S.pred !== 'sube') errores++;
+    S.etapa = 'resultado';
+  }
+  if(M.id === 'm2' && S.a === 0) evaluarM2();
+  if(M.id === 'm3'){
+    if(S.a === -3200){
+      const v = fen(S.pobs[0].p);
+      S.nota = v <= 0.20
+        ? `<p class="res cerca">Llegaste a la fecha de los esqueletos con <b>${pct(S.pobs[0].p)}</b>: coincide con el dato. Ahora te quedan 3200 años para llegar a cerca de 9 de cada 10.</p>`
+        : `<p class="res lejos">Llegaste a la fecha de los esqueletos con <b>${pct(S.pobs[0].p)}</b>, y el ADN antiguo dice que la variante todavía era rara. Podés seguir para ver el final, o volver a empezar y probar otra historia para los primeros milenios.</p>`;
+    }
+    if(S.a === 0) evaluarM3();
+  }
+  pintarDesafio(); actualizar();
+}
 
-  if(r.tipo === "directa"){
-    correcta = persisteLactasa(r.genotipo) ? PERSISTE : NO_PERSISTE;
-    opciones = [PERSISTE, NO_PERSISTE];
-    cuerpo = `
-      <p class="enunciado">El alelo <b>L</b> (persistencia de lactasa) es dominante sobre <b>l</b> (no persistencia). Una persona con genotipo:</p>
-      <p class="gen">${r.genotipo}</p>
-      <p class="enunciado">¿Qué esperás que pase con su producción de lactasa en la adultez?</p>`;
+function evaluarM2(){
+  const P = S.pobs[0], v = fen(P.p);
+  const usoFresca = P.hist.some((h, i) => i > 0 && h.dieta === 'fresca');
+  S.etapa = 'resultado';
+  if(v <= 0.20){
+    S.resultado = `<p class="res cerca"><b>Eso es.</b> La población llegó a hoy con ${pct(P.p)}. En el yogur, el queso y el airag (leche de yegua fermentada, muy consumida en Mongolia) las bacterias se comen buena parte de la lactosa antes que nosotros. Si casi todo lo que se consume está fermentado, no producir lactasa casi no molesta y la variante tiene poca ventaja. Es una solución <b>cultural</b> al mismo problema: en vez de cambiar las personas, se cambia la leche.</p>
+      <div class="botones"><button class="primario" id="d-sig">Siguiente misión &rarr;</button></div>`;
   } else {
-    correcta = r.correcta;
-    opciones = r.opciones;
-    cuerpo = `
-      <p class="enunciado">El alelo <b>L</b> (persistencia de lactasa) es dominante sobre <b>l</b> (no persistencia).</p>
-      <p class="enunciado">${r.enunciado}</p>`;
+    errores++;
+    S.resultado = `<p class="res lejos">La población llegó a hoy con <b>${pct(P.p)}</b>: muchos más que en la Mongolia real. ${usoFresca
+      ? 'Con leche fresca, en 5000 años la variante tiene tiempo de sobra para volverse frecuente. Algo tuvo que hacer que diera poca ventaja aunque se consumieran muchos lácteos. Pista: ¿en qué se diferencian el yogur y el queso de la leche recién ordeñada?'
+      : 'Algo tuvo que hacer que la variante diera menos ventaja.'}</p>
+      <div class="botones"><button class="primario" id="d-otra">Probar otra historia</button></div>`;
   }
+}
 
-  tablero.innerHTML = cuerpo + `
-    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
-    <p class="feedback" id="feedback"></p>
-    <button class="siguiente" id="siguiente">Siguiente &rarr;</button>` + NOTA_PIE;
+function evaluarM3(){
+  const P = S.pobs[0];
+  const antes = fen(valorEn(P, -3200)), hoy = fen(P.p);
+  const okAntes = antes <= 0.20, okHoy = hoy >= 0.80;
+  S.etapa = 'resultado'; S.nota = null;
+  if(okAntes && okHoy){
+    S.resultado = `<p class="res cerca"><b>Lo lograste:</b> casi nada de cambio durante cinco milenios (${pct(valorEn(P, -3200))} hace 3200 años) y después una subida enorme, hasta el ${pct(P.p)} de hoy. Para eso, en los últimos milenios no digerir la leche tuvo que ser muy perjudicial. Una hipótesis actual es justamente esa: en una persona desnutrida o con una infección, la diarrea que provoca la lactosa puede ser mortal. Hay otras explicaciones en discusión, pero algo es seguro: la persistencia de lactasa es uno de los casos de <b>selección natural más fuertes</b> que se conocen en humanos, y muy reciente.</p>
+      <div class="botones"><button class="primario" id="d-sig">Siguiente misión &rarr;</button></div>`;
+    return;
+  }
+  errores++;
+  let t = '<p class="res lejos">';
+  if(!okAntes) t += `Hace 3200 años tu población ya tenía <b>${pct(valorEn(P, -3200))}</b>, y los esqueletos dicen que la variante era rara. En los primeros milenios la ventaja tuvo que ser chica. Pista: en vasijas de los primeros agricultores de Europa se encontraron restos de <b>queso</b>. `;
+  if(!okHoy) t += `Hoy tu población tiene <b>${pct(P.p)}</b>, lejos de los 9 de cada 10 del norte de Europa. Para subir tanto en solo 3200 años, tomar leche sin digerirla tuvo que ser mucho más grave que una molestia. ¿En qué situaciones una diarrea se vuelve peligrosa? Mirá las opciones de «¿Cómo son los tiempos?».`;
+  t += `</p><div class="botones"><button class="primario" id="d-otra">Probar otra historia</button></div>`;
+  S.resultado = t;
+}
 
-  tablero.querySelectorAll('.opciones button').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const acierto = btn.dataset.o === correcta;
-      tablero.querySelectorAll('.opciones button').forEach(b=>{
-        b.disabled = true;
-        if(b.dataset.o === correcta) b.classList.add('ok');
-        else if(b === btn) b.classList.add('mal');
-      });
-      let nota;
-      if(r.tipo === "directa"){
-        nota = r.genotipo === "Ll"
-          ? "Con un solo alelo L alcanza: es dominante, así que basta una copia para seguir produciendo lactasa de adulto."
-          : (r.genotipo === "ll"
-              ? "Sin ningún alelo L, la producción de lactasa disminuye después de la niñez. Cuánta lactosa tolere cada persona depende además de la cantidad y del tipo de lácteo."
-              : "Con dos copias de L, la producción de lactasa se mantiene alta toda la vida.");
-      } else {
-        nota = r.nota;
-      }
-      document.getElementById('feedback').textContent = (acierto ? "¡Correcto! " : "No. ") + nota;
-      if(acierto) aciertos++;
-      marcar(ronda+1);
-      const sig = document.getElementById('siguiente');
-      sig.style.display = 'block';
-      sig.onclick = () => { ronda++; ronda < rondas.length ? dibujar() : final(); };
-    });
+// ---------- Misión 4: convergencia ----------
+const VARIANTES = [
+  { pos:-14010, cambio:'G→C', donde:'Pastores de Kenia y Tanzania' },
+  { pos:-13915, cambio:'T→G', donde:'Península arábiga' },
+  { pos:-13910, cambio:'C→T', donde:'Norte de Europa' },
+  { pos:-13907, cambio:'C→G', donde:'Sudán y Etiopía' }
+];
+const RESP_M4 = [
+  { id:'migr', txt:'Una sola variante apareció en Europa y llegó a África y a Arabia con las migraciones',
+    mal:'Si fuera así, en todos esos lugares estaría el mismo cambio en la misma posición. Mirá el mapa: los cambios están en posiciones distintas.' },
+  { id:'conv', txt:'Aparecieron variantes distintas, por separado, y en cada lugar la selección las hizo frecuentes' },
+  { id:'leche', txt:'Tomar leche durante muchas generaciones produjo esas mutaciones',
+    mal:'Las mutaciones aparecen al azar, se tome leche o no. Acordate de la misión 1: la variante estaba también en el pueblo sin ganado. La leche no la creó; cambió cuánta descendencia dejaba.' }
+];
+
+// El mapa no está a escala: tres de las cuatro variantes están a menos de 10
+// bases entre sí, y a escala se encimarían.
+function mapaSVG(){
+  const W = 560, x0 = 60, x1 = 330, xs = VARIANTES.map((_, i) => x0 + 30 + i * (x1 - x0 - 60) / (VARIANTES.length - 1));
+  let s = `<svg class="mapa" viewBox="0 0 ${W} 100" role="img" aria-label="Esquema de la región que regula el gen de la lactasa, con cuatro variantes numeradas en posiciones distintas">`;
+  s += `<line x1="10" y1="50" x2="${W-10}" y2="50" stroke="#16211F" stroke-width="2"/>`;
+  s += `<rect x="${x0}" y="40" width="${x1-x0}" height="20" rx="3" fill="#EFF9F9" stroke="#3BA2A5" stroke-width="1.5"/>`;
+  s += `<text x="${(x0+x1)/2}" y="80" text-anchor="middle" font-size="11" fill="#16211F">región que regula la lactasa</text>`;
+  s += `<text x="${(x0+x1)/2}" y="94" text-anchor="middle" font-size="10" fill="#5B6E6B">(dentro del gen vecino, MCM6)</text>`;
+  s += `<text x="${(x1 + W - 120)/2}" y="44" text-anchor="middle" font-size="10" fill="#5B6E6B">unas 13.900 bases</text>`;
+  s += `<path d="M${W-120} 42 L${W-36} 42 L${W-36} 34 L${W-16} 50 L${W-36} 66 L${W-36} 58 L${W-120} 58 Z" fill="#2D7B7E"/>`;
+  s += `<text x="${W-74}" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">LCT</text>`;
+  s += `<text x="${W-70}" y="80" text-anchor="middle" font-size="10.5" fill="#16211F">gen de la lactasa</text>`;
+  VARIANTES.forEach((v, i) => {
+    s += `<line x1="${xs[i]}" y1="40" x2="${xs[i]}" y2="22" stroke="#A35C00" stroke-width="1.5"/>`
+       + `<circle cx="${xs[i]}" cy="14" r="10" fill="#A35C00"/>`
+       + `<text x="${xs[i]}" y="18" text-anchor="middle" font-size="11.5" font-weight="700" fill="#fff">${i + 1}</text>`
+       + `<circle cx="${xs[i]}" cy="50" r="3.5" fill="#A35C00"/>`;
   });
+  s += '</svg>';
+  s += `<div class="tabla-wrap"><table><tr><th></th><th>Dónde es frecuente</th><th>Posición</th><th>Cambio</th></tr>${VARIANTES.map((v, i) =>
+    `<tr><td><b>${i + 1}</b></td><td>${v.donde}</td><td>${miles(v.pos).replace('-', '−')}</td><td>${v.cambio}</td></tr>`).join('')}</table></div>`;
+  s += `<p class="pie">Esquema sin escala. La posición cuenta las bases antes del comienzo del gen de la lactasa.</p>`;
+  return s;
 }
 
-// Una sola vez por visita, igual que en el resto de los juegos.
-let finContado = false;
-function final(){
-  if(!finContado){
-    finContado = true;
-    window.goatcounter?.count({ path: 'fin/nutrigenetica',
-      title: 'Completó Nutrigenética: lactosa', event: true });
+function m4HTML(){
+  let h = `<p>La persistencia de lactasa no es solo europea: también es frecuente en pueblos pastores de África oriental y de la península arábiga, que crían vacas o camellos. Cuando se leyó el ADN de esas personas, en la región que regula el gen de la lactasa apareció esto:</p>
+    <div class="mapa-wrap">${mapaSVG()}</div>
+    <p><b>¿Cómo se explica que haya persistencia de lactasa en esos lugares?</b></p>`;
+  h += `<div class="opciones">${RESP_M4.map(r => {
+    const cls = S.m4 && S.m4.mal.includes(r.id) ? 'mal' : (S.m4 && S.m4.ok && r.id === 'conv' ? 'ok' : '');
+    const dis = (S.m4 && (S.m4.ok || S.m4.mal.includes(r.id))) ? 'disabled' : '';
+    return `<button data-r="${r.id}" class="${cls}" ${dis}>${r.txt}</button>`;
+  }).join('')}</div>`;
+  if(S.m4 && S.m4.ultimo && !S.m4.ok) h += `<p class="res lejos">${RESP_M4.find(r => r.id === S.m4.ultimo).mal} Probá de nuevo.</p>`;
+  if(S.m4 && S.m4.ok){
+    h += `<p class="res cerca"><b>Exacto: es evolución convergente.</b> El mismo resultado, la lactasa encendida en la adultez, alcanzado varias veces por caminos distintos. Y no por casualidad todos los cambios caen en la misma zona: es la que regula cuánto se expresa el gen. Ninguno cambia la enzima; cambian <i>cuándo</i> se produce. Donde la cultura puso leche fresca en la dieta, la selección hizo frecuente la variante que hubiera a mano.</p>
+      <p class="res info"><b>Terminaste las cuatro misiones</b>${OPC.errores ? ` con ${errores} ${errores === 1 ? 'error' : 'errores'}` : ''}${OPC.crono ? ` en ${mmss(Math.round((tFin - t0) / 1000))}` : ''}. Viste que la cultura cambia los genes de una población (sin cambiar los de nadie en particular), que también puede esquivar la selección (fermentando la leche) y que la misma solución evolutiva apareció más de una vez.</p>
+      <div class="botones"><button class="primario" id="d-libre">Seguir en el modo libre</button><button onclick="location.reload()">Jugar de nuevo</button></div>`;
   }
-  tablero.innerHTML = `
-    <div class="final">
-      <h2 style="font-weight:300;letter-spacing:-0.01em;">Terminaste el juego</h2>
-      <p>Acertaste ${aciertos} de ${rondas.length} rondas.</p>
-      <button onclick="location.reload()">Jugar de nuevo</button>
-    </div>`;
+  return h;
 }
 
-dibujar();
+function responderM4(id){
+  if(!S.m4) S.m4 = { mal:[], ok:false, ultimo:null };
+  if(id === 'conv'){
+    S.m4.ok = true;
+    if(!tFin) tFin = Date.now();
+    if(!finContado){
+      finContado = true;
+      window.goatcounter?.count({ path:'fin/nutrigenetica', title:'Completó Nutrigenética: leche, genes y cultura', event:true });
+    }
+  } else {
+    errores++;
+    if(!S.m4.mal.includes(id)) S.m4.mal.push(id);
+    S.m4.ultimo = id;
+  }
+  pintarDesafio(); pintarEstado();
+}
+
+arrancar(0);
+window.addEventListener('resize', () => { if(S && mision().id !== 'm4') el('grafico').innerHTML = grafico(); });
 </script>
 
-<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:var(--muted);line-height:1.55;text-align:left;">
-  <summary style="cursor:pointer;font-weight:700;color:var(--ink);font-size:0.95rem;">Para el/la docente</summary>
-  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Secundaria</p>
-  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Persistencia de lactasa; dominancia; la diferencia entre genotipo, fenotipo y síntomas; variante ancestral y variante derivada.</p>
-  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> La no persistencia de lactasa es la condición ancestral y la más frecuente en el mundo. ¿Por qué se la suele describir como un problema o una falla? Da para conversar sobre qué poblaciones se estudian más y cómo eso moldea lo que llamamos "normal".</p>
-</details>
+<script>
+// Panel de opciones del docente: actualiza la URL para que se pueda compartir.
+(function(){
+  const c = document.getElementById('o-crono'), e = document.getElementById('o-errores');
+  const link = document.getElementById('o-link');
+  c.checked = OPC.crono; e.checked = OPC.errores;
+  function aplicar(){
+    OPC.crono = c.checked; OPC.errores = e.checked;
+    const p = new URLSearchParams();
+    if(OPC.crono) p.set('crono', '1');
+    if(OPC.errores) p.set('errores', '1');
+    const q = p.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
+    link.textContent = location.href;
+    pintarEstado();
+  }
+  c.onchange = aplicar; e.onchange = aplicar;
+  link.textContent = location.href;
+})();
+</script>
 
 <script data-goatcounter="https://gaa.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
