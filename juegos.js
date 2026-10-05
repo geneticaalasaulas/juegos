@@ -247,8 +247,8 @@ const juegos = [
     es: {
       nombre: "Epigenética con interruptores",
       subtitulo: "El ambiente prende y apaga genes",
-      resumen: "A partir de casos reales (ratones agutí, gemelos, abejas reina), identificá el concepto epigenético que ilustran.",
-      aprende: ["Metilación del ADN", "Epigenética y ambiente", "Diferencias entre genotipo idéntico y fenotipo distinto"]
+      resumen: "Metilá las citosinas del promotor de un gen y abrí o cerrá la cromatina para reproducir casos reales: ratones agutí, gemelos, abejas reina, piel y neurona, hambruna. La secuencia del ADN nunca cambia.",
+      aprende: ["Metilación del ADN en sitios CG", "Cromatina abierta y cerrada", "Epigenética y ambiente", "Mismo genotipo, distinto fenotipo"]
     }
   }
 ];
