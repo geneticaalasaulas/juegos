@@ -6,175 +6,292 @@
 <title>Detective de enfermedades genéticas · Genética a las Aulas</title>
 <style>
   :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
-    /* Una sola paleta de texto: --ink y --muted sirven tanto sobre la
-       pagina como sobre el tablero, porque los dos son claros. */
-    --enfasis:#BC0440;        /* enfasis del texto, en el color del juego */
+    --enfasis:#BC0440;
     --juego:#BC0440;          /* magenta del logo — ver capas/detective-clinico.svg */
-    --juego-texto:#BC0440;    /* misma familia, oscurecido hasta 4.5:1 sobre blanco */
-    --juego-tinte:#F8E3EA;    /* fondo del boton al pasar el mouse */
-    --pista:#E2E8E6;             /* pista de la barra de progreso */
-    --foco:#16211F;              /* anillo de foco: igual en todo el sitio, maxima visibilidad */
+    --juego-texto:#BC0440;
+    --juego-tinte:#F8E3EA;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
     --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
   *{box-sizing:border-box;}
   body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
   a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
   a.volver:hover{ color:var(--juego-texto); }
-  h1{
-    font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem);
-    letter-spacing:-0.01em; line-height:1.2;
-    margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem;
-  }
-  .marcador{ color:var(--muted); font-size:0.9rem; margin-bottom:1rem; }
-  .tablero{ background:var(--card); color:var(--ink); border-radius:8px;
-    border:1px solid #E1E7E5;
-    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem; }
-  .caso{ background:#F7F3E7; border-radius:4px; padding:1rem 1.1rem; font-size:0.94rem; margin-bottom:1rem; line-height:1.5; }
-  .caso b{ color:var(--enfasis); }
-  .opciones{ display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; }
-  .opciones button{
-    min-height:44px; padding:0.7rem 0.5rem; border-radius:4px; border:1.5px solid var(--juego); background:#fff; color:var(--ink); font-size:0.92rem; cursor:pointer;
-    transition:background-color .15s ease, border-color .15s ease, opacity .15s ease; }
-  .opciones button:hover{ background:var(--juego-tinte); }
-  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
-  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
-  .feedback{ min-height:2.6rem; margin-top:0.9rem; font-size:0.92rem; }
-  .siguiente{ margin-top:0.6rem; width:fit-content; margin-left:auto; background:var(--accent); color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px; font-weight:600; cursor:pointer; display:none; }
+  h1{ font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem); letter-spacing:-0.01em; line-height:1.2; margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem; }
+  .bajada{ max-width:34em; margin:0 auto 1rem; font-size:0.95rem; line-height:1.55; color:var(--muted); text-align:center; padding:0 1rem; }
+  .marcador{ color:var(--muted); font-size:0.95rem; margin:0 0 1rem; text-align:center; }
+  .progreso{ width:min(760px,94vw); height:5px; margin:0 0 1.1rem; background:var(--pista); border-radius:999px; overflow:hidden; }
+  .progreso > i{ display:block; height:100%; width:0; border-radius:999px; background:var(--juego-texto); transition:width .3s ease; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.5rem; width:min(760px,94vw); margin-bottom:1.2rem; }
+
+  button{ min-height:44px; padding:0.55rem 0.9rem; border-radius:6px; font-size:0.93rem; cursor:pointer; font-family:inherit;
+    border:1.5px solid var(--juego); background:#fff; color:var(--ink); transition:background-color .15s ease; }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+
+  .caso{ background:#F7F3E7; border-radius:6px; padding:0.9rem 1.1rem; line-height:1.55; margin:0 0 1rem; }
+  .caso .paciente{ font-size:1.08rem; font-weight:600; }
+  .caso dl{ margin:0.6rem 0 0; }
+  .caso dt{ font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; font-weight:700; color:var(--juego-texto); margin-top:0.55rem; }
+  .caso dd{ margin:0.1rem 0 0; }
+  .caso .estudio-alt{ font-weight:600; }
+  h2.etapa{ font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); font-weight:700; margin:1.2rem 0 0.5rem; }
+  .fila-btn{ display:flex; gap:0.5rem; flex-wrap:wrap; }
+  .estado{ font-size:0.92rem; color:var(--muted); margin:0 0 0.6rem; }
+  .estado b{ color:var(--ink); }
+  .dx{ display:grid; gap:0.5rem; }
+  .dx-fila{ border:1px solid #E1E7E5; border-radius:6px; padding:0.55rem 0.7rem; display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap; }
+  .dx-fila .nom{ flex:1 1 220px; font-weight:600; }
+  .dx-fila.descartada .nom{ text-decoration:line-through; color:var(--muted); font-weight:400; }
+  .dx-fila .razon{ flex-basis:100%; font-size:0.85rem; color:var(--muted); }
+  .dx-fila button{ min-height:38px; padding:0.35rem 0.75rem; font-size:0.88rem; }
+  .fb{ font-size:0.97rem; line-height:1.5; margin:0.9rem 0 0; padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; }
+  .fb:empty{ display:none; }
+  .fb.pista{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .fb.ok{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .fb.info{ background:var(--juego-tinte); border-left:3px solid var(--juego); }
+  .acciones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.9rem; }
+  .nota{ font-size:0.85rem; color:var(--muted); line-height:1.5; margin-top:1rem; }
   .final{ text-align:center; }
-  .final button{ margin-top:1rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
+  .final table{ border-collapse:collapse; margin:1rem auto; font-size:0.92rem; }
+  .final td, .final th{ padding:0.35rem 0.8rem; border-bottom:1px solid #E6E9E8; text-align:left; }
 
-  /* --- I1 · foco visible para navegacion con teclado --- */
-  .opciones button:focus-visible, .siguiente:focus-visible,
-  a.volver:focus-visible, summary:focus-visible, #seguir:focus-visible{
-    outline:3px solid var(--foco); outline-offset:2px;
-  }
-  /* --- I2 · senal de acierto/error que no depende del color ---
-     verde y rojo son indistinguibles en la forma mas frecuente de daltonismo */
-  .opciones button.ok::before{  content:"\2713\00a0"; font-weight:700; }
-  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
-  /* --- I3 · los botones ya respondidos dejan de parecer clickeables --- */
-  .opciones button:disabled{ cursor:default; }
-  .opciones button:disabled:not(.ok):not(.mal){ opacity:0.45; border-color:#C9CFCE; }
-  /* --- I4 · en pantallas chicas, una sola columna de opciones --- */
-  @media (max-width:520px){ .opciones{ grid-template-columns:1fr; } }
-
-  /* --- V1 · el verde del logo como color de estructura, compartido con la portada.
-     El ambar queda reservado para la accion principal y el enfasis del texto. --- */
-  /* --- V2 · barra de progreso --- */
-  .progreso{
-    width:min(560px,92vw); height:5px; margin:0 0 1.1rem;
-    background:var(--pista); border-radius:999px; overflow:hidden;
-  }
-  .progreso > i{
-    display:block; height:100%; width:0; border-radius:999px;
-    background:var(--juego-texto); transition:width .3s ease;
-  }
-  /* en los juegos contrarreloj la barra se vacia, y va en ambar (urgencia) */
-  .progreso.tiempo > i{ background:var(--enfasis); width:100%; }
+  details.docente{ max-width:38em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  .opciones-doc{ background:#fff; border:1px solid #E1E7E5; border-radius:6px; padding:0.7rem 0.9rem; margin-top:0.8rem; color:var(--ink); }
+  .opciones-doc label{ display:flex; gap:0.5rem; align-items:center; min-height:36px; cursor:pointer; }
+  .opciones-doc input{ width:20px; height:20px; }
+  .opciones-doc code{ font-size:0.85rem; word-break:break-all; }
+  @media (prefers-reduced-motion:reduce){ .progreso > i{ transition:none; } }
 </style>
 </head>
 <body>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
 <h1>Detective de enfermedades genéticas</h1>
-<p style="max-width:34em;margin:0 auto 1.2rem;font-size:0.95rem;line-height:1.55;color:var(--muted);text-align:center;padding:0 1rem;">Muchas enfermedades genéticas se sospechan a partir de los síntomas y de cómo aparecen en la familia. En cada caso vas a leer un relato clínico breve y proponer el diagnóstico más probable.</p>
-<p class="marcador" id="marcador">Caso 1 de 5 · Aciertos: 0</p>
+<p class="bajada">Muchas enfermedades genéticas se sospechan a partir de los síntomas y de cómo aparecen en la familia. En cada caso vas a pedir información, descartar diagnósticos y llegar al más probable.</p>
+<p class="marcador" id="marcador"></p>
 <div class="progreso" aria-hidden="true"><i id="barra"></i></div>
 <div class="tablero" id="tablero"></div>
 
 <script>
-const casos = [
-  { relato:"Varón de 8 años con infecciones respiratorias recurrentes desde bebé, mal aumento de peso a pesar de comer bien, y sudor con sabor muy salado (lo notó la madre al besarlo). Ambos padres son sanos.",
-    correcta:"Fibrosis quística",
-    pista:"Herencia autosómica recesiva — ambos padres sanos son portadores. El sudor salado y los problemas respiratorios/digestivos son el cuadro clásico." },
-  { relato:"Varón de 5 años con moretones frecuentes y sangrados prolongados incluso por golpes leves. El análisis muestra tiempo de coagulación aumentado. La madre no tiene síntomas, pero un tío materno sí los tuvo.",
-    correcta:"Hemofilia",
-    pista:"Herencia ligada al cromosoma X recesiva: se expresa sobre todo en varones y pasa por la línea materna. Las mujeres portadoras suelen no tener síntomas, aunque algunas presentan sangrados leves." },
-  { relato:"Mujer de 40 años empieza con movimientos involuntarios (corea), cambios de personalidad y dificultad para concentrarse. Su padre desarrolló síntomas similares a los 45 años y falleció por la enfermedad.",
-    correcta:"Enfermedad de Huntington",
-    pista:"Herencia autosómica dominante, de aparición en la adultez — alcanza con heredar una copia del alelo mutado de un progenitor afectado." },
-  { relato:"Varón de 4 años con debilidad muscular progresiva, dificultad para subir escaleras y para levantarse del piso (usa las manos para 'trepar' por sus propias piernas). Los niveles de una enzima muscular en sangre están muy elevados.",
-    correcta:"Distrofia muscular de Duchenne",
-    pista:"Herencia ligada al X recesiva, casi exclusiva de varones, con debilidad muscular progresiva desde la primera infancia (maniobra de Gowers)." },
-  { relato:"Recién nacido con orina y pañales con olor dulce/a jarabe de arce, dificultad para alimentarse y letargo en los primeros días de vida. Ambos padres son portadores sanos de una mutación en el mismo gen.",
-    correcta:"Enfermedad de la orina con olor a jarabe de arce",
-    pista:"Herencia autosómica recesiva: un error congénito del metabolismo de los aminoácidos, llamado también leucinosis. En Uruguay no forma parte del panel obligatorio de pesquisa neonatal — las aminoacidopatías se pesquisan por ahora en un plan piloto —, así que el diagnóstico depende de la sospecha clínica en los primeros días de vida." }
+// ---------------------------------------------------------------------------
+// Enfermedades y sus rasgos principales (simplificados para el juego).
+// ---------------------------------------------------------------------------
+const HERENCIA = { AD:'autosómica dominante', AR:'autosómica recesiva', XR:'recesiva ligada al X' };
+const INICIO = { neonatal:'los primeros días de vida', infancia:'la infancia', adultez:'la adultez' };
+const ENF = {
+  fq:  { nombre:'Fibrosis quística', her:'AR', inicio:'infancia', signos:'infecciones respiratorias repetidas, problemas digestivos y sudor muy salado', estudio:'sudor' },
+  hem: { nombre:'Hemofilia A', her:'XR', inicio:'infancia', signos:'sangrados prolongados y moretones con golpes leves', estudio:'coag' },
+  hun: { nombre:'Enfermedad de Huntington', her:'AD', inicio:'adultez', signos:'movimientos involuntarios y cambios cognitivos y del ánimo', estudio:'htt' },
+  dmd: { nombre:'Distrofia muscular de Duchenne', her:'XR', inicio:'infancia', signos:'debilidad muscular que avanza', estudio:'ck' },
+  msud:{ nombre:'Enfermedad de la orina con olor a jarabe de arce', her:'AR', inicio:'neonatal', signos:'rechazo del alimento, somnolencia y orina con olor dulce en recién nacidos', estudio:'aa' }
+};
+const ESTUDIOS = {
+  sudor:{ nombre:'Test del sudor', alterado:'Cloro en el sudor muy elevado.', normal:'Cloro en el sudor normal.' },
+  coag: { nombre:'Estudio de la coagulación', alterado:'Tiempo de coagulación prolongado y factor VIII muy bajo.', normal:'Coagulación normal.' },
+  ck:   { nombre:'Creatina quinasa (CK) en sangre', alterado:'CK muy elevada: es una enzima que sale del músculo cuando se daña.', normal:'CK normal.' },
+  aa:   { nombre:'Aminoácidos en sangre', alterado:'Leucina, isoleucina y valina muy elevadas.', normal:'Aminoácidos normales.' },
+  htt:  { nombre:'Estudio molecular del gen HTT', alterado:'Expansión de repeticiones CAG en el gen HTT.', normal:'Cantidad de repeticiones CAG en el rango habitual.' }
+};
+
+// Casos. "compatibles": modos de herencia que encajan con los antecedentes
+// familiares (suponiendo penetrancia completa y enfermedad poco frecuente).
+const CASOS = [
+  { dx:'fq', sexo:'M', paciente:'Varón de 8 años',
+    familia:'Los padres y una hermana mayor están sanos. No hay otros casos conocidos en la familia.', compatibles:['AR','XR'],
+    inicio:'infancia', inicioTxt:'Los problemas empezaron en los primeros meses de vida.',
+    signosTxt:'Infecciones respiratorias que se repiten, poco aumento de peso aunque come bien, y la madre nota que el sudor es muy salado.' },
+  { dx:'hem', sexo:'M', paciente:'Varón de 5 años',
+    familia:'La madre no tiene síntomas, pero un tío materno (hermano de la madre) tuvo el mismo problema.', compatibles:['XR'],
+    inicio:'infancia', inicioTxt:'Desde que empezó a gatear.',
+    signosTxt:'Moretones grandes y sangrados que duran mucho, incluso con golpes leves.' },
+  { dx:'hun', sexo:'F', paciente:'Mujer de 40 años',
+    familia:'Su padre tuvo síntomas parecidos a partir de los 45 años, y su abuela paterna también.', compatibles:['AD'],
+    inicio:'adultez', inicioTxt:'Los síntomas empezaron hace alrededor de un año.',
+    signosTxt:'Movimientos involuntarios, cambios de ánimo y dificultad para concentrarse.' },
+  { dx:'dmd', sexo:'M', paciente:'Varón de 4 años',
+    familia:'Los padres están sanos y no hay otros casos conocidos.', compatibles:['AR','XR'],
+    inicio:'infancia', inicioTxt:'Caminó más tarde que otros chicos y cada vez le cuesta más.',
+    signosTxt:'Debilidad muscular que avanza; para levantarse del piso se ayuda con las manos, "trepando" por sus piernas. Las pantorrillas se ven grandes.' },
+  { dx:'msud', sexo:'F', paciente:'Recién nacida de 5 días',
+    familia:'Los padres están sanos. Un hermano mayor murió a los pocos días de nacer, sin diagnóstico.', compatibles:['AR','XR'],
+    inicio:'neonatal', inicioTxt:'Los síntomas empezaron al tercer día de vida.',
+    signosTxt:'Rechaza el alimento, está muy somnolienta y la orina tiene un olor dulce, como a jarabe de arce.' }
 ];
 
-let caso = 0, aciertos = 0;
+const params = new URLSearchParams(location.search);
+const OPC = { crono: params.get('crono') === '1', errores: params.get('errores') === '1' };
 const tablero = document.getElementById('tablero');
 const marcador = document.getElementById('marcador');
+let S = null, reloj = null, finContado = false;
+const resultados = {};
+function el(id){ return document.getElementById(id); }
+function mmss(s){ return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+function segundos(){ return S ? Math.round(((S.fin || Date.now()) - S.inicio) / 1000) : 0; }
 
-// Actualiza el marcador y la barra de progreso. `hechas` = rondas ya respondidas.
-function marcar(hechas){
-  marcador.textContent = `Caso ${caso+1} de ${casos.length} · Aciertos: ${aciertos}`;
-  const b = document.getElementById('barra');
-  if(b) b.style.width = (hechas / casos.length * 100) + '%';
+function empezar(i){
+  S = { i, c:CASOS[i], pedidos:{}, estudios:[], descartadas:{}, errores:0, msg:null, hecho:false, inicio:Date.now(), fin:null };
+  marcador.textContent = `Caso ${i + 1} de ${CASOS.length}`;
+  el('barra').style.width = (i / CASOS.length * 100) + '%';
+  clearInterval(reloj);
+  reloj = setInterval(() => { if(S && !S.fin && OPC.crono && el('st-t')) el('st-t').textContent = mmss(segundos()); }, 1000);
+  dibujar();
+  window.scrollTo({ top:0 });
+}
+const nPedidos = () => Object.keys(S.pedidos).length + S.estudios.length;
+
+// ¿Qué dato revelado contradice esta enfermedad? Devuelve el motivo o null.
+function motivoDescarte(id){
+  const c = S.c, d = ENF[id];
+  if(d.her === 'XR' && c.sexo === 'F')
+    return 'Es una mujer: las enfermedades recesivas ligadas al X afectan casi siempre a varones, que tienen un solo X.';
+  if(S.pedidos.familia && !c.compatibles.includes(d.her)){
+    if(d.her === 'AD') return 'Con herencia dominante, alguno de los progenitores estaría afectado, y no hay antecedentes así.';
+    if(c.compatibles.includes('AD')) return 'La enfermedad pasa de una generación a la siguiente, de padre a hija: ese es el patrón de la herencia dominante, no el de la ' + HERENCIA[d.her] + '.';
+    return 'El patrón familiar (varones afectados, emparentados a través de mujeres sanas) apunta a herencia ligada al X, no ' + HERENCIA[d.her] + '.';
+  }
+  if(S.pedidos.inicio && d.inicio !== c.inicio)
+    return `La edad de inicio no coincide: “${d.nombre}” empieza en ${INICIO[d.inicio]}.`;
+  if(S.pedidos.signos && id !== c.dx)
+    return `Los síntomas no coinciden: “${d.nombre}” se caracteriza por ${d.signos}.`;
+  if(S.estudios.includes(d.estudio) && id !== c.dx)
+    return `${ESTUDIOS[d.estudio].nombre}: dio normal.`;
+  return null;
 }
 
-const todasOpciones = [
-  "Fibrosis quística","Hemofilia","Enfermedad de Huntington",
-  "Distrofia muscular de Duchenne","Enfermedad de la orina con olor a jarabe de arce"
-];
-
 function dibujar(){
-  const c = casos[caso];
-  marcar(caso);
+  const c = S.c;
+  const filas = [];
+  if(S.pedidos.familia) filas.push(['Antecedentes familiares', c.familia]);
+  if(S.pedidos.inicio)  filas.push(['Edad de inicio', c.inicioTxt]);
+  if(S.pedidos.signos)  filas.push(['Signos y síntomas', c.signosTxt]);
+  S.estudios.forEach(e => filas.push([ESTUDIOS[e].nombre, e === ENF[c.dx].estudio ? `<span class="estudio-alt">${ESTUDIOS[e].alterado}</span>` : ESTUDIOS[e].normal]));
+  const btnInfo = (k, t) => `<button data-p="${k}" ${S.pedidos[k] || S.hecho ? 'disabled' : ''}>${t}</button>`;
+  let html = `
+    <div class="caso"><span class="paciente">${c.paciente}.</span> Llega a la consulta de genética.
+      ${filas.length ? `<dl>${filas.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl>` : ''}</div>
+    <p class="estado">Información pedida: <b>${nPedidos()}</b>
+      ${OPC.crono ? ` · Tiempo: <b id="st-t">${mmss(segundos())}</b>` : ''}${OPC.errores ? ` · Errores: <b>${S.errores}</b>` : ''}</p>
+    <h2 class="etapa">Pedir información</h2>
+    <div class="fila-btn">${btnInfo('familia', 'Antecedentes familiares')}${btnInfo('inicio', 'Edad de inicio')}${btnInfo('signos', 'Signos y síntomas')}</div>
+    <h2 class="etapa">Pedir un estudio</h2>
+    <div class="fila-btn">${Object.entries(ESTUDIOS).map(([k, e]) => `<button data-e="${k}" ${S.estudios.includes(k) || S.hecho ? 'disabled' : ''}>${e.nombre}</button>`).join('')}</div>
+    <h2 class="etapa">Diagnósticos posibles</h2>
+    <div class="dx">${Object.entries(ENF).map(([k, d]) => `
+      <div class="dx-fila ${S.descartadas[k] ? 'descartada' : ''}">
+        <span class="nom">${d.nombre}</span>
+        ${S.descartadas[k] || S.hecho ? '' : `<button data-d="${k}">Descartar</button><button data-x="${k}">Diagnosticar</button>`}
+        ${S.descartadas[k] ? `<span class="razon">${S.descartadas[k]}</span>` : ''}
+      </div>`).join('')}</div>
+    <p class="fb ${S.msg ? S.msg.tipo : ''}" aria-live="polite">${S.msg ? S.msg.texto : ''}</p>`;
+  if(S.hecho) html += `<div class="acciones"><button class="primario" id="sig">${S.i + 1 < CASOS.length ? 'Siguiente caso' : 'Ver el resumen'} &rarr;</button></div>`;
+  html += `<p class="nota">Pedí solo lo que te sirva: en la clínica, cada estudio lleva tiempo, cuesta y a veces es molesto para la persona.</p>`;
+  tablero.innerHTML = html;
+  tablero.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { S.pedidos[b.dataset.p] = true; S.msg = null; dibujar(); });
+  tablero.querySelectorAll('[data-e]').forEach(b => b.onclick = () => { S.estudios.push(b.dataset.e); S.msg = null; dibujar(); });
+  tablero.querySelectorAll('[data-d]').forEach(b => b.onclick = () => descartar(b.dataset.d));
+  tablero.querySelectorAll('[data-x]').forEach(b => b.onclick = () => diagnosticar(b.dataset.x));
+  const s = el('sig'); if(s) s.onclick = () => S.i + 1 < CASOS.length ? empezar(S.i + 1) : final();
+}
 
-  const opciones = [c.correcta, ...todasOpciones.filter(o=>o!==c.correcta).sort(()=>Math.random()-0.5).slice(0,3)]
-    .sort(()=>Math.random()-0.5);
-
-  tablero.innerHTML = `
-    <div class="caso">${c.relato}</div>
-    <p style="font-size:0.94rem;margin-bottom:0.8rem;">¿Cuál es el diagnóstico más probable?</p>
-    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
-    <p class="feedback" id="feedback"></p>
-    <button class="siguiente" id="siguiente">Siguiente caso &rarr;</button>
-  `;
-
-  tablero.querySelectorAll('.opciones button').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const acierto = btn.dataset.o === c.correcta;
-      tablero.querySelectorAll('.opciones button').forEach(b=>{
-        b.disabled = true;
-        if(b.dataset.o === c.correcta) b.classList.add('ok');
-        else if(b === btn) b.classList.add('mal');
-      });
-      document.getElementById('feedback').textContent = (acierto ? "¡Correcto! " : `Era ${c.correcta}. `) + c.pista;
-      if(acierto) aciertos++;
-      marcar(caso+1);
-      const sig = document.getElementById('siguiente');
-      sig.style.display = 'block';
-      sig.onclick = () => { caso++; caso < casos.length ? dibujar() : final(); };
-    });
-  });
+function descartar(id){
+  // Intentar descartar el diagnóstico correcto da la misma respuesta que
+  // cualquier descarte sin fundamento: así no se regala la respuesta.
+  const m = id === S.c.dx ? null : motivoDescarte(id);
+  if(m){ S.descartadas[id] = m; S.msg = null; }
+  else {
+    S.errores++;
+    const falta = !S.pedidos.familia || !S.pedidos.inicio || !S.pedidos.signos || S.estudios.length < Object.keys(ESTUDIOS).length;
+    S.msg = { tipo:'pista', texto:`Nada de lo que sabés hasta ahora contradice “${ENF[id].nombre}”.${falta ? ' Pedí más información.' : ''}` };
+  }
+  dibujar();
+}
+function diagnosticar(id){
+  const c = S.c, d = ENF[id];
+  const quedan = Object.keys(ENF).filter(k => !S.descartadas[k]);
+  const confirmado = S.estudios.includes(d.estudio) && id === c.dx;
+  if(id !== c.dx){
+    S.errores++;
+    const m = motivoDescarte(id);
+    S.msg = { tipo:'pista', texto: m ? `No puede ser: ${m}` : `Todavía no hay nada que lo confirme, y otras enfermedades siguen siendo posibles. Pedí más información.` };
+  } else if(!confirmado && quedan.length > 1){
+    S.errores++;
+    S.msg = { tipo:'pista', texto:'Puede ser, pero todavía no lo podés asegurar: o descartás las otras opciones, o pedís un estudio que lo confirme.' };
+  } else {
+    S.hecho = true; S.fin = Date.now();
+    resultados[S.i] = { pedidos:nPedidos(), errores:S.errores, segundos:segundos() };
+    const pocos = nPedidos() <= 3;
+    S.msg = { tipo:'ok', texto:`<b>Diagnóstico más probable: ${d.nombre}.</b> Herencia ${HERENCIA[d.her]}. ${confirmado ? `El estudio que pediste lo confirma (${ESTUDIOS[d.estudio].alterado.replace(/\.$/, '').toLowerCase()})` : 'Descartaste todas las otras opciones'} con ${nPedidos()} pedidos de información${pocos ? ': muy eficiente' : ''}.` +
+      (id === 'hun' ? ' En la vida real, el estudio del gen HTT se hace siempre con asesoramiento genético, porque el resultado tiene consecuencias para toda la familia.' : '') };
+    if(Object.keys(resultados).length === CASOS.length) contarFin();
+  }
+  dibujar();
 }
 
 // Una sola vez por visita, igual que en el resto de los juegos.
-let finContado = false;
+function contarFin(){
+  if(finContado) return;
+  finContado = true;
+  window.goatcounter?.count({ path:'fin/detective-clinico', title:'Completó Detective de enfermedades genéticas', event:true });
+}
 function final(){
-  if(!finContado){
-    finContado = true;
-    window.goatcounter?.count({ path: 'fin/detective-clinico',
-      title: 'Completó Detective de enfermedades genéticas', event: true });
-  }
+  S = null; clearInterval(reloj);
+  marcador.textContent = 'Resumen';
+  el('barra').style.width = '100%';
+  const filas = CASOS.map((c, i) => resultados[i] ? `<tr><td>${c.paciente}</td><td>${ENF[c.dx].nombre}</td><td>${resultados[i].pedidos}</td>${OPC.crono ? `<td>${mmss(resultados[i].segundos)}</td>` : ''}${OPC.errores ? `<td>${resultados[i].errores}</td>` : ''}</tr>` : '').join('');
   tablero.innerHTML = `
     <div class="final">
-      <h2 style="font-weight:300;letter-spacing:-0.01em;">Terminaste el juego</h2>
-      <p>Identificaste correctamente ${aciertos} de ${casos.length} casos.</p>
-      <p style="font-size:0.9rem;color:#5B6E6B;max-width:34em;margin:1.2rem auto;line-height:1.5;">En la vida real, esto es solo el primer paso: una <b>sospecha clínica</b>. Confirmar un diagnóstico genético requiere estudios específicos, y siempre va acompañado de asesoramiento genético a la persona y su familia.</p>
-      <button onclick="location.reload()">Jugar de nuevo</button>
+      <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">Terminaste el juego</h2>
+      <table><tr><th>Paciente</th><th>Diagnóstico</th><th>Información pedida</th>${OPC.crono ? '<th>Tiempo</th>' : ''}${OPC.errores ? '<th>Errores</th>' : ''}</tr>${filas}</table>
+      <p style="font-size:0.95rem;color:var(--muted);max-width:34em;margin:1.2rem auto;line-height:1.5;">En la vida real, esto es solo el primer paso: una <b>sospecha clínica</b>. Confirmar un diagnóstico genético requiere estudios específicos, y siempre va acompañado de asesoramiento genético a la persona y su familia.</p>
+      <div class="acciones" style="justify-content:center;"><button class="primario" id="otra">Jugar de nuevo</button></div>
     </div>`;
+  el('otra').onclick = () => empezar(0);
 }
-
-dibujar();
+empezar(0);
 </script>
 
-<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:var(--muted);line-height:1.55;text-align:left;">
-  <summary style="cursor:pointer;font-weight:700;color:var(--ink);font-size:0.95rem;">Para el/la docente</summary>
-  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Docentes</p>
-  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Patrones de herencia aplicados a la clínica; relación entre fenotipo y genotipo; pesquisa neonatal; diferencia entre sospecha clínica y diagnóstico confirmado.</p>
-  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> En los cinco casos la historia familiar orienta el patrón de herencia. ¿Qué pasa cuando no hay antecedentes familiares? Puede tratarse de una mutación nueva, de una familia chica, o de una enfermedad recesiva donde nadie más resultó afectado.</p>
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Docentes.</p>
+  <p><b>Conceptos que trabaja:</b> patrones de herencia en la clínica; enfermedades genéticas frecuentes; razonamiento diagnóstico por descarte; elección de estudios.</p>
+  <p><b>Cómo funciona:</b> cada caso arranca solo con la edad y el sexo. Se pide información (antecedentes familiares, edad de inicio, síntomas o un estudio) y se descartan diagnósticos. Un descarte solo vale si algún dato ya revelado lo contradice; si no, el juego pide más información. Se diagnostica cuando quedó una sola opción o cuando un estudio la confirma. El contador de información pedida invita a ser eficiente.</p>
+  <p><b>Simplificaciones:</b> las enfermedades recesivas ligadas al X se tratan como exclusivas de varones (las portadoras pueden tener síntomas leves); los patrones familiares suponen penetrancia completa y enfermedad poco frecuente. En Uruguay, la enfermedad de la orina con olor a jarabe de arce (leucinosis) no forma parte del panel obligatorio de pesquisa neonatal: las aminoacidopatías se pesquisan por ahora en un plan piloto, así que el diagnóstico depende de la sospecha clínica en los primeros días de vida.</p>
+  <p><b>Para discutir después de jugar:</b> ¿qué dato descartó más opciones de una sola vez? ¿Cuándo conviene pedir un estudio específico y cuándo conviene primero reunir antecedentes? En el caso de Huntington, ¿qué implica para la familia un estudio genético predictivo?</p>
+  <div class="opciones-doc">
+    <b>Opciones para la clase</b>
+    <label><input type="checkbox" id="o-crono"> Mostrar cronómetro</label>
+    <label><input type="checkbox" id="o-errores"> Mostrar contador de errores</label>
+    <p style="margin:0.4rem 0 0;font-size:0.85rem;color:var(--muted);">Enlace con esta configuración para compartir: <code id="o-link"></code></p>
+  </div>
 </details>
+
+<script>
+// Panel de opciones del docente: actualiza la URL para que se pueda compartir.
+(function(){
+  const c = document.getElementById('o-crono'), e = document.getElementById('o-errores');
+  const link = document.getElementById('o-link');
+  c.checked = OPC.crono; e.checked = OPC.errores;
+  function aplicar(){
+    OPC.crono = c.checked; OPC.errores = e.checked;
+    const p = new URLSearchParams();
+    if(OPC.crono) p.set('crono', '1');
+    if(OPC.errores) p.set('errores', '1');
+    const q = p.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
+    link.textContent = location.href;
+    if(S) dibujar();
+  }
+  c.onchange = aplicar; e.onchange = aplicar;
+  link.textContent = location.href;
+})();
+</script>
 
 <script data-goatcounter="https://gaa.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>

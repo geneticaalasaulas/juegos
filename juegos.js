@@ -227,9 +227,9 @@ const juegos = [
     autores: ["Genética a las Aulas"],
     es: {
       nombre: "Detective de enfermedades genéticas",
-      subtitulo: "Diagnosticá a partir del caso clínico",
-      resumen: "A partir de un relato clínico breve y el patrón de herencia familiar, diagnosticá la enfermedad genética más probable.",
-      aprende: ["Patrones de herencia en clínica", "Enfermedades genéticas comunes", "Razonamiento diagnóstico"]
+      subtitulo: "Pedí información y descartá",
+      resumen: "Cada caso empieza solo con la edad y el sexo. Pedí antecedentes familiares, síntomas o estudios, descartá los diagnósticos que no encajan y llegá al más probable con la menor información posible.",
+      aprende: ["Patrones de herencia en clínica", "Enfermedades genéticas comunes", "Razonamiento diagnóstico por descarte", "Elección de estudios"]
     }
   },
   {
