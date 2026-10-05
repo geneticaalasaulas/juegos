@@ -3,17 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Árbol filogenético · Genética a las Aulas</title>
+<title>Árbol filogenético: armalo vos · Genética a las Aulas</title>
 <style>
   :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
-    /* Una sola paleta de texto: --ink y --muted sirven tanto sobre la
-       pagina como sobre el tablero, porque los dos son claros. */
-    --enfasis:#01806F;        /* enfasis del texto, en el color del juego */
+    --enfasis:#01806F;
     --juego:#02A690;          /* turquesa del logo — ver capas/filogenia.svg */
     --juego-texto:#01806F;    /* misma familia, oscurecido hasta 4.5:1 sobre blanco */
-    --juego-tinte:#E3F7F5;    /* fondo del boton al pasar el mouse */
-    --pista:#E2E8E6;             /* pista de la barra de progreso */
-    --foco:#16211F;              /* anillo de foco: igual en todo el sitio, maxima visibilidad */
+    --juego-tinte:#E3F7F5;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
     --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
   *{box-sizing:border-box;}
@@ -25,208 +23,543 @@
     letter-spacing:-0.01em; line-height:1.2;
     margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem;
   }
-  .marcador{ color:var(--muted); font-size:0.9rem; margin-bottom:1rem; }
-  .tablero{ background:var(--card); color:var(--ink); border-radius:8px;
-    border:1px solid #E1E7E5;
-    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem; }
-  .enunciado{ font-size:0.98rem; margin:0 0 1rem; line-height:1.5; }
-  table.similitud{ width:100%; border-collapse:collapse; margin-bottom:1rem; font-size:0.88rem; }
-  table.similitud th, table.similitud td{ border:1px solid #ddd; padding:0.4rem 0.5rem; text-align:center; }
-  table.similitud th{ background:#F7F3E7; }
-  .opciones{ display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; }
-  .opciones button{
-    min-height:44px; padding:0.7rem 0.5rem; border-radius:4px; border:1.5px solid var(--juego); background:#fff; color:var(--ink); font-size:0.9rem; cursor:pointer;
-    transition:background-color .15s ease, border-color .15s ease, opacity .15s ease; }
-  .opciones button:hover{ background:var(--juego-tinte); }
-  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
-  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
-  .feedback{ min-height:2.6rem; margin-top:0.9rem; font-size:0.92rem; }
-  .siguiente{ margin-top:0.6rem; width:fit-content; margin-left:auto; background:var(--accent); color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px; font-weight:600; cursor:pointer; display:none; }
-  .final{ text-align:center; }
-  .final button{ margin-top:1rem; background:var(--accent); color:#2C1D02; border:none; padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer; }
+  .marcador{ color:var(--muted); font-size:0.95rem; margin:0 0 1rem; text-align:center; padding:0 1rem; }
+  .progreso{ width:min(760px,94vw); height:5px; margin:0 0 1.1rem; background:var(--pista); border-radius:999px; overflow:hidden; }
+  .progreso > i{ display:block; height:100%; width:0; border-radius:999px; background:var(--juego-texto); transition:width .3s ease; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05);
+    padding:1.5rem; width:min(760px,94vw); margin-bottom:1.2rem; }
+  .enunciado{ font-size:1rem; margin:0 0 1rem; line-height:1.55; }
+  .estado{ display:flex; gap:1.4rem; flex-wrap:wrap; font-size:0.95rem; margin:0 0 0.8rem; color:var(--muted); }
+  .estado b{ color:var(--ink); font-variant-numeric:tabular-nums; }
 
-  /* --- I1 · foco visible para navegacion con teclado --- */
-  .opciones button:focus-visible, .siguiente:focus-visible,
-  a.volver:focus-visible, summary:focus-visible, #seguir:focus-visible{
+  button{
+    min-height:44px; padding:0.6rem 1rem; border-radius:6px; font-size:0.95rem;
+    cursor:pointer; font-family:inherit; border:1.5px solid var(--juego);
+    background:#fff; color:var(--ink);
+    transition:background-color .15s ease, border-color .15s ease, opacity .15s ease;
+  }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button[aria-pressed="true"]{ background:var(--juego-texto); border-color:var(--juego-texto); color:#fff; font-weight:600; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible, svg [tabindex]:focus-visible{
     outline:3px solid var(--foco); outline-offset:2px;
   }
-  /* --- I2 · senal de acierto/error que no depende del color ---
-     verde y rojo son indistinguibles en la forma mas frecuente de daltonismo */
-  .opciones button.ok::before{  content:"\2713\00a0"; font-weight:700; }
-  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
-  /* --- I3 · los botones ya respondidos dejan de parecer clickeables --- */
-  .opciones button:disabled{ cursor:default; }
-  .opciones button:disabled:not(.ok):not(.mal){ opacity:0.45; border-color:#C9CFCE; }
-  /* --- I4 · en pantallas chicas, una sola columna de opciones --- */
-  @media (max-width:520px){ .opciones{ grid-template-columns:1fr; } }
 
-  /* --- V1 · el verde del logo como color de estructura, compartido con la portada.
-     El ambar queda reservado para la accion principal y el enfasis del texto. --- */
-  /* --- V2 · barra de progreso --- */
-  .progreso{
-    width:min(560px,92vw); height:5px; margin:0 0 1.1rem;
-    background:var(--pista); border-radius:999px; overflow:hidden;
-  }
-  .progreso > i{
-    display:block; height:100%; width:0; border-radius:999px;
-    background:var(--juego-texto); transition:width .3s ease;
-  }
-  /* en los juegos contrarreloj la barra se vacia, y va en ambar (urgencia) */
-  .progreso.tiempo > i{ background:var(--enfasis); width:100%; }
+  h2.etapa{ font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); font-weight:700; margin:1.2rem 0 0.5rem; }
+  .tabla-wrap{ overflow-x:auto; }
+  table.similitud{ border-collapse:collapse; font-size:0.92rem; min-width:100%; }
+  table.similitud th, table.similitud td{ border:1px solid #ddd; padding:0.45rem 0.5rem; text-align:center; }
+  table.similitud th{ background:#F7F3E7; font-weight:600; }
+  table.similitud td{ font-variant-numeric:tabular-nums; }
+  table.similitud .sel{ background:var(--juego-tinte); }
+  table.similitud td.cruce{ background:#FFE7B0; font-weight:700; }
+  .nota-tabla{ font-size:0.82rem; color:var(--muted); margin:0.4rem 0 0; line-height:1.5; }
+
+  .arbol-wrap{ background:#FAFCFB; border:1px solid #E1E7E5; border-radius:8px; padding:0.4rem; }
+  svg.arbol{ width:100%; height:auto; display:block; max-width:560px; margin:0 auto; }
+  svg.arbol .rama{ stroke:var(--ink); stroke-width:2; fill:none; }
+  svg.arbol .rama.res{ stroke:var(--juego-texto); stroke-width:3.5; }
+  svg.arbol .nodo{ fill:var(--ink); }
+  svg.arbol .nodo.res{ fill:var(--juego-texto); }
+  svg.arbol .nodo.ok{ fill:var(--ok); }
+  svg.arbol text{ font-size:13px; fill:var(--ink); font-family:var(--fuente); }
+  svg.arbol text.res{ font-weight:700; fill:var(--juego-texto); }
+  svg.arbol .hit{ fill:transparent; cursor:pointer; }
+  svg.arbol.clic-nodo .hit-nodo:hover + .nodo, svg.arbol.clic-nodo .hit-nodo:focus + .nodo{ fill:var(--accent); }
+  svg.arbol .hit-nodo{ cursor:pointer; }
+
+  .grupos{ display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.9rem 0 0.6rem; }
+  .acciones{ display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; }
+  .fb{ min-height:1.6rem; margin:0.8rem 0 0; font-size:0.97rem; line-height:1.5; }
+  .fb.pista{ background:#FFF4DC; border-left:3px solid var(--accent); padding:0.6rem 0.8rem; }
+  .fb.pista::before{ content:"Pista: "; font-weight:700; }
+  .fb.ok{ color:var(--ok); font-weight:600; }
+  .fb.ok::before{ content:"\2713\00a0"; }
+  .pregunta{ background:var(--juego-tinte); border-left:4px solid var(--juego); padding:0.8rem 1rem; border-radius:0 6px 6px 0; font-size:1.02rem; line-height:1.5; margin:0.9rem 0 0; }
+  .comparar{ display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-top:0.8rem; }
+  @media (max-width:560px){ .comparar{ grid-template-columns:1fr; } }
+  .comparar button{ padding:0.5rem; background:#FAFCFB; }
+  .comparar button.mal{ border-color:var(--mal); }
+  .comparar svg.arbol text{ font-size:17px; }
+  .comparar button span{ display:block; font-weight:600; margin-bottom:0.2rem; }
+  .explica{ font-size:0.95rem; line-height:1.55; border-top:1px solid #E6E9E8; padding-top:0.9rem; margin-top:1rem; }
+
+  .inicio p{ line-height:1.6; margin:0 0 0.9rem; }
+  .niveles{ list-style:none; padding:0; margin:1.2rem 0; display:grid; gap:0.6rem; }
+  .niveles button{ width:100%; text-align:left; display:flex; gap:0.9rem; align-items:baseline; }
+  .niveles .n{ font-weight:700; color:var(--juego-texto); white-space:nowrap; }
+  .niveles .d{ color:var(--muted); font-size:0.88rem; }
+  .niveles .hecho::after{ content:"\2713"; margin-left:auto; color:var(--ok); font-weight:700; }
+  .botones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1rem; }
+  .final{ text-align:center; }
+  .final .botones{ justify-content:center; }
+  .final table{ border-collapse:collapse; margin:1rem auto; font-size:0.92rem; }
+  .final td, .final th{ padding:0.35rem 0.8rem; border-bottom:1px solid #E6E9E8; text-align:left; }
+
+  details.docente{ max-width:38em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  .opciones-doc{ background:#fff; border:1px solid #E1E7E5; border-radius:6px; padding:0.7rem 0.9rem; margin-top:0.8rem; color:var(--ink); }
+  .opciones-doc label{ display:flex; gap:0.5rem; align-items:center; min-height:36px; cursor:pointer; }
+  .opciones-doc input{ width:20px; height:20px; }
+  .opciones-doc code{ font-size:0.85rem; word-break:break-all; }
+  @media (prefers-reduced-motion:reduce){ .progreso > i{ transition:none; } }
 </style>
 </head>
 <body>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
-<h1>Árbol filogenético</h1>
-<p class="marcador" id="marcador">Ronda 1 de 5 · Aciertos: 0</p>
+<h1>Árbol filogenético: armalo vos</h1>
+<p class="marcador" id="marcador">Uní las especies más parecidas y leé el árbol</p>
 <div class="progreso" aria-hidden="true"><i id="barra"></i></div>
 <div class="tablero" id="tablero"></div>
 
 <script>
-const rondas = [
-  { especies:["Humano","Chimpancé","Ratón","Pez cebra"],
-    tabla:[["—","98%","85%","70%"],["98%","—","84%","69%"],["85%","84%","—","71%"],["70%","69%","71%","—"]],
-    correcta:"Humano y Chimpancé",
-    explicacion:"En general, cuanto mayor es el % de similitud, más reciente es el ancestro común — siempre que las especies comparadas acumulen cambios a un ritmo parecido. Humano y chimpancé son el par más cercano de esta tabla." },
-  { especies:["Perro","Lobo","Gato","Vaca"],
-    tabla:[["—","99%","90%","88%"],["99%","—","89%","87%"],["90%","89%","—","86%"],["88%","87%","86%","—"]],
-    correcta:"Perro y Lobo",
-    explicacion:"Perro y lobo son subespecies muy cercanas — de hecho el perro desciende de una población de lobos domesticados." },
-  { especies:["Trigo","Maíz","Arroz","Levadura"],
-    tabla:[["—","78%","80%","45%"],["78%","—","77%","44%"],["80%","77%","—","46%"],["45%","44%","46%","—"]],
-    correcta:"Trigo y Arroz",
-    explicacion:"Trigo y arroz están un poco más emparentados entre sí que con el maíz, y todas las plantas están muy alejadas de la levadura (un hongo)." },
-  { especies:["Ballena","Vaca","Delfín","Tiburón"],
-    tabla:[["—","92%","95%","60%"],["92%","—","91%","58%"],["95%","91%","—","59%"],["60%","58%","59%","—"]],
-    correcta:"Ballena y Delfín",
-    explicacion:"Ballenas y delfines son ambos cetáceos — mamíferos que volvieron al agua — por eso están más emparentados entre sí que con la vaca, aunque esta también es un mamífero." },
-  { especies:["Gorila","Orangután","Humano","Lémur"],
-    tabla:[["—","94%","98%","75%"],["94%","—","93%","74%"],["98%","93%","—","73%"],["75%","74%","73%","—"]],
-    correcta:"Humano y Gorila",
-    explicacion:"Entre estas cuatro especies, humano y gorila son las más cercanas: los dos son grandes simios africanos, y el orangután se separó antes de ese linaje. El lémur también es un primate, pero de una rama que se diferenció mucho antes. Si estuviera el chimpancé, sería el más cercano al humano de todos." }
+// Tablas de % de similitud entre secuencias de un mismo conjunto de genes.
+// Son valores ilustrativos, elegidos para que el agrupamiento por promedios
+// (UPGMA) dé la topología aceptada hoy para cada grupo de especies.
+const RONDAS = [
+  { nivel:1, titulo:'Cuatro vertebrados',
+    especies:['Humano','Chimpancé','Ratón','Pez cebra'],
+    tabla:[[0,98,85,70],[98,0,84,69],[85,84,0,71],[70,69,71,0]],
+    intro:'Cuatro vertebrados. La tabla muestra el % de similitud entre sus secuencias para un mismo conjunto de genes.',
+    preguntas:[{t:'mrca', a:'Humano', b:'Ratón'}, {t:'externo'}],
+    explicacion:'En general, cuanto mayor es la similitud, más reciente es el ancestro común, siempre que las especies acumulen cambios a un ritmo parecido. Humano y chimpancé son el par más cercano; el ratón comparte con ellos un ancestro mamífero, y el pez cebra quedó afuera: es el grupo externo.' },
+  { nivel:1, titulo:'Cereales y una levadura',
+    especies:['Trigo','Maíz','Arroz','Levadura'],
+    tabla:[[0,78,80,45],[78,0,77,44],[80,77,0,46],[45,44,46,0]],
+    intro:'Tres cereales y una levadura. Las cuatro tienen células con núcleo, pero solo tres son plantas.',
+    preguntas:[{t:'mrca', a:'Trigo', b:'Maíz'}, {t:'externo'}],
+    explicacion:'Trigo y arroz están un poco más emparentados entre sí que con el maíz, y las tres plantas están muy alejadas de la levadura, que es un hongo.' },
+  { nivel:2, titulo:'¿Qué es un delfín?',
+    especies:['Ballena','Delfín','Hipopótamo','Vaca','Tiburón'],
+    tabla:[[0,95,90,86,60],[95,0,89,85,59],[90,89,0,86,59],[86,85,86,0,58],[60,59,59,58,0]],
+    intro:'Por la forma del cuerpo, un delfín se parece mucho más a un tiburón que a un hipopótamo. ¿Qué dicen sus genes?',
+    preguntas:[{t:'mrca', a:'Delfín', b:'Vaca'}, {t:'mrca', a:'Ballena', b:'Hipopótamo'}, {t:'rotar'}],
+    explicacion:'Ballenas y delfines son cetáceos, y su pariente vivo más cercano es el hipopótamo: lo muestran el ADN y también fósiles de cetáceos primitivos que todavía tenían patas. La forma de pez del delfín es una convergencia: evolucionó por separado, porque nadar rápido en el agua favorece esa forma. El tiburón queda afuera: es un pez cartilaginoso.' },
+  { nivel:3, titulo:'Seis primates',
+    especies:['Humano','Chimpancé','Gorila','Orangután','Macaco','Lémur'],
+    tabla:[[0,98,97,95,93,85],[98,0,97,95,93,85],[97,97,0,94,92,84],[95,95,94,0,92,84],[93,93,92,92,0,85],[85,85,84,84,85,0]],
+    intro:'Seis primates. Cuantas más especies, más uniones: fijate bien en la tabla en cada paso.',
+    preguntas:[{t:'mrca', a:'Humano', b:'Gorila'}, {t:'mrca', a:'Chimpancé', b:'Macaco'}, {t:'rotar'}],
+    explicacion:'El chimpancé (junto con el bonobo, que no está en la tabla) es el pariente vivo más cercano de los humanos; después vienen el gorila y el orangután: con nosotros forman los grandes simios. El macaco es un mono del Viejo Mundo, y el lémur, un primate de Madagascar de una rama que se separó mucho antes. Ojo: que el chimpancé sea nuestro pariente más cercano no significa que descendamos de él, sino que compartimos un ancestro común.' }
+];
+const NIVELES = [
+  {n:1, desc:'Cuatro especies, dos rondas.'},
+  {n:2, desc:'Cinco especies, y una sorpresa sobre los delfines.'},
+  {n:3, desc:'Seis primates.'}
 ];
 
-let ronda = 0, aciertos = 0;
+const params = new URLSearchParams(location.search);
+const OPC = { crono: params.get('crono') === '1', errores: params.get('errores') === '1' };
+
 const tablero = document.getElementById('tablero');
 const marcador = document.getElementById('marcador');
+let S = null, reloj = null, finContado = false;
+const resultados = {};   // índice de ronda -> {errores, segundos}
 
-// Actualiza el marcador y la barra de progreso. `hechas` = rondas ya respondidas.
-function marcar(hechas){
-  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
-  const b = document.getElementById('barra');
-  if(b) b.style.width = (hechas / rondas.length * 100) + '%';
+function el(id){ return document.getElementById(id); }
+function mmss(s){ return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+function segundos(){ return S ? Math.round(((S.fin || Date.now()) - S.inicio) / 1000) : 0; }
+function fmt(v){ return (Number.isInteger(v) ? String(v) : v.toFixed(1).replace('.', ',')) + ' %'; }
+function progreso(){ el('barra').style.width = (Object.keys(resultados).length / RONDAS.length * 100) + '%'; }
+
+// ---------------------------------------------------------------------------
+// Árbol: cada nodo es {id, hoja?:nombre, idx?:índice en la tabla, hijos?:[a,b], alt}
+// ---------------------------------------------------------------------------
+let nId = 0;
+function hojas(n){ return n.hoja ? [n] : n.hijos.flatMap(hojas); }
+function nombre(g){ return hojas(g).map(h => h.hoja).join(' + '); }
+// Similitud entre dos grupos: promedio de todas las comparaciones entre sus especies.
+function sim(g1, g2){
+  const a = hojas(g1), b = hojas(g2);
+  let s = 0;
+  a.forEach(x => b.forEach(y => { s += S.r.tabla[x.idx][y.idx]; }));
+  return s / (a.length * b.length);
 }
-
-// Deduce la topología a partir de la tabla: el par más parecido forma el grupo,
-// de las dos especies restantes se une primero la más parecida a ese par, y la
-// última queda como grupo externo.
-function topologia(r){
-  const val = (i,j) => parseFloat(r.tabla[i][j]);
-  let a = 0, b = 1, mejor = -1;
-  for(let i=0;i<4;i++) for(let j=i+1;j<4;j++){
-    if(val(i,j) > mejor){ mejor = val(i,j); a = i; b = j; }
+function mejorPar(){
+  let m = -1, par = null;
+  for(let i=0;i<S.grupos.length;i++) for(let j=i+1;j<S.grupos.length;j++){
+    const v = sim(S.grupos[i], S.grupos[j]);
+    if(v > m + 1e-9){ m = v; par = [S.grupos[i], S.grupos[j]]; }
   }
-  const resto = [0,1,2,3].filter(k => k !== a && k !== b);
-  const cercania = k => (val(k,a) + val(k,b)) / 2;
-  const [tercero, externo] = cercania(resto[0]) >= cercania(resto[1])
-    ? resto : [resto[1], resto[0]];
-  return {a, b, tercero, externo};
+  return { m, par };
 }
-
-// Cladograma simple: no representa tiempo ni distancias, solo el orden de
-// ramificación que se desprende de la tabla.
-function arbolSVG(r){
-  const t = topologia(r);
-  const n = i => r.especies[i];
-  const L = "#16211F", A = "#018574";
-  return `
-    <svg viewBox="0 0 300 130" style="width:100%;max-width:430px;display:block;margin:0.8rem auto 0.2rem;">
-      <line x1="34" y1="88" x2="56" y2="88" stroke="${L}" stroke-width="2"/>
-      <line x1="56" y1="60" x2="56" y2="116" stroke="${L}" stroke-width="2"/>
-      <line x1="56" y1="116" x2="182" y2="116" stroke="${L}" stroke-width="2"/>
-      <line x1="56" y1="60" x2="98" y2="60" stroke="${L}" stroke-width="2"/>
-      <line x1="98" y1="38" x2="98" y2="86" stroke="${L}" stroke-width="2"/>
-      <line x1="98" y1="86" x2="182" y2="86" stroke="${L}" stroke-width="2"/>
-      <line x1="98" y1="38" x2="138" y2="38" stroke="${L}" stroke-width="2"/>
-      <line x1="138" y1="20" x2="138" y2="56" stroke="${A}" stroke-width="3"/>
-      <line x1="138" y1="20" x2="182" y2="20" stroke="${A}" stroke-width="3"/>
-      <line x1="138" y1="56" x2="182" y2="56" stroke="${A}" stroke-width="3"/>
-      <circle cx="138" cy="38" r="4" fill="${A}"/>
-      <text x="188" y="23" font-size="10" font-weight="700" fill="${L}">${n(t.a)}</text>
-      <text x="188" y="59" font-size="10" font-weight="700" fill="${L}">${n(t.b)}</text>
-      <text x="188" y="89" font-size="10" fill="${L}">${n(t.tercero)}</text>
-      <text x="188" y="119" font-size="10" fill="${L}">${n(t.externo)}</text>
-    </svg>
-    <p style="font-size:0.82rem;color:#5B6E6B;text-align:center;margin:0;">Este es el árbol que se deduce de la tabla. El punto naranja es el ancestro común más reciente del par. El cladograma muestra el orden de ramificación, no el tiempo.</p>`;
+function lca(raiz, a, b){
+  let n = raiz;
+  for(;;){
+    const sig = n.hijos && n.hijos.find(h => { const ns = hojas(h).map(x => x.hoja); return ns.includes(a) && ns.includes(b); });
+    if(!sig) return n;
+    n = sig;
+  }
 }
+function contiene(n, nombreHoja){ return hojas(n).some(h => h.hoja === nombreHoja); }
+function todos(n){ return n.hoja ? [n] : [n, ...n.hijos.flatMap(todos)]; }
+function clonar(n){ return n.hoja ? {...n} : {...n, hijos:n.hijos.map(clonar)}; }
+// Girar ramas: cambia el dibujo, no los parentescos.
+function rotarAzar(n){ if(!n.hoja){ if(Math.random() < 0.5) n.hijos.reverse(); n.hijos.forEach(rotarAzar); } return n; }
 
-function dibujar(){
-  const r = rondas[ronda];
-  marcar(ronda);
-
-  const pares = [];
-  for(let i=0;i<4;i++) for(let j=i+1;j<4;j++) pares.push(`${r.especies[i]} y ${r.especies[j]}`);
-  const opciones = [r.correcta, ...pares.filter(p=>p!==r.correcta).sort(()=>Math.random()-0.5).slice(0,3)]
-    .sort(()=>Math.random()-0.5);
-
-  tablero.innerHTML = `
-    <p class="enunciado">Esta tabla muestra el % de similitud entre las secuencias de un mismo conjunto de genes en cuatro especies. Son valores aproximados, con fines ilustrativos: el porcentaje exacto cambia según qué se compare.</p>
-    <table class="similitud">
-      <tr><th></th>${r.especies.map(e=>`<th>${e}</th>`).join('')}</tr>
-      ${r.especies.map((e,i)=>`<tr><th>${e}</th>${r.tabla[i].map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}
-    </table>
-    <p class="enunciado">¿Qué par comparte el ancestro común más reciente?</p>
-    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
-    <p class="feedback" id="feedback"></p>
-    <div id="arbolito"></div>
-    <button class="siguiente" id="siguiente">Siguiente &rarr;</button>
-  `;
-
-  tablero.querySelectorAll('.opciones button').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const acierto = btn.dataset.o === r.correcta;
-      tablero.querySelectorAll('.opciones button').forEach(b=>{
-        b.disabled = true;
-        if(b.dataset.o === r.correcta) b.classList.add('ok');
-        else if(b === btn) b.classList.add('mal');
-      });
-      document.getElementById('feedback').textContent = (acierto ? "¡Correcto! " : "No. ") + r.explicacion;
-      // El árbol se dibuja recién al responder, para no adelantar la respuesta.
-      document.getElementById('arbolito').innerHTML = arbolSVG(r);
-      if(acierto) aciertos++;
-      marcar(ronda+1);
-      const sig = document.getElementById('siguiente');
-      sig.style.display = 'block';
-      sig.onclick = () => { ronda++; ronda < rondas.length ? dibujar() : final(); };
+// Dibuja uno o más árboles (durante el armado, cada grupo es un árbol aparte).
+// Cladograma: la posición horizontal muestra el orden de ramificación, no tiempo.
+function svgArbol(raices, o){
+  o = o || {};
+  const W = 400, xh = 270, altMax = Math.max(1, o.altMax || 1);
+  const step = (xh - 40) / altMax, dy = 36;
+  const pos = new Map(); let fila = 0;
+  (function lay(lista){ lista.forEach(function f(n){
+    if(n.hoja){ pos.set(n.id, {x:xh, y:22 + dy*fila++}); return; }
+    n.hijos.forEach(f);
+    const ys = n.hijos.map(h => pos.get(h.id).y);
+    pos.set(n.id, {x:xh - n.alt*step, y:(Math.min(...ys) + Math.max(...ys)) / 2});
+  }); })(raices);
+  const H = 22 + dy*fila - dy + 22;
+  const res = o.resaltar || new Set();
+  let ramas = '', nodos = '', textos = '';
+  raices.forEach(r => {
+    const grupoAttr = n => o.modo === 'grupo' ? ` data-g="${r.id}"` : '';
+    todos(r).forEach(n => {
+      const p = pos.get(n.id), enRes = res.has(r.id) ? ' res' : '';
+      if(n.hoja){
+        const clic = o.modo === 'grupo' || o.modo === 'nodo';
+        textos += `<text x="${xh + 8}" y="${p.y + 4.5}" class="${enRes ? 'res' : ''}">${n.hoja}</text>`;
+        if(clic) textos += `<rect class="hit" x="${xh - 4}" y="${p.y - 15}" width="${W - xh}" height="30"${grupoAttr(n)}${o.modo === 'nodo' ? ` data-hoja="${n.hoja}"` : ''} tabindex="0" role="button" aria-label="${n.hoja}"/>`;
+        return;
+      }
+      const ys = n.hijos.map(h => pos.get(h.id).y);
+      ramas += `<line class="rama${enRes}" x1="${p.x}" y1="${Math.min(...ys)}" x2="${p.x}" y2="${Math.max(...ys)}"/>`;
+      n.hijos.forEach(h => { const q = pos.get(h.id); ramas += `<line class="rama${enRes}" x1="${p.x}" y1="${q.y}" x2="${q.x}" y2="${q.y}"/>`; });
+      const okc = o.ok === n.id ? ' ok' : '';
+      if(o.modo === 'nodo')
+        nodos += `<circle class="hit hit-nodo" cx="${p.x}" cy="${p.y}" r="16" data-nodo="${n.id}" tabindex="0" role="button" aria-label="Nodo que une a ${nombre(n)}"/>`;
+      else if(o.modo === 'grupo')
+        nodos += `<circle class="hit" cx="${p.x}" cy="${p.y}" r="16"${grupoAttr(n)}/>`;
+      nodos += `<circle class="nodo${enRes}${okc}" cx="${p.x}" cy="${p.y}" r="${okc ? 6.5 : 4.5}"/>`;
     });
+    // Tronco de la raíz, solo cuando el árbol está completo.
+    if(raices.length === 1 && !r.hoja){ const p = pos.get(r.id); ramas = `<line class="rama" x1="${p.x - 18}" y1="${p.y}" x2="${p.x}" y2="${p.y}"/>` + ramas; }
+  });
+  return `<svg class="arbol${o.modo === 'nodo' ? ' clic-nodo' : ''}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.etiqueta || 'Árbol'}">${ramas}${nodos}${textos}</svg>`;
+}
+
+// ---------------------------------------------------------------------------
+// Inicio
+// ---------------------------------------------------------------------------
+function inicio(){
+  S = null; clearInterval(reloj);
+  marcador.textContent = 'Uní las especies más parecidas y leé el árbol';
+  progreso();
+  tablero.innerHTML = `
+    <div class="inicio">
+      <p>Un <b>árbol filogenético</b> muestra cómo se relacionan distintas especies por su ascendencia común. Una forma de armarlo es comparar secuencias de ADN: las especies más parecidas suelen compartir un ancestro más reciente.</p>
+      <p>Vas a armar el árbol vos, paso a paso: en cada paso unís los dos grupos <b>más parecidos</b> según la tabla. Después vas a leer el árbol que armaste.</p>
+      <ul class="niveles">${NIVELES.map(nv => {
+        const rs = RONDAS.map((r, i) => i).filter(i => RONDAS[i].nivel === nv.n);
+        return `<li><button data-r="${rs[0]}" class="${rs.every(i => resultados[i]) ? 'hecho' : ''}"><span class="n">Nivel ${nv.n}</span><span class="d">${nv.desc}</span></button></li>`;
+      }).join('')}</ul>
+      <div class="botones"><button class="primario" id="empezar">Empezar por el nivel 1</button></div>
+    </div>`;
+  tablero.querySelectorAll('[data-r]').forEach(b => b.onclick = () => empezar(+b.dataset.r));
+  el('empezar').onclick = () => empezar(0);
+}
+
+// ---------------------------------------------------------------------------
+// Armado del árbol
+// ---------------------------------------------------------------------------
+function empezar(i){
+  const r = RONDAS[i];
+  S = { i, r, errores:0, inicio:Date.now(), fin:null, sel:[], intentos:0, etapa:'armar', q:0,
+        grupos: r.especies.map((e, k) => ({ id:'n' + (nId++), hoja:e, idx:k, alt:0 })) };
+  const enNivel = RONDAS.filter(x => x.nivel === r.nivel);
+  marcador.textContent = `Nivel ${r.nivel} de ${NIVELES.length}` + (enNivel.length > 1 ? ` · Ronda ${enNivel.indexOf(r) + 1} de ${enNivel.length}` : '') + ` · ${r.titulo}`;
+  progreso();
+  tablero.innerHTML = `
+    <p class="enunciado">${r.intro} <span style="color:var(--muted)">Son valores aproximados, con fines ilustrativos.</span></p>
+    <div class="estado">
+      <span id="st-paso"></span>
+      <span id="st-crono" ${OPC.crono ? '' : 'hidden'}>Tiempo: <b id="st-t">00:00</b></span>
+      <span id="st-err" ${OPC.errores ? '' : 'hidden'}>Errores: <b id="st-e">0</b></span>
+    </div>
+    <h2 class="etapa">Tabla de similitud</h2>
+    <div class="tabla-wrap" id="tabla"></div>
+    <p class="nota-tabla" id="nota-tabla"></p>
+    <h2 class="etapa">Tu árbol</h2>
+    <div class="arbol-wrap" id="arbol"></div>
+    <div id="zona"></div>`;
+  clearInterval(reloj);
+  reloj = setInterval(() => { if(S && !S.fin && OPC.crono) el('st-t').textContent = mmss(segundos()); }, 1000);
+  dibujarArmado();
+  window.scrollTo({ top:0 });
+}
+
+function dibujarArmado(){
+  const g = S.grupos, n = S.r.especies.length;
+  el('st-paso').innerHTML = `Uniones: <b>${n - g.length} de ${n - 1}</b>`;
+  el('st-e').textContent = S.errores;
+  // Tabla con los grupos que quedan
+  const selIds = new Set(S.sel.map(x => x.id));
+  const cab = g.map(x => `<th scope="col" class="${selIds.has(x.id) ? 'sel' : ''}">${nombre(x)}</th>`).join('');
+  const filas = g.map(a => `<tr><th scope="row" class="${selIds.has(a.id) ? 'sel' : ''}">${nombre(a)}</th>` + g.map(b => {
+    if(a === b) return '<td>—</td>';
+    const cruce = S.sel.length === 2 && selIds.has(a.id) && selIds.has(b.id);
+    const marca = cruce ? 'cruce' : (selIds.has(a.id) || selIds.has(b.id)) ? 'sel' : '';
+    return `<td class="${marca}">${fmt(sim(a, b))}</td>`;
+  }).join('') + '</tr>').join('');
+  el('tabla').innerHTML = g.length > 1
+    ? `<table class="similitud"><tr><th></th>${cab}</tr>${filas}</table>`
+    : '<p class="nota-tabla">Ya no quedan grupos por unir: todas las especies están en un mismo árbol.</p>';
+  el('nota-tabla').textContent = g.length < n
+    ? 'Cuando unís dos grupos, la tabla los junta y usa el promedio de sus similitudes con cada uno de los demás.'
+    : '';
+  el('arbol').innerHTML = svgArbol(g, { modo:'grupo', altMax:n - 1, resaltar:selIds, etiqueta:'Árbol en construcción' });
+  el('arbol').querySelectorAll('[data-g]').forEach(x => {
+    x.addEventListener('click', () => elegir(x.dataset.g));
+    x.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); elegir(x.dataset.g); } });
+  });
+  if(!el('zona').dataset.armado){
+    el('zona').dataset.armado = '1';
+    el('zona').innerHTML = `
+      <p class="enunciado" style="margin:1rem 0 0;">Elegí los dos grupos <b>más parecidos</b> (tocalos en el árbol o acá abajo) y uní sus ramas.</p>
+      <div class="grupos" id="grupos"></div>
+      <div class="acciones"><button class="primario" id="unir" disabled>Unir</button></div>
+      <p class="fb" id="fb" aria-live="polite"></p>`;
+    el('unir').onclick = unir;
+  }
+  el('grupos').innerHTML = g.map(x => `<button data-g="${x.id}" aria-pressed="${selIds.has(x.id)}">${nombre(x)}</button>`).join('');
+  el('grupos').querySelectorAll('button').forEach(b => b.onclick = () => elegir(b.dataset.g));
+  el('unir').disabled = S.sel.length !== 2;
+}
+
+function elegir(id){
+  if(S.etapa !== 'armar') return;
+  const g = S.grupos.find(x => x.id === id);
+  const i = S.sel.indexOf(g);
+  if(i >= 0) S.sel.splice(i, 1);
+  else { S.sel.push(g); if(S.sel.length > 2) S.sel.shift(); }
+  dibujarArmado();
+}
+
+function fb(texto, tipo){
+  const f = el('fb');
+  f.className = 'fb' + (tipo ? ' ' + tipo : '');
+  f.textContent = texto;
+}
+
+function unir(){
+  const [a, b] = S.sel;
+  const v = sim(a, b), { m, par } = mejorPar();
+  if(v < m - 1e-9){
+    S.errores++; S.intentos++;
+    if(S.intentos === 1)
+      fb(`La similitud entre ${nombre(a)} y ${nombre(b)} es ${fmt(v)}. Hay otro par más parecido entre los grupos que quedan: buscá el valor más alto de la tabla.`, 'pista');
+    else
+      fb(`El valor más alto de la tabla está en la fila de ${nombre(par[0])}.`, 'pista');
+    S.sel = [];
+    dibujarArmado();
+    return;
+  }
+  S.intentos = 0;
+  const nuevo = { id:'n' + (nId++), hijos:[a, b], alt:Math.max(a.alt, b.alt) + 1 };
+  const ia = Math.min(S.grupos.indexOf(a), S.grupos.indexOf(b));
+  S.grupos = S.grupos.filter(x => x !== a && x !== b);
+  S.grupos.splice(ia, 0, nuevo);
+  S.sel = [];
+  if(S.grupos.length === 1){
+    S.etapa = 'leer';
+    S.raiz = nuevo;
+    dibujarArmado();
+    el('zona').innerHTML = `<p class="fb ok">¡Árbol completo! Ahora leelo.</p><div id="preguntas"></div>`;
+    el('nota-tabla').textContent = '';
+    siguientePregunta();
+    return;
+  }
+  dibujarArmado();
+  fb(`Bien: ${nombre(a)} y ${nombre(b)} son el par más parecido (${fmt(v)}).`, 'ok');
+}
+
+// ---------------------------------------------------------------------------
+// Lectura del árbol armado
+// ---------------------------------------------------------------------------
+function externo(raiz){ const h = raiz.hijos.find(x => x.hoja); return h ? h.hoja : null; }
+
+function siguientePregunta(){
+  const r = S.r;
+  S.esperando = false;
+  if(S.q >= r.preguntas.length){ terminar(); return; }
+  const p = r.preguntas[S.q];
+  const zona = el('preguntas');
+  if(p.t === 'mrca' || p.t === 'externo'){
+    const txt = p.t === 'mrca'
+      ? `Tocá en tu árbol el <b>nodo</b> que representa al <b>ancestro común más reciente</b> de ${p.a} y ${p.b}.`
+      : `¿Cuál es el <b>grupo externo</b> de este árbol? Tocá su nombre en el árbol.`;
+    zona.innerHTML = `<p class="pregunta">${txt}</p><p class="fb" id="fb" aria-live="polite"></p>`;
+    dibujarLectura();
+  } else {
+    zona.innerHTML = `<p class="pregunta">Estos dos árboles están dibujados distinto. ¿Cuál cuenta <b>la misma historia</b> que el tuyo, o sea, los mismos parentescos?</p>
+      <div class="comparar" id="comparar"></div><p class="fb" id="fb" aria-live="polite"></p>`;
+    armarComparacion();
+    el('arbol').innerHTML = svgArbol([S.raiz], { altMax:S.r.especies.length - 1, etiqueta:'Tu árbol' });
+  }
+}
+
+function dibujarLectura(okId){
+  el('arbol').innerHTML = svgArbol([S.raiz], { modo:'nodo', altMax:S.r.especies.length - 1, ok:okId, etiqueta:'Tu árbol' });
+  el('arbol').querySelectorAll('[data-nodo],[data-hoja]').forEach(x => {
+    const go = () => responder(x.dataset.nodo || null, x.dataset.hoja || null);
+    x.addEventListener('click', go);
+    x.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
   });
 }
 
-// Una sola vez por visita, igual que en el resto de los juegos.
-let finContado = false;
-function final(){
-  if(!finContado){
-    finContado = true;
-    window.goatcounter?.count({ path: 'fin/filogenia',
-      title: 'Completó Árbol filogenético', event: true });
+function responder(nodoId, hoja){
+  const p = S.r.preguntas[S.q];
+  if(S.esperando || !p || (p.t !== 'mrca' && p.t !== 'externo')) return;
+  if(p.t === 'mrca'){
+    if(hoja){ fb('Tocá un nodo (un punto donde se separan las ramas), no una especie.', 'pista'); return; }
+    const n = todos(S.raiz).find(x => x.id === nodoId);
+    const ok = lca(S.raiz, p.a, p.b);
+    if(n === ok){ acierto(n.id, `Ese es: desde ese nodo salen, por un lado, las ramas que llevan a ${p.a} y, por el otro, las que llevan a ${p.b}.`); return; }
+    S.errores++; actualizarEstado();
+    if(contiene(n, p.a) && contiene(n, p.b))
+      fb(`Ese nodo es un ancestro común de ${p.a} y ${p.b}, pero no el más reciente: hay uno más cerca de las puntas del árbol.`, 'pista');
+    else
+      fb(`Ese nodo no es ancestro de ${p.a} y de ${p.b} a la vez. Seguí la rama de cada uno hacia la izquierda hasta que se junten.`, 'pista');
+  } else {
+    if(!hoja){ fb('Tocá el nombre de una especie.', 'pista'); return; }
+    if(hoja === externo(S.raiz)){ acierto(null, `Sí: ${hoja} es la rama que se separó primero; sale directo de la raíz. El grupo externo sirve de referencia para ordenar al resto.`); return; }
+    S.errores++; actualizarEstado();
+    fb('El grupo externo es el que se separó primero del resto: su rama sale directo de la raíz, sin unirse antes con ninguna otra especie.', 'pista');
   }
-  tablero.innerHTML = `
-    <div class="final">
-      <h2 style="font-weight:300;letter-spacing:-0.01em;">Terminaste el juego</h2>
-      <p>Acertaste ${aciertos} de ${rondas.length} rondas.</p>
-      <button onclick="location.reload()">Jugar de nuevo</button>
-    </div>`;
 }
 
-dibujar();
+function acierto(nodoId, texto){
+  S.q++; S.esperando = true;
+  if(nodoId) dibujarLectura(nodoId);
+  el('arbol').querySelectorAll('[data-nodo],[data-hoja]').forEach(x => x.removeAttribute('tabindex'));
+  fb(texto, 'ok');
+  const sig = document.createElement('button');
+  sig.className = 'primario'; sig.textContent = 'Seguir →'; sig.style.marginTop = '0.6rem';
+  sig.onclick = siguientePregunta;
+  el('preguntas').appendChild(sig);
+  sig.focus();
+}
+
+// Dos dibujos: el árbol del estudiante con las ramas giradas, y un árbol con
+// dos especies intercambiadas (otra historia), también girado.
+function armarComparacion(){
+  const raiz = S.raiz, ext = externo(raiz);
+  const ordenOrig = hojas(raiz).map(h => h.hoja).join();
+  let mismo, intentos = 0;
+  do { mismo = rotarAzar(clonar(raiz)); } while(hojas(mismo).map(h => h.hoja).join() === ordenOrig && ++intentos < 20);
+  const otro = clonar(raiz);
+  // Intercambia una especie del par más interno con el grupo externo.
+  let n = otro; while(!n.hijos.every(h => h.hoja)) n = n.hijos.find(h => !h.hoja && hojas(h).length > 1) || n.hijos.find(h => !h.hoja);
+  const hA = n.hijos[0], hB = hojas(otro).find(h => h.hoja === ext);
+  [hA.hoja, hB.hoja] = [hB.hoja, hA.hoja];
+  rotarAzar(otro);
+  const opciones = Math.random() < 0.5 ? [mismo, otro] : [otro, mismo];
+  S.comparar = opciones.map(x => x === mismo);
+  el('comparar').innerHTML = opciones.map((x, i) =>
+    `<button data-i="${i}"><span>Árbol ${'AB'[i]}</span>${svgArbol([x], { altMax:S.r.especies.length - 1, etiqueta:'Árbol ' + 'AB'[i] })}</button>`).join('');
+  el('comparar').querySelectorAll('button').forEach(b => b.onclick = () => {
+    const i = +b.dataset.i;
+    if(S.comparar[i]){
+      el('comparar').querySelectorAll('button').forEach(x => x.disabled = true);
+      acierto(null, `Sí: el árbol ${'AB'[i]} tiene las ramas giradas, pero cada especie se une con las mismas que en el tuyo. Girar las ramas alrededor de un nodo no cambia ningún parentesco; el orden de arriba a abajo no significa nada.`);
+    } else {
+      S.errores++; actualizarEstado();
+      b.classList.add('mal');
+      const par = n.hijos.map(h => h.hoja).filter(Boolean);
+      fb(`Fijate en quién se une con quién, no en el orden de arriba a abajo. En el árbol ${'AB'[i]}, ¿con quién se une primero ${par[0]}? ¿Pasa lo mismo en el tuyo?`, 'pista');
+    }
+  });
+}
+
+function actualizarEstado(){ const e = el('st-e'); if(e) e.textContent = S.errores; }
+
+function terminar(){
+  S.fin = Date.now();
+  resultados[S.i] = { errores:S.errores, segundos:segundos() };
+  progreso();
+  el('arbol').innerHTML = svgArbol([S.raiz], { altMax:S.r.especies.length - 1, etiqueta:'Tu árbol' });
+  const datos = [];
+  if(OPC.crono) datos.push('Tiempo: ' + mmss(segundos()));
+  if(OPC.errores) datos.push('Errores: ' + S.errores);
+  const hay = S.i + 1 < RONDAS.length;
+  el('zona').innerHTML = `
+    <div class="explica"><p style="margin:0 0 0.6rem;"><b>Terminaste esta ronda.</b> ${S.r.explicacion}</p>
+    ${datos.length ? `<p style="color:var(--muted);margin:0;">${datos.join(' · ')}</p>` : ''}</div>
+    <div class="botones">
+      ${hay ? `<button class="primario" id="sig">${RONDAS[S.i + 1].nivel !== S.r.nivel ? 'Pasar al nivel ' + RONDAS[S.i + 1].nivel : 'Siguiente ronda'} &rarr;</button>` : `<button class="primario" id="sig">Ver el resumen &rarr;</button>`}
+      <button id="ini">Elegir otro nivel</button>
+    </div>`;
+  el('sig').onclick = hay ? () => empezar(S.i + 1) : final;
+  el('ini').onclick = inicio;
+  if(Object.keys(resultados).length === RONDAS.length) contarFin();
+}
+
+// Una sola vez por visita, igual que en el resto de los juegos.
+function contarFin(){
+  if(finContado) return;
+  finContado = true;
+  window.goatcounter?.count({ path:'fin/filogenia', title:'Completó Árbol filogenético', event:true });
+}
+
+function final(){
+  S = null; clearInterval(reloj);
+  marcador.textContent = 'Resumen';
+  const filas = RONDAS.map((r, i) => resultados[i] ? `<tr><td>Nivel ${r.nivel}</td><td>${r.titulo}</td>${OPC.crono ? `<td>${mmss(resultados[i].segundos)}</td>` : ''}${OPC.errores ? `<td>${resultados[i].errores}</td>` : ''}</tr>` : '').join('');
+  tablero.innerHTML = `
+    <div class="final">
+      <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">Terminaste el juego</h2>
+      <table><tr><th>Nivel</th><th>Ronda</th>${OPC.crono ? '<th>Tiempo</th>' : ''}${OPC.errores ? '<th>Errores</th>' : ''}</tr>${filas}</table>
+      <div class="botones"><button class="primario" id="ini">Volver a los niveles</button></div>
+    </div>`;
+  el('ini').onclick = inicio;
+}
+
+inicio();
 </script>
 
-<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:var(--muted);line-height:1.55;text-align:left;">
-  <summary style="cursor:pointer;font-weight:700;color:var(--ink);font-size:0.95rem;">Para el/la docente</summary>
-  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Secundaria</p>
-  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Árboles filogenéticos y cladogramas; ancestro común más reciente; grupo externo; similitud de secuencias como evidencia de parentesco.</p>
-  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> Un porcentaje de similitud no significa nada si no se aclara qué se comparó: por eso circulan cifras tan distintas para "cuánto compartimos con el chimpancé". ¿Qué habría que preguntar siempre antes de aceptar un número así?</p>
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Secundaria.</p>
+  <p><b>Conceptos que trabaja:</b> árboles filogenéticos y cladogramas; ancestro común más reciente; grupo externo; similitud de secuencias como evidencia de parentesco; convergencia evolutiva (forma del delfín y del tiburón); girar ramas no cambia el árbol.</p>
+  <p><b>Cómo se arma:</b> en cada paso se unen los dos grupos con mayor similitud, y la tabla se recalcula con el promedio de las similitudes de sus miembros. Es el método UPGMA, uno de los más simples. Supone que todos los linajes acumulan cambios a un ritmo parecido; los métodos que se usan hoy en investigación (máxima verosimilitud, inferencia bayesiana) no lo suponen. Los porcentajes son ilustrativos, pero la topología de cada árbol es la aceptada hoy.</p>
+  <p><b>Cómo se lee:</b> el dibujo es un cladograma: muestra el orden en que se separaron los linajes, no el tiempo ni la cantidad de cambios. Las especies de las puntas son actuales: ninguna es "ancestro" de otra.</p>
+  <p><b>Para discutir después de jugar:</b> un porcentaje de similitud no significa nada si no se aclara qué se comparó: por eso circulan cifras tan distintas para "cuánto compartimos con el chimpancé". ¿Qué habría que preguntar siempre antes de aceptar un número así? ¿Por qué el delfín se parece al tiburón si no son parientes cercanos?</p>
+  <div class="opciones-doc">
+    <b>Opciones para la clase</b>
+    <label><input type="checkbox" id="o-crono"> Mostrar cronómetro</label>
+    <label><input type="checkbox" id="o-errores"> Mostrar contador de errores</label>
+    <p style="margin:0.4rem 0 0;font-size:0.85rem;color:var(--muted);">Enlace con esta configuración para compartir: <code id="o-link"></code></p>
+  </div>
 </details>
+
+<script>
+// Panel de opciones del docente: actualiza la URL para que se pueda compartir.
+(function(){
+  const c = document.getElementById('o-crono'), e = document.getElementById('o-errores');
+  const link = document.getElementById('o-link');
+  c.checked = OPC.crono; e.checked = OPC.errores;
+  function aplicar(){
+    OPC.crono = c.checked; OPC.errores = e.checked;
+    const p = new URLSearchParams();
+    if(OPC.crono) p.set('crono', '1');
+    if(OPC.errores) p.set('errores', '1');
+    const q = p.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
+    link.textContent = location.href;
+    const sc = document.getElementById('st-crono'), se = document.getElementById('st-err');
+    if(sc) sc.hidden = !OPC.crono;
+    if(se) se.hidden = !OPC.errores;
+    if(sc && S) document.getElementById('st-t').textContent = mmss(segundos());
+  }
+  c.onchange = aplicar; e.onchange = aplicar;
+  link.textContent = location.href;
+})();
+</script>
 
 <script data-goatcounter="https://gaa.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>

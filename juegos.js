@@ -108,14 +108,14 @@ const juegos = [
     acentoTexto: "#018574",
     publicado: "2026-10",
     nivel: "secundaria",
-    duracion: 6,
+    duracion: 12,
     temas: ["evolucion"],
     autores: ["Genética a las Aulas"],
     es: {
-      nombre: "Árbol filogenético",
-      subtitulo: "Armá el rompecabezas evolutivo",
-      resumen: "A partir de tablas de similitud genética entre especies, identificá qué pares comparten el ancestro común más reciente.",
-      aprende: ["Árboles filogenéticos", "Ancestro común", "Similitud genética entre especies"]
+      nombre: "Árbol filogenético: armalo vos",
+      subtitulo: "De la tabla de similitud al árbol",
+      resumen: "Armá el árbol paso a paso, uniendo las especies más parecidas según una tabla de similitud genética. Después leé tu árbol: ancestros comunes, grupo externo y por qué girar las ramas no cambia nada.",
+      aprende: ["Construcción de árboles a partir de similitud genética", "Ancestro común más reciente y grupo externo", "Lectura de cladogramas", "Convergencia evolutiva"]
     }
   },
   {
