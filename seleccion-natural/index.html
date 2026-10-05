@@ -105,6 +105,19 @@
   summary:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
   details p{ margin:0.6rem 0 0; }
   @media (max-width:520px){ .controles button{ flex:1 1 100%; } .grupo button{ flex:1 1 100%; } }
+
+  /* --- Desafíos: predecir antes de correr --- */
+  .desafio{ border:2px solid var(--juego); border-radius:8px; padding:1rem 1.1rem; margin:0 0 1.3rem; background:#fff; }
+  .desafio .eti{ font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; font-weight:700; color:var(--juego-texto); }
+  .desafio p{ margin:0.4rem 0 0.7rem; line-height:1.5; font-size:0.95rem; }
+  .desafio .pred{ display:flex; gap:0.8rem; align-items:center; flex-wrap:wrap; margin:0 0 0.7rem; font-size:0.95rem; }
+  .desafio .pred input[type=range]{ flex:1 1 200px; accent-color:var(--juego-texto); }
+  .desafio .pred output{ font-size:1.3rem; font-weight:700; min-width:3.5ch; color:var(--ink); }
+  .desafio .res{ padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; margin:0.6rem 0 0; font-size:0.93rem; line-height:1.5; }
+  .desafio .res.cerca{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .desafio .res.lejos{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .desafio .botones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.6rem; }
+  .desafio button[aria-pressed="true"]{ background:var(--juego-texto); border-color:var(--juego-texto); color:#fff; font-weight:600; }
 </style>
 </head>
 <body>
@@ -150,6 +163,7 @@
 </div>
 
 <div class="tablero">
+  <div class="desafio" id="desafio" aria-live="polite"></div>
   <div class="lectura">
     <div><b id="lec-gen">0</b><span>generaciones</span></div>
     <div><b id="lec-osc">10%</b><span>son oscuras</span></div>
@@ -269,6 +283,7 @@
   dominante, así que hay heterocigotas oscuras que pueden tener crías claras. El
   modelo del juego sigue la proporción de polillas de cada color, que es lo que se
   ve y lo que se cuenta en el campo.</p>
+  <p><b>Desafíos:</b> arriba del tablero hay cuatro desafíos en los que primero se predice (con la barra, que dibuja un rombo en el gráfico) y después se corre la simulación para comparar. Trabajan la forma de la curva, la intensidad de la selección, la necesidad de variación previa y la reversibilidad. Al terminar queda el modo libre.</p>
   <p><b>Para discutir:</b> si al inicio hubiera habido <b>cero</b> polillas
   oscuras, ¿qué habría pasado cuando los troncos se oscurecieron? Sin variación
   previa, la selección natural no tiene sobre qué actuar.</p>
@@ -352,6 +367,12 @@ function graficoSVG(){
   historia.forEach((h,i) => { s2 += `<circle cx="${x(i)}" cy="${y(h.p)}" r="3" fill="#0A874E"/>`; });
   const ult = historia[historia.length-1];
   s2 += `<text x="${Math.min(x(historia.length-1)+8, W-MR-36)}" y="${Math.max(y(ult.p)-8, MT+10)}" font-size="11" font-weight="700" fill="#16211F">${pct(ult.p)}</text>`;
+  if(window.PRED){
+    const px = x(PRED.g), py = y(PRED.p);
+    s2 += `<line x1="${ML}" y1="${py}" x2="${px}" y2="${py}" stroke="#F2A406" stroke-width="1.5" stroke-dasharray="4 3"/>`
+       + `<path d="M${px} ${py-7} L${px+7} ${py} L${px} ${py+7} L${px-7} ${py} Z" fill="#F2A406" stroke="#16211F" stroke-width="1"/>`
+       + `<text x="${px - 10}" y="${py - 10}" text-anchor="end" font-size="10.5" font-weight="700" fill="#16211F">tu predicción</text>`;
+  }
   return s2;
 }
 
@@ -474,6 +495,87 @@ el('btn-reset').onclick  = () => reiniciar();
 el('s').oninput = e => { s = +e.target.value/100; el('v-s').textContent = e.target.value+'%'; };
 
 reiniciar();
+</script>
+
+<script>
+// ---------------------------------------------------------------------------
+// Desafíos: antes de correr, se predice; después se compara con el modelo.
+// Cada desafío arma su propio punto de partida, así el resultado no depende de
+// lo que se haya hecho antes en modo libre.
+// ---------------------------------------------------------------------------
+(function(){
+  const D = [
+    { titulo:'¿Cuánto sube?', p0:0.10, s:0.30, oscuro:true, gens:10,
+      consigna:'El hollín oscurece el tronco. La población arranca con 10% de polillas oscuras y no camuflarse castiga un 30%. ¿Qué porcentaje de oscuras va a haber en la <b>generación 10</b>?',
+      explica:'La curva no sube a ritmo constante: mientras las oscuras son pocas, cada generación suman poco; después se acelera, y al final se frena porque quedan pocas claras para reemplazar.' },
+    { titulo:'Menos presión', p0:0.10, s:0.15, oscuro:true, gens:10,
+      consigna:'El mismo tronco oscuro y el mismo 10% inicial, pero ahora no camuflarse castiga la mitad: 15%. ¿Qué porcentaje de oscuras va a haber en la <b>generación 10</b>?',
+      explica:'Con la mitad de presión de selección el cambio es mucho más lento. El ambiente decide la dirección; la intensidad de la selección decide la velocidad.' },
+    { titulo:'Sin variación', p0:0, s:0.30, oscuro:true, gens:10,
+      consigna:'Tronco oscuro y presión de 30%, pero en esta población <b>no hay ninguna polilla oscura</b>. ¿Qué porcentaje de oscuras va a haber en la generación 10?',
+      explica:'Sin polillas oscuras no hay nada que seleccionar: la proporción se queda en 0%. La selección natural no crea variantes; actúa sobre la variación que ya existe.' },
+    { titulo:'Vuelta atrás', p0:0.80, s:0.30, oscuro:false, gens:10,
+      consigna:'Ahora la población tiene 80% de oscuras y el aire se limpia: el tronco vuelve a ser claro, con la misma presión de 30%. ¿Qué porcentaje de oscuras va a haber en la generación 10?',
+      explica:'Con la misma presión en sentido contrario, la población vuelve casi al punto de partida del primer desafío. Ninguna de las dos variantes es mejor en abstracto: depende del ambiente.' }
+  ];
+  const caja = el('desafio');
+  let i = 0, pred = 50, corrido = false, corriendo = false, cerca = 0, resultado = null;
+  const libres = ['btn-claro','btn-oscuro','btn-gen','btn-x5','btn-reset','s'];
+
+  function preparar(){
+    const d = D[i];
+    p0 = d.p0; s = d.s; troncoOscuro = d.oscuro;
+    el('s').value = Math.round(s * 100); el('v-s').textContent = Math.round(s * 100) + '%';
+    window.PRED = { g:d.gens, p:pred / 100 };
+    reiniciar();
+  }
+  function render(){
+    if(i >= D.length){
+      window.PRED = null; dibujar();
+      caja.innerHTML = `<span class="eti">Desafíos</span>
+        <p><b>Terminaste los desafíos:</b> acertaste ${cerca} de ${D.length} con un margen de 10 puntos. Ahora podés seguir explorando con los controles de abajo.</p>
+        <div class="botones"><button id="d-otra">Hacer los desafíos de nuevo</button></div>`;
+      el('d-otra').onclick = () => { i = 0; cerca = 0; corrido = false; pred = 50; preparar(); render(); };
+      return;
+    }
+    const d = D[i];
+    caja.innerHTML = `<span class="eti">Desafío ${i + 1} de ${D.length} · ${d.titulo}</span>
+      <p>${d.consigna}</p>
+      <div class="pred"><label for="d-pred">Tu predicción:</label>
+        <input type="range" id="d-pred" min="0" max="100" step="1" value="${pred}" ${corrido ? 'disabled' : ''}>
+        <output id="d-val">${pred}%</output></div>
+      <div class="botones">
+        ${corrido ? `<button class="primario" id="d-sig">${i + 1 < D.length ? 'Siguiente desafío' : 'Terminar'} &rarr;</button>`
+                  : `<button class="primario" id="d-correr" ${corriendo ? 'disabled' : ''}>Correr ${d.gens} generaciones</button>`}
+      </div>
+      ${resultado ? `<div class="res ${resultado.cerca ? 'cerca' : 'lejos'}">${resultado.texto}</div>` : ''}`;
+    const r = el('d-pred');
+    r.oninput = () => { pred = +r.value; el('d-val').textContent = pred + '%'; window.PRED = { g:d.gens, p:pred / 100 }; dibujar(); };
+    if(el('d-correr')) el('d-correr').onclick = correr;
+    if(el('d-sig')) el('d-sig').onclick = () => { i++; corrido = false; resultado = null; pred = 50; if(i < D.length) preparar(); render(); };
+  }
+  function correr(){
+    const d = D[i];
+    preparar();
+    corriendo = true; libres.forEach(id => el(id).disabled = true); render();
+    let n = 0;
+    const t = setInterval(() => {
+      troncoOscuro = d.oscuro; paso(); n++;
+      if(n >= d.gens){
+        clearInterval(t);
+        corriendo = false; corrido = true; libres.forEach(id => el(id).disabled = false);
+        const real = historia[historia.length - 1].p * 100, dif = Math.abs(real - pred);
+        if(dif <= 10) cerca++;
+        resultado = { cerca: dif <= 10, texto:
+          `Predijiste <b>${pred}%</b> y el resultado fue <b>${pct(real / 100)}</b>. ` +
+          (dif <= 10 ? '<b>¡Muy cerca!</b> ' : dif <= 20 ? '<b>Cerca, pero no tanto.</b> ' : '<b>Bastante lejos.</b> ') + d.explica };
+        dibujar(); render();
+      }
+    }, 220);
+  }
+  preparar();
+  render();
+})();
 </script>
 <script data-goatcounter="https://gaa.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>

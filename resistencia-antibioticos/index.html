@@ -82,6 +82,19 @@
   summary:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
   details p{ margin:0.6rem 0 0; }
   @media (max-width:520px){ .controles button{ flex:1 1 100%; } }
+
+  /* --- Desafíos: predecir antes de correr --- */
+  .desafio{ border:2px solid var(--juego); border-radius:8px; padding:1rem 1.1rem; margin:0 0 1.3rem; background:#fff; }
+  .desafio .eti{ font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; font-weight:700; color:var(--juego-texto); }
+  .desafio p{ margin:0.4rem 0 0.7rem; line-height:1.5; font-size:0.95rem; }
+  .desafio .pred{ display:flex; gap:0.8rem; align-items:center; flex-wrap:wrap; margin:0 0 0.7rem; font-size:0.95rem; }
+  .desafio .pred input[type=range]{ flex:1 1 200px; accent-color:var(--juego-texto); }
+  .desafio .pred output{ font-size:1.3rem; font-weight:700; min-width:3.5ch; color:var(--ink); }
+  .desafio .res{ padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; margin:0.6rem 0 0; font-size:0.93rem; line-height:1.5; }
+  .desafio .res.cerca{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .desafio .res.lejos{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .desafio .botones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.6rem; }
+  .desafio button[aria-pressed="true"]{ background:var(--juego-texto); border-color:var(--juego-texto); color:#fff; font-weight:600; }
 </style>
 </head>
 <body>
@@ -90,6 +103,7 @@
 <p class="bajada">Una población de bacterias, un antibiótico y una decisión en cada generación. Mirá cómo cambia la proporción de bacterias resistentes.</p>
 
 <div class="tablero">
+  <div class="desafio" id="desafio" aria-live="polite"></div>
   <div class="lectura">
     <div><b id="lec-gen">0</b><span>generaciones</span></div>
     <div><b id="lec-res">2%</b><span>son resistentes</span></div>
@@ -156,6 +170,7 @@
   interesante: ¿alcanza con suspender el antibiótico para que la resistencia
   desaparezca? Probá con el costo en 0%: la proporción se queda donde estaba. Lo
   que subió por selección no baja solo si nada empuja en el otro sentido.</p>
+  <p><b>Desafíos:</b> arriba del tablero hay cuatro desafíos en los que primero se predice el porcentaje de resistentes (la barra dibuja un rombo en el gráfico) y después se corre la simulación para comparar: la velocidad de la selección, la bajada lenta al suspender el antibiótico, el papel del costo y que el antibiótico no crea la resistencia.</p>
   <p><b>Para discutir después de jugar:</b> el antibiótico no crea la
   resistencia — la mutación ya estaba en unas pocas bacterias antes de la primera
   dosis (movés el control "resistentes al inicio" y siempre hay algunas). Lo que
@@ -246,6 +261,12 @@ function graficoSVG(){
   historia.forEach((h,i) => { s += `<circle cx="${x(i)}" cy="${y(h.p)}" r="3" fill="#EB101B"/>`; });
   const ult = historia[historia.length-1];
   s += `<text x="${Math.min(x(historia.length-1)+8, W-MR-40)}" y="${Math.max(y(ult.p)-8, MT+10)}" font-size="11" font-weight="700" fill="#EB101B">${pct(ult.p)}</text>`;
+  if(window.PRED){
+    const px = x(PRED.g), py = y(PRED.p);
+    s += `<line x1="${ML}" y1="${py}" x2="${px}" y2="${py}" stroke="#F2A406" stroke-width="1.5" stroke-dasharray="4 3"/>`
+       + `<path d="M${px} ${py-7} L${px+7} ${py} L${px} ${py+7} L${px-7} ${py} Z" fill="#F2A406" stroke="#16211F" stroke-width="1"/>`
+       + `<text x="${px - 10}" y="${py - 10}" text-anchor="end" font-size="10.5" font-weight="700" fill="#16211F">tu predicción</text>`;
+  }
   return s;
 }
 
@@ -314,6 +335,89 @@ el('w').oninput  = e => { w  = +e.target.value;     el('v-w').textContent  = (+e
 el('c').oninput  = e => { costo = +e.target.value/100; el('v-c').textContent = e.target.value+'%'; };
 
 reiniciar();
+</script>
+
+<script>
+// ---------------------------------------------------------------------------
+// Desafíos: antes de correr, se predice; después se compara con el modelo.
+// acciones: true = generación con antibiótico, false = sin antibiótico.
+// ---------------------------------------------------------------------------
+(function(){
+  const con = n => Array(n).fill(true), sin = n => Array(n).fill(false);
+  const D = [
+    { titulo:'Cinco dosis', p0:0.02, w:2, c:0.15, acciones:con(5),
+      consigna:'Hay 2% de bacterias resistentes y se da antibiótico durante 5 generaciones (las resistentes tienen el doble de éxito). ¿Qué porcentaje de resistentes va a haber en la <b>generación 5</b>?',
+      explica:'Con ventaja doble, la proporción de resistentes se multiplica rápido mientras son pocas: de 2% pasa a cerca de 40% en solo 5 generaciones.' },
+    { titulo:'Suspender el antibiótico', p0:0.02, w:2, c:0.15, acciones:con(5).concat(sin(5)),
+      consigna:'Lo mismo de antes, y después 5 generaciones <b>sin</b> antibiótico. Ser resistente tiene un costo de 15%. ¿Qué porcentaje de resistentes va a haber en la <b>generación 10</b>?',
+      explica:'Sin antibiótico las resistentes bajan, pero mucho más despacio de lo que subieron: el costo de 15% empuja menos que la ventaja doble del antibiótico. No vuelve al 2%.' },
+    { titulo:'Resistencia sin costo', p0:0.02, w:2, c:0, acciones:con(5).concat(sin(5)),
+      consigna:'La misma secuencia, pero esta vez ser resistente <b>no tiene ningún costo</b>. ¿Qué porcentaje de resistentes va a haber en la generación 10?',
+      explica:'Si la resistencia no cuesta nada, al suspender el antibiótico nada empuja en sentido contrario: la proporción se queda donde estaba. Lo que subió por selección no baja solo.' },
+    { titulo:'Sin resistentes al inicio', p0:0, w:2, c:0.15, acciones:con(10),
+      consigna:'En esta población <b>no hay ninguna bacteria resistente</b>. Se da antibiótico durante 10 generaciones. ¿Qué porcentaje de resistentes va a haber en la generación 10?',
+      explica:'El antibiótico no crea la resistencia: si no hay ninguna bacteria resistente, no hay nada que seleccionar y la proporción se queda en 0%. (En la realidad pueden aparecer mutaciones nuevas, pero el antibiótico no las provoca a pedido: selecciona las que ya están.)' }
+  ];
+  const caja = el('desafio');
+  let i = 0, pred = 50, corrido = false, corriendo = false, cerca = 0, resultado = null;
+  const libres = ['btn-dar','btn-no','btn-x5','btn-reset','p0','w','c'];
+
+  function preparar(){
+    const d = D[i];
+    p0 = d.p0; w = d.w; costo = d.c;
+    el('p0').value = Math.max(0.5, p0 * 100); el('v-p0').textContent = (p0 * 100).toString().replace('.', ',') + '%';
+    el('w').value = w; el('v-w').textContent = w.toFixed(1) + '×';
+    el('c').value = Math.round(costo * 100); el('v-c').textContent = Math.round(costo * 100) + '%';
+    window.PRED = { g:d.acciones.length, p:pred / 100 };
+    reiniciar();
+  }
+  function render(){
+    if(i >= D.length){
+      window.PRED = null; dibujar();
+      caja.innerHTML = `<span class="eti">Desafíos</span>
+        <p><b>Terminaste los desafíos:</b> acertaste ${cerca} de ${D.length} con un margen de 10 puntos. Ahora podés seguir explorando con los controles de abajo.</p>
+        <div class="botones"><button id="d-otra">Hacer los desafíos de nuevo</button></div>`;
+      el('d-otra').onclick = () => { i = 0; cerca = 0; corrido = false; pred = 50; preparar(); render(); };
+      return;
+    }
+    const d = D[i], g = d.acciones.length;
+    caja.innerHTML = `<span class="eti">Desafío ${i + 1} de ${D.length} · ${d.titulo}</span>
+      <p>${d.consigna}</p>
+      <div class="pred"><label for="d-pred">Tu predicción:</label>
+        <input type="range" id="d-pred" min="0" max="100" step="1" value="${pred}" ${corrido ? 'disabled' : ''}>
+        <output id="d-val">${pred}%</output></div>
+      <div class="botones">
+        ${corrido ? `<button class="primario" id="d-sig">${i + 1 < D.length ? 'Siguiente desafío' : 'Terminar'} &rarr;</button>`
+                  : `<button class="primario" id="d-correr" ${corriendo ? 'disabled' : ''}>Correr ${g} generaciones</button>`}
+      </div>
+      ${resultado ? `<div class="res ${resultado.cerca ? 'cerca' : 'lejos'}">${resultado.texto}</div>` : ''}`;
+    const r = el('d-pred');
+    r.oninput = () => { pred = +r.value; el('d-val').textContent = pred + '%'; window.PRED = { g, p:pred / 100 }; dibujar(); };
+    if(el('d-correr')) el('d-correr').onclick = correr;
+    if(el('d-sig')) el('d-sig').onclick = () => { i++; corrido = false; resultado = null; pred = 50; if(i < D.length) preparar(); render(); };
+  }
+  function correr(){
+    const d = D[i];
+    preparar();
+    corriendo = true; libres.forEach(id => el(id).disabled = true); render();
+    let n = 0;
+    const t = setInterval(() => {
+      paso(d.acciones[n]); n++;
+      if(n >= d.acciones.length){
+        clearInterval(t);
+        corriendo = false; corrido = true; libres.forEach(id => el(id).disabled = false);
+        const real = historia[historia.length - 1].p * 100, dif = Math.abs(real - pred);
+        if(dif <= 10) cerca++;
+        resultado = { cerca: dif <= 10, texto:
+          `Predijiste <b>${pred}%</b> y el resultado fue <b>${pct(real / 100)}</b>. ` +
+          (dif <= 10 ? '<b>¡Muy cerca!</b> ' : dif <= 20 ? '<b>Cerca, pero no tanto.</b> ' : '<b>Bastante lejos.</b> ') + d.explica };
+        dibujar(); render();
+      }
+    }, 220);
+  }
+  preparar();
+  render();
+})();
 </script>
 <script data-goatcounter="https://gaa.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>

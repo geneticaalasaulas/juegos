@@ -91,6 +91,19 @@
   summary:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
   details p{ margin:0.6rem 0 0; }
   @media (max-width:520px){ .controles button{ flex:1 1 100%; } }
+
+  /* --- Desafíos: predecir antes de correr --- */
+  .desafio{ border:2px solid var(--juego); border-radius:8px; padding:1rem 1.1rem; margin:0 0 1.3rem; background:#fff; }
+  .desafio .eti{ font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; font-weight:700; color:var(--juego-texto); }
+  .desafio p{ margin:0.4rem 0 0.7rem; line-height:1.5; font-size:0.95rem; }
+  .desafio .pred{ display:flex; gap:0.8rem; align-items:center; flex-wrap:wrap; margin:0 0 0.7rem; font-size:0.95rem; }
+  .desafio .pred input[type=range]{ flex:1 1 200px; accent-color:var(--juego-texto); }
+  .desafio .pred output{ font-size:1.3rem; font-weight:700; min-width:3.5ch; color:var(--ink); }
+  .desafio .res{ padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; margin:0.6rem 0 0; font-size:0.93rem; line-height:1.5; }
+  .desafio .res.cerca{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .desafio .res.lejos{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .desafio .botones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.6rem; }
+  .desafio button[aria-pressed="true"]{ background:var(--juego-texto); border-color:var(--juego-texto); color:#fff; font-weight:600; }
 </style>
 </head>
 <body>
@@ -114,6 +127,7 @@
 <p class="bajada">Una isla con 100 tortugas y tres colores de caparazón. Una tormenta deja unas pocas sobrevivientes, elegidas al azar. Corré la simulación varias veces: el resultado no es el mismo.</p>
 
 <div class="tablero">
+  <div class="desafio" id="desafio" aria-live="polite"></div>
   <h2 class="etapa">Antes de la tormenta — 100 tortugas</h2>
   <div class="tortugas" id="antes" aria-hidden="true"></div>
   <div class="barras" id="barras-antes"></div>
@@ -164,6 +178,7 @@
   verde: el par más parecido, en el peor de los tres tipos de daltonismo más
   frecuentes, todavía separa 78 unidades de color. Si un/a estudiante pregunta,
   vale decirlo: acá el color es una etiqueta para seguir un alelo, no un retrato.</p>
+  <p><b>Desafíos:</b> arriba del tablero hay tres desafíos: predecir qué color se pierde más seguido, en cuántas de 20 tormentas se pierde algún color, y buscar cuántas sobrevivientes hacen falta para que eso pase en menos de 1 de cada 20. Como la deriva es azar, cada predicción se compara con la probabilidad exacta (distribución hipergeométrica) y también con lo que salió en la tanda.</p>
   <p><b>Para discutir después de jugar:</b> moviendo el control, ¿a partir de
   cuántas sobrevivientes deja de perderse algún color casi siempre? Y una vez
   que un color se perdió, ¿puede volver? No por azar: haría falta una mutación
@@ -340,6 +355,134 @@ el('btn-borrar').onclick = () => {
 el('k').oninput = e => { k = +e.target.value; el('v-k').textContent = k; dibujar(); };
 
 dibujar();
+</script>
+
+<script>
+// ---------------------------------------------------------------------------
+// Desafíos. La deriva es azar, así que cada predicción se compara con la
+// probabilidad exacta (muestreo sin reposición: distribución hipergeométrica),
+// y además se muestra lo que salió en una tanda de 20 tormentas.
+// ---------------------------------------------------------------------------
+(function(){
+  const ns = alelos.map(a => Math.round(a.f * N));          // 50, 30, 20 tortugas
+  // Probabilidad de que ninguna de las kk sobrevivientes esté entre c tortugas.
+  const pNinguna = (c, kk) => { if(kk > N - c) return 0; let r = 1; for(let j = 0; j < kk; j++) r *= (N - c - j) / (N - j); return r; };
+  const pColor = (i, kk) => pNinguna(ns[i], kk);
+  // Probabilidad de perder al menos un color (inclusión-exclusión).
+  function pPerdida(kk){
+    const [a, b, c] = ns;
+    return pNinguna(a, kk) + pNinguna(b, kk) + pNinguna(c, kk) - pNinguna(a + b, kk) - pNinguna(a + c, kk) - pNinguna(b + c, kk);
+  }
+  let kMin = 2; while(pPerdida(kMin) >= 0.05) kMin++;
+  const raro = ns.indexOf(Math.min(...ns));
+  const fmt = v => v.toFixed(1).replace('.', ',');
+  const pc = v => (v * 100).toFixed(2).replace('.', ',') + ' %';
+  const veces = n => n === 1 ? '1 vez' : n + ' veces';
+
+  const D = [
+    { tipo:'color', k:6, titulo:'¿Cuál se pierde?',
+      consigna:'Sobreviven 6 tortugas de 100. Si la tormenta se repite 20 veces, ¿qué color se va a perder <b>más seguido</b>? Elegí uno y corré la tanda.' },
+    { tipo:'numero', k:6, titulo:'¿Cuántas veces?',
+      consigna:'Con 6 sobrevivientes, ¿en cuántas de 20 tormentas se va a perder <b>al menos un color</b>?' },
+    { tipo:'buscar', titulo:'¿Cuántas hacen falta?',
+      consigna:'Buscá la <b>menor</b> cantidad de sobrevivientes con la que se pierde algún color en <b>menos del 5 %</b> de las tormentas (1 de cada 20), en promedio. Probá con la barra "Cuántas tortugas sobreviven" y corré tandas de 20; cuando tengas tu respuesta, confirmala.' }
+  ];
+  const caja = el('desafio');
+  let i = 0, eleccion = null, pred = 10, resultado = null, hecho = false, aciertos = 0, intentos = 0;
+
+  function fijarK(kk){ k = kk; el('k').value = kk; el('v-k').textContent = kk; dibujar(); }
+  function tanda(){
+    let perd = 0; const porColor = alelos.map(() => 0);
+    for(let t = 0; t < 20; t++){
+      correr();
+      const r = registro[0];
+      if(r.perdidos) perd++;
+      r.cuentas.forEach((c, j) => { if(c === 0) porColor[j]++; });
+    }
+    return { perd, porColor };
+  }
+
+  function render(){
+    if(i >= D.length){
+      caja.innerHTML = `<span class="eti">Desafíos</span>
+        <p><b>Terminaste los desafíos</b> (${aciertos} de ${D.length} bien a la primera). Seguí explorando: cambiá la cantidad de sobrevivientes y corré varias tormentas.</p>
+        <div class="botones"><button id="d-otra">Hacer los desafíos de nuevo</button></div>`;
+      el('d-otra').onclick = () => { i = 0; aciertos = 0; reset(); };
+      return;
+    }
+    const d = D[i];
+    let cuerpo = '';
+    if(d.tipo === 'color')
+      cuerpo = `<div class="botones">${alelos.map((a, j) => `<button data-c="${j}" aria-pressed="${eleccion === j}" ${hecho ? 'disabled' : ''}>Las ${a.plural}</button>`).join('')}</div>`;
+    else if(d.tipo === 'numero')
+      cuerpo = `<div class="pred"><label for="d-pred">Tu predicción:</label>
+        <input type="range" id="d-pred" min="0" max="20" step="1" value="${pred}" ${hecho ? 'disabled' : ''}>
+        <output id="d-val">${pred} de 20</output></div>`;
+    else
+      cuerpo = `<div class="botones"><button id="d-tanda">Correr 20 tormentas con ${k} sobrevivientes</button>
+        <button class="primario" id="d-resp" ${hecho ? 'disabled' : ''}>Mi respuesta: ${k} sobrevivientes</button></div>`;
+    const accion = d.tipo === 'buscar' ? '' : hecho ? '' : `<div class="botones"><button class="primario" id="d-correr">Correr 20 tormentas</button></div>`;
+    caja.innerHTML = `<span class="eti">Desafío ${i + 1} de ${D.length} · ${d.titulo}</span>
+      <p>${d.consigna}</p>${cuerpo}${accion}
+      ${resultado ? `<div class="res ${resultado.bien ? 'cerca' : 'lejos'}">${resultado.texto}</div>` : ''}
+      ${hecho ? `<div class="botones"><button class="primario" id="d-sig">${i + 1 < D.length ? 'Siguiente desafío' : 'Terminar'} &rarr;</button></div>` : ''}`;
+    caja.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { eleccion = +b.dataset.c; render(); });
+    const r = el('d-pred');
+    if(r) r.oninput = () => { pred = +r.value; el('d-val').textContent = pred + ' de 20'; };
+    if(el('d-correr')) el('d-correr').onclick = correrDesafio;
+    if(el('d-tanda')) el('d-tanda').onclick = () => {
+      const t = tanda();
+      resultado = { bien:true, texto:`Con ${k} sobrevivientes, en esta tanda se perdió algún color en <b>${t.perd} de 20</b> tormentas. Ojo: es una sola tanda y el azar pesa; podés correr varias.` };
+      render();
+    };
+    if(el('d-resp')) el('d-resp').onclick = responderBuscar;
+    if(el('d-sig')) el('d-sig').onclick = () => { i++; reset(); };
+  }
+  function reset(){
+    eleccion = null; pred = 10; resultado = null; hecho = false; intentos = 0;
+    if(i < D.length && D[i].k) fijarK(D[i].k);
+    render();
+  }
+  function correrDesafio(){
+    const d = D[i];
+    if(d.tipo === 'color' && eleccion === null){ resultado = { bien:false, texto:'Primero elegí un color.' }; render(); return; }
+    fijarK(d.k);
+    const t = tanda();
+    hecho = true;
+    if(d.tipo === 'color'){
+      const bien = eleccion === raro;
+      if(bien) aciertos++;
+      const detalle = alelos.map((a, j) => `${a.plural}: ${veces(t.porColor[j])} (esperado en promedio: ${fmt(20 * pColor(j, d.k))})`).join(' · ');
+      resultado = { bien, texto: (bien ? '<b>¡Bien!</b> ' : `<b>No:</b> el que más se pierde es el de las ${alelos[raro].plural}. `) +
+        `En esta tanda: ${detalle}. El color que se pierde más seguido es el <b>más raro</b> (era el 20% de la población): basta con que ninguna de las pocas sobrevivientes lo tenga. ` +
+        (t.porColor[raro] < Math.max(...t.porColor) ? 'Justo en esta tanda el azar dio otra cosa: corré otra y fijate.' : '') };
+    } else {
+      const esp = 20 * pPerdida(d.k), bien = Math.abs(pred - esp) <= 3;
+      if(bien) aciertos++;
+      resultado = { bien, texto: `Predijiste <b>${pred} de 20</b>. En esta tanda se perdió algún color en <b>${t.perd} de 20</b> tormentas, y lo esperado en promedio es <b>${fmt(esp)} de 20</b>. ` +
+        (bien ? '<b>¡Muy cerca!</b> ' : '<b>Lejos de lo esperado.</b> ') +
+        'Con tan pocas sobrevivientes, perder un color es algo que pasa muy seguido: la deriva es fuerte cuando la población es chica.' };
+    }
+    render();
+  }
+  function responderBuscar(){
+    intentos++;
+    const p = pPerdida(k);
+    if(p >= 0.05){
+      resultado = { bien:false, texto:`Con ${k} sobrevivientes todavía se pierde algún color en el <b>${pc(p)}</b> de las tormentas, en promedio. Hacen falta más.` };
+    } else if(k > kMin){
+      resultado = { bien:false, texto:`Con ${k} sobrevivientes funciona: se pierde algún color en el ${pc(p)} de las tormentas, en promedio. Pero <b>con menos también alcanza</b>: probá bajar.` };
+    } else {
+      hecho = true;
+      if(intentos === 1) aciertos++;
+      resultado = { bien:true, texto:`<b>¡Exacto!</b> Con ${kMin} sobrevivientes se pierde algún color en el ${pc(pPerdida(kMin))} de las tormentas, en promedio; con ${kMin - 1}, en el ${pc(pPerdida(kMin - 1))}. Hacen falta muchas sobrevivientes para no perder variación, sobre todo la de los colores raros. Por eso un cuello de botella deja a la población con menos variación genética.` };
+    }
+    render();
+  }
+  // Si se mueve la barra durante el tercer desafío, el botón muestra el valor nuevo.
+  el('k').addEventListener('input', () => { if(i < D.length && D[i].tipo === 'buscar') render(); });
+  reset();
+})();
 </script>
 <script data-goatcounter="https://gaa.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>

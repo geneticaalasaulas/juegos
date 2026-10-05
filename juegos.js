@@ -95,7 +95,7 @@ const juegos = [
     es: {
       nombre: "Selección natural simulada",
       subtitulo: "Camuflaje, generación a generación",
-      resumen: "Polillas claras y oscuras sobre el tronco de un abedul. Elegí el color del tronco, hacé pasar las generaciones y mirá cómo se mueven las proporciones. Cambiá el tronco a mitad de camino y la curva se da vuelta.",
+      resumen: "Polillas claras y oscuras sobre el tronco de un abedul. Predecí cómo van a cambiar las proporciones, hacé pasar las generaciones y compará. Cambiá el tronco a mitad de camino y la curva se da vuelta.",
       aprende: ["Selección natural", "La variación existe antes de la selección", "El ambiente define qué variante es ventajosa", "Melanismo industrial"]
     }
   },
@@ -133,7 +133,7 @@ const juegos = [
     es: {
       nombre: "Cuello de botella",
       subtitulo: "Simulá la deriva genética",
-      resumen: "Una tormenta deja unas pocas tortugas sobrevivientes, elegidas al azar. Corré la simulación varias veces y mirá cómo el resultado cambia cada vez: eso es la deriva genética.",
+      resumen: "Una tormenta deja unas pocas tortugas sobrevivientes, elegidas al azar. Predecí qué color se pierde y cuántas sobrevivientes hacen falta para no perder variación, y ponelo a prueba corriendo tormentas.",
       aprende: ["Deriva genética", "Cuello de botella poblacional", "Pérdida de variación por azar", "Diferencia entre deriva y selección"]
     }
   },
@@ -152,7 +152,7 @@ const juegos = [
     es: {
       nombre: "Resistencia a antibióticos",
       subtitulo: "Simulador interactivo",
-      resumen: "Aplicá o no el antibiótico en cada generación y mirá en el gráfico cómo cambia la proporción de bacterias resistentes. Ajustá la ventaja de las resistentes y el costo de serlo.",
+      resumen: "Predecí qué va a pasar con las bacterias resistentes, aplicá o no el antibiótico en cada generación y compará en el gráfico. Ajustá la ventaja de las resistentes y el costo de serlo.",
       aprende: ["Evolución de la resistencia bacteriana", "El antibiótico selecciona, no crea", "Proporción frente a cantidad", "Uso responsable de antibióticos"]
     }
   },
