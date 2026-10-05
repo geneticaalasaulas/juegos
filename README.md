@@ -3,8 +3,9 @@
 Sitio publicado: **https://geneticaalasaulas.github.io/juegos/**
 
 Sitio estático, sin build, sin framework, sin dependencias: solo HTML, CSS
-y un catálogo en JavaScript. Incluye 12 juegos: Árbol genealógico: poné a prueba tu hipótesis, Punnett: de los gametos
-a la descendencia, Cariotipo: armá y diagnosticá, Selección natural simulada, Árbol filogenético: armalo vos,
+y un catálogo en JavaScript. Incluye 17 juegos. Para primaria: La escalera del ADN, Viaje al interior,
+Extracción de ADN, Detectives de familia y ¿Es merluza de verdad?. Para secundaria y docentes:
+Árbol genealógico: poné a prueba tu hipótesis, Punnett: de los gametos a la descendencia, Cariotipo: armá y diagnosticá, Selección natural simulada, Árbol filogenético: armalo vos,
 Cuello de botella, Resistencia a antibióticos, Nutrigenética (leche, genes y cultura),
 CRISPR simplificado, Farmacogenómica: ajustá la dosis, Detective de enfermedades
 genéticas y Epigenética con interruptores.

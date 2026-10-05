@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extracción de ADN · Genética a las Aulas</title>
+<style>
+  :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
+    --juego:#C88705;          /* ocre del logo — ver capas/extraccion-adn.svg */
+    --juego-texto:#A06C04;
+    --juego-tinte:#F8EEDA;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--juego-texto); }
+  h1{ font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem); letter-spacing:-0.01em; line-height:1.2; margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem; }
+  .bajada{ max-width:34em; margin:0 auto 1rem; font-size:0.95rem; line-height:1.55; color:var(--muted); text-align:center; padding:0 1rem; }
+  .marcador{ color:var(--muted); font-size:0.95rem; margin:0 0 1rem; text-align:center; }
+  .progreso{ width:min(820px,94vw); height:5px; margin:0 0 1.1rem; background:var(--pista); border-radius:999px; overflow:hidden; }
+  .progreso > i{ display:block; height:100%; width:0; border-radius:999px; background:var(--juego-texto); transition:width .3s ease; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.5rem; width:min(820px,94vw); margin-bottom:1.2rem; }
+
+  button{ min-height:44px; padding:0.55rem 0.95rem; border-radius:6px; font-size:0.97rem; cursor:pointer; font-family:inherit;
+    border:1.5px solid var(--juego); background:#fff; color:var(--ink); transition:background-color .15s ease; }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+
+  .lab{ display:grid; grid-template-columns:minmax(0, 1.1fr) minmax(0, 1fr); gap:1.2rem; align-items:start; }
+  @media (max-width:640px){ .lab{ grid-template-columns:1fr; } }
+  .mesa{ background:#FAF6EE; border:1px solid #EADFC9; border-radius:8px; padding:0.6rem; }
+  .mesa svg{ display:block; width:100%; height:auto; }
+  .consigna{ font-size:1.05rem; line-height:1.5; margin:0 0 0.8rem; font-weight:600; }
+  .estante-eti{ font-size:0.82rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--muted); font-weight:600; margin:0 0 0.4rem; }
+  .estante{ display:grid; grid-template-columns:repeat(auto-fill, minmax(118px, 1fr)); gap:0.45rem; }
+  .estante button{ display:flex; align-items:center; gap:0.4rem; text-align:left; padding:0.4rem 0.55rem; font-size:0.9rem; line-height:1.2; }
+  .estante button .ico{ font-size:1.35rem; flex:none; }
+  .estante button.usado{ background:#E2F3EA; border-color:var(--ok); }
+  .estante button.usado::after{ content:"\2713"; margin-left:auto; color:var(--ok); font-weight:700; }
+  .accion{ margin-top:0.8rem; display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; }
+  .medidor{ flex:1 1 120px; height:12px; background:#EEE6D6; border-radius:999px; overflow:hidden; }
+  .medidor > i{ display:block; height:100%; background:#D2405E; border-radius:999px; transition:width .15s ease; }
+
+  .cuaderno{ margin-top:1.3rem; border-top:1px solid #E6E9E8; padding-top:0.9rem; }
+  .cuaderno h2{ font-size:0.82rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--muted); font-weight:600; margin:0 0 0.5rem; }
+  .cuaderno ol{ margin:0; padding-left:1.3rem; line-height:1.5; font-size:0.95rem; }
+  .cuaderno li{ margin-bottom:0.45rem; }
+  .cuaderno li span{ color:var(--muted); }
+
+  .fb{ font-size:1rem; line-height:1.5; margin:0.9rem 0 0; padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; }
+  .fb:empty{ display:none; }
+  .fb.pista{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .fb.ok{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .pregunta p{ margin:0.9rem 0 0.4rem; font-weight:600; }
+  .opciones{ display:grid; gap:0.5rem; }
+  .opciones button{ text-align:left; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.ok:disabled{ opacity:1; }
+  .opciones button.ok::before{ content:"\2713\00a0"; font-weight:700; }
+  .opciones button.mal{ border-color:var(--mal); color:var(--mal); }
+  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
+  .acciones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.9rem; justify-content:center; }
+  .receta{ text-align:left; max-width:36em; margin:1rem auto 0; line-height:1.55; }
+  .receta h3{ margin:1rem 0 0.3rem; font-size:1rem; }
+  .receta ul, .receta ol{ margin:0; padding-left:1.3rem; }
+  .cuidado{ background:#FFF4DC; border-left:3px solid var(--accent); padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; margin-top:0.8rem; }
+  .final{ text-align:center; }
+
+  details.docente{ max-width:38em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  @media (prefers-reduced-motion:reduce){ .progreso > i, .medidor > i{ transition:none; } }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>Extracción de ADN</h1>
+<p class="bajada">Con cosas de la cocina se puede sacar el ADN de una frutilla y verlo a simple vista. Probalo primero acá, elegí bien cada paso, y después hacelo de verdad.</p>
+<p class="marcador" id="marcador"></p>
+<div class="progreso" aria-hidden="true"><i id="barra"></i></div>
+<div class="tablero" id="tablero"></div>
+
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Primaria (de 8 a 12 años, aproximadamente). Es una buena previa (o un buen repaso) de la extracción real en el aula.</p>
+  <p><b>Conceptos que trabaja:</b> el ADN está dentro de las células, en el núcleo, rodeado de membranas; para sacarlo hay que romper los tejidos (aplastar) y las membranas (detergente); el ADN no se disuelve en alcohol y por eso se junta y se hace visible; un procedimiento científico tiene pasos en orden, y cada uno tiene una razón.</p>
+  <p><b>Qué hace cada ingrediente:</b> aplastar rompe el tejido y las paredes de las células vegetales. El detergente disuelve las membranas, que están hechas de lípidos (por eso saca la grasa de los platos), y libera el ADN. La sal aporta iones positivos que neutralizan las cargas negativas del ADN y lo ayudan a juntarse; también ayuda a separarlo de las proteínas. Filtrar saca los restos sólidos. El alcohol frío hace que el ADN, que no se disuelve en alcohol, precipite en la interfase como una nube blanca de hilos.</p>
+  <p><b>Por qué frutilla:</b> la frutilla cultivada es octoploide (tiene ocho copias de cada cromosoma) y madura es blanda, así que da mucho material con poco esfuerzo. Banana y kiwi también funcionan.</p>
+  <p><b>Una precisión importante:</b> lo que se ve no es "una molécula de ADN": son millones de moléculas de miles de células, enredadas, y mezcladas con otras sustancias que también precipitan en alcohol (en la frutilla, sobre todo pectina y ARN). Ninguna molécula de ADN se ve a simple vista. Tampoco se ve la doble hélice: hace falta mucho más aumento.</p>
+  <p><b>Para hacerlo en el aula:</b> la receta del final está pensada para hacerla con supervisión. El alcohol etílico de farmacia (96°) funciona mejor que el de 70°; tiene que estar bien frío y lo manipula una persona adulta, porque es inflamable. No se ingiere nada de lo que se use.</p>
+  <p><b>Para discutir después de jugar:</b> ¿por qué hace falta el detergente? ¿Qué creés que pasaría si usáramos una banana? ¿Y un pedacito de carne? (También tiene ADN: todas las células con núcleo lo tienen.)</p>
+</details>
+
+<script>
+// ---------------------------------------------------------------------------
+// El estante: ingredientes y herramientas. Los que no van, para tentar.
+// ---------------------------------------------------------------------------
+const ITEMS = {
+  frutilla:   { ico:'🍓', nom:'Frutilla' },
+  agua:       { ico:'💧', nom:'Agua' },
+  detergente: { ico:'🧴', nom:'Detergente' },
+  sal:        { ico:'🧂', nom:'Sal' },
+  azucar:     { ico:'🍬', nom:'Azúcar' },
+  filtro:     { ico:'☕', nom:'Filtro de café' },
+  alcohol:    { ico:'🧊', nom:'Alcohol bien frío' },
+  palito:     { ico:'🥢', nom:'Palito de brochette' },
+  leche:      { ico:'🥛', nom:'Leche' }
+};
+const ORDEN_ESTANTE = ['frutilla','agua','azucar','detergente','leche','sal','filtro','alcohol','palito'];
+
+// Pasos del protocolo. "usa": lo que hay que elegir del estante en ese paso.
+const PASOS = [
+  { id:'romper', titulo:'Romper la frutilla', consigna:'Tenemos una bolsa con cierre vacía. ¿Qué ponemos primero?', usa:['frutilla'],
+    nota:'Pusimos la frutilla en la bolsa y la aplastamos.', por:'Aplastar rompe la fruta y separa sus células.' },
+  { id:'solucion', titulo:'Preparar la mezcla', consigna:'Ahora hay que agregar tres cosas a la bolsa, para sacar el ADN de adentro de las células. ¿Cuáles?', usa:['agua','detergente','sal'],
+    notas:{ agua:'Agregamos agua.', detergente:'Agregamos detergente.', sal:'Agregamos sal.' },
+    por:{ agua:'El agua ayuda a que todo se mezcle.', detergente:'El detergente rompe las membranas que rodean a cada célula y a su núcleo. Están hechas de grasas: por eso el detergente las deshace, como saca la grasa de los platos.', sal:'La sal ayuda a que los hilos de ADN se junten entre sí.' } },
+  { id:'filtrar', titulo:'Filtrar', consigna:'La bolsa tiene un líquido rosado con pedazos de frutilla y semillas. ¿Cómo separamos el líquido?', usa:['filtro'],
+    nota:'Pasamos todo por un filtro de café a un vaso.', por:'El filtro deja pasar el líquido, donde está el ADN, y retiene los pedazos de fruta y las semillas.' },
+  { id:'alcohol', titulo:'El alcohol', consigna:'Tenemos un vaso con el líquido filtrado. ¿Qué agregamos ahora, despacito, por el costado del vaso?', usa:['alcohol'], prediccion:true,
+    nota:'Agregamos alcohol bien frío, despacio, por el costado.', por:'El ADN no se disuelve en alcohol: cuando se encuentra con él, se junta y aparece.' },
+  { id:'enrollar', titulo:'Sacar el ADN', consigna:'¡Mirá esa nube blanca! ¿Con qué la sacamos del vaso?', usa:['palito'],
+    nota:'Enrollamos la nube blanca con un palito.', por:'Son hilos de ADN de miles de células, todos juntos y enredados.' }
+];
+
+const PRED = {
+  pregunta:'Antes de agregar el alcohol: ¿qué creés que va a pasar?',
+  correcta:'Va a aparecer una nube blanca de hilitos entre el líquido rosado y el alcohol',
+  distractores:['El líquido se va a poner azul', 'No va a pasar nada: el ADN es invisible'],
+  ok:'¡Buena predicción! Vamos a ver si tenías razón.',
+  mal:'Puede ser lo que esperabas, pero mirá lo que pasa en el vaso.'
+};
+
+const PREGUNTAS = [
+  { p:'Si nos hubiéramos olvidado del detergente, ¿qué habría pasado?',
+    correcta:'Casi no habría aparecido ADN, porque habría quedado encerrado dentro de las células',
+    distractores:['Habría aparecido más ADN, porque no habría nada que lo moleste', 'El ADN habría salido de otro color'],
+    exp:'El detergente rompe las membranas. Sin él, casi todo el ADN se queda adentro de las células y se va con lo que queda en el filtro.' },
+  { p:'¿Lo que enrollaste en el palito es una sola molécula de ADN?',
+    correcta:'No: son muchísimos hilos de ADN de miles de células, juntos y mezclados con otras sustancias de la frutilla',
+    distractores:['Sí: es una molécula de ADN, y con una lupa se vería la doble hélice', 'No: es el núcleo entero de la frutilla'],
+    exp:'Un solo hilo de ADN es tan fino que no se ve ni con un microscopio común. Lo que se ve es un montón de hilos juntos, y además otras sustancias de la frutilla que también se juntan con el alcohol.' },
+  { p:'¿De qué otra cosa podríamos sacar ADN de la misma forma?',
+    correcta:'De una banana, un kiwi o cualquier ser vivo: todos tienen células con ADN',
+    distractores:['Solo de frutillas: es la única fruta que tiene ADN', 'De una piedra, si la aplastamos bien'],
+    exp:'Todos los seres vivos tienen ADN en sus células. La frutilla se usa porque es blanda y tiene mucho: cada una de sus células tiene ocho copias de cada cromosoma.' }
+];
+
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+const el = id => document.getElementById(id);
+let S = null, errores = 0, finContado = false;
+function mezclar(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function empezar(){
+  S = { paso:0, usados:new Set(), puestos:new Set(), aplastado:0, mezclado:false, esperado:false, nube:0,
+        pred:null, predOps:mezclar([PRED.correcta, ...PRED.distractores]), cuaderno:[], msg:null, fase:'lab',
+        q:0, qElegidas:new Set(), qOps:null, qHecho:false };
+  dibujar();
+}
+
+// ---------------------------------------------------------------------------
+// Dibujo de la mesa según el paso.
+// ---------------------------------------------------------------------------
+function mesaSVG(){
+  const p = PASOS[S.paso] ? PASOS[S.paso].id : 'fin';
+  let s = `<svg viewBox="0 0 320 240" role="img" aria-label="${descMesa(p)}"><rect y="200" width="320" height="40" fill="#E4D3B2"/>`;
+  const bolsa = (relleno, extra) => `<path d="M90 60 L230 60 L222 196 Q160 206 98 196 Z" fill="#EEF5F8" stroke="#8FA9B5" stroke-width="2.5"/>
+    <rect x="86" y="52" width="148" height="10" rx="3" fill="#6E8C99"/>${relleno || ''}${extra || ''}`;
+  if(p === 'romper'){
+    if(!S.puestos.has('frutilla')){
+      s += bolsa() + fresa(260, 176, 1);
+    } else {
+      const a = S.aplastado / 8;
+      s += bolsa(`<path d="M${100 - a * 2} ${196 - 40 - a * 10} Q160 ${150 - a * 14} ${220 + a * 2} ${156 - a * 10} L222 196 Q160 206 98 196 Z" fill="#D2405E" opacity="${0.55 + a * 0.4}"/>`,
+        a < 1 ? fresa(160, 170 - a * 4, 1 - a * 0.6) : semillas());
+    }
+  } else if(p === 'solucion'){
+    const nivel = 150 - S.puestos.size * 16;
+    const color = S.puestos.has('agua') ? '#E58AA0' : '#D2405E';
+    const burbujas = S.puestos.has('detergente') ? [[120,nivel+8],[150,nivel+4],[190,nivel+10],[205,nivel+3],[135,nivel+14]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="5" fill="#fff" opacity="0.8"/>`).join('') : '';
+    s += bolsa(`<path d="M98 ${nivel} Q160 ${nivel - 8} 222 ${nivel} L222 196 Q160 206 98 196 Z" fill="${color}"/>${burbujas}`, semillas());
+  } else if(p === 'filtrar'){
+    s += vaso(`<rect x="110" y="150" width="100" height="46" fill="#E58AA0" opacity="0.85"/>`);
+    if(S.puestos.has('filtro')) s += `<path d="M118 46 L202 46 L170 100 L150 100 Z" fill="#F4E6CF" stroke="#B79B6A" stroke-width="2"/><path d="M128 54 Q160 70 192 54 L176 84 L144 84Z" fill="#B23552" opacity="0.8"/>`;
+  } else if(p === 'alcohol' || p === 'enrollar' || p === 'fin'){
+    const conAlcohol = S.puestos.has('alcohol') || p !== 'alcohol';
+    let cont = `<rect x="110" y="150" width="100" height="46" fill="#E58AA0" opacity="0.85"/>`;
+    if(conAlcohol) cont += `<rect x="110" y="104" width="100" height="46" fill="#D3E6F0"/><line x1="110" y1="150" x2="210" y2="150" stroke="#C9DCE6" stroke-width="1"/>`;
+    const n = p === 'alcohol' ? S.nube : (p === 'enrollar' && !S.puestos.has('palito') ? 1 : 0.25);
+    if(conAlcohol && n > 0) cont += nubeADN(n);
+    s += vaso(cont);
+    if(p === 'fin' || S.puestos.has('palito')) s += `<line x1="196" y1="30" x2="150" y2="140" stroke="#B88B4A" stroke-width="5" stroke-linecap="round"/>
+      <g fill="none" stroke-linecap="round"><g stroke="#8A9A97" stroke-width="7">${ENROLLADO}</g><g stroke="#FFFFFF" stroke-width="4.5">${ENROLLADO}</g></g>`;
+  }
+  return s + '</svg>';
+}
+const ENROLLADO = '<path d="M160 112 q-14 -4 -5 -14 q14 -2 7 -12"/><path d="M165 120 q12 -9 2 -19"/><path d="M155 126 q-12 -7 0 -16"/>';
+function descMesa(p){
+  return { romper:'Una bolsa con cierre y una frutilla', solucion:'La bolsa con la frutilla aplastada y la mezcla', filtrar:'Un vaso con el líquido filtrado',
+    alcohol:'Un vaso con el líquido rosado y una capa de alcohol', enrollar:'Una nube blanca de ADN en el vaso', fin:'El ADN enrollado en un palito' }[p] || 'La mesa del laboratorio';
+}
+function fresa(x, y, esc){
+  return `<g transform="translate(${x} ${y}) scale(${esc})"><path d="M0 -26 C20 -26 26 -8 18 6 C10 20 4 26 0 28 C-4 26 -10 20 -18 6 C-26 -8 -20 -26 0 -26Z" fill="#D2304B"/>
+    <path d="M-12 -26 L0 -36 L12 -26 L4 -24 L0 -30 L-4 -24Z" fill="#2E8B3E"/>${[[-8,-10],[6,-12],[-2,0],[10,2],[-10,6],[2,14]].map(([a,b]) => `<ellipse cx="${a}" cy="${b}" rx="1.4" ry="2" fill="#F4D58D"/>`).join('')}</g>`;
+}
+function semillas(){ return [[120,184],[150,190],[176,186],[200,182],[136,176],[188,176]].map(([x,y]) => `<ellipse cx="${x}" cy="${y}" rx="1.6" ry="2.4" fill="#F4D58D"/>`).join(''); }
+function vaso(cont){ return `<path d="M106 96 L214 96 L210 198 L110 198 Z" fill="#F7FBFC" stroke="#8FA9B5" stroke-width="2.5"/>${cont}<path d="M106 96 L214 96 L210 198 L110 198 Z" fill="none" stroke="#8FA9B5" stroke-width="2.5"/>`; }
+function nubeADN(n){
+  const hilos = [[124,146],[138,140],[150,144],[164,138],[176,145],[190,141],[200,147]];
+  const d = hilos.map(([x, y], k) => { const alto = 8 + 30 * Math.min(1, n) * (0.6 + (k % 3) * 0.2); return `<path d="M${x} ${y} q${k % 2 ? 7 : -7} ${-alto / 2} 0 ${-alto}"/>`; }).join('');
+  // Contorno gris debajo y trazo blanco encima, para que se vea sobre el alcohol.
+  return `<g opacity="${Math.min(1, n)}" fill="none" stroke-linecap="round"><g stroke="#8A9A97" stroke-width="5.5">${d}</g><g stroke="#FFFFFF" stroke-width="3.2">${d}</g></g>`;
+}
+
+// ---------------------------------------------------------------------------
+// Qué pasa si se elige algo que no corresponde en ese paso.
+// ---------------------------------------------------------------------------
+function porQueNo(item, paso){
+  const id = PASOS[paso].id;
+  if(item === 'azucar') return 'El azúcar no ayuda a sacar el ADN: no rompe las membranas ni hace que el ADN se junte. Probá con otra cosa.';
+  if(item === 'leche') return 'La leche no sirve acá: tiene sus propias grasas y proteínas, y ensuciaría la mezcla. Probá con otra cosa.';
+  if(id === 'romper') return 'Primero hay que tener algo de dónde sacar el ADN. ¿Qué tiene células con ADN?';
+  if(id === 'solucion'){
+    if(item === 'filtro') return 'Si filtramos ahora, el ADN se queda encerrado adentro de las células, que todavía tienen sus membranas enteras. Falta agregar algo.';
+    if(item === 'alcohol') return 'Todavía no: el ADN sigue adentro de las células y mezclado con los pedazos de fruta. El alcohol va casi al final.';
+    if(item === 'palito') return 'Todavía no hay nada para enrollar.';
+  }
+  if(id === 'filtrar'){
+    if(item === 'alcohol') return 'Todavía no: primero hay que sacar los pedazos de fruta y las semillas, si no, el ADN queda mezclado con todo eso.';
+    if(item === 'palito') return 'Todavía no hay nada para enrollar.';
+    return 'Eso ya está en la bolsa. Ahora hay que separar el líquido de los pedazos de fruta.';
+  }
+  if(id === 'alcohol'){
+    if(item === 'palito') return 'Todavía no hay nada para enrollar. Primero hay que hacer aparecer el ADN.';
+    if(item === 'filtro') return 'Ya filtramos. Ahora hay que hacer que el ADN aparezca.';
+    return 'Eso ya lo usamos. Ahora hay que hacer que el ADN aparezca.';
+  }
+  if(id === 'enrollar') return 'Ya está casi todo hecho: ahora hay que sacar la nube blanca del vaso. ¿Con qué?';
+  return 'Eso no va en este paso.';
+}
+
+// ---------------------------------------------------------------------------
+function dibujar(){
+  if(S.fase === 'preguntas') return dibujarPreguntas();
+  const P = PASOS[S.paso];
+  marcador.textContent = `Paso ${S.paso + 1} de ${PASOS.length} · ${P.titulo}`;
+  el('barra').style.width = (S.paso / (PASOS.length + 1) * 100) + '%';
+  const completo = P.usa.every(x => S.puestos.has(x));
+  let accion = '';
+  if(P.id === 'romper' && completo && S.aplastado < 8)
+    accion = `<div class="accion"><button class="primario" id="aplastar">Aplastar</button><div class="medidor" aria-hidden="true"><i style="width:${S.aplastado / 8 * 100}%"></i></div><span>${S.aplastado} de 8</span></div>`;
+  if(P.id === 'solucion' && completo && !S.mezclado)
+    accion = `<div class="accion"><button class="primario" id="mezclar">Mezclar suavemente</button></div>`;
+  if(P.id === 'alcohol' && completo && !S.esperado)
+    accion = `<div class="accion"><button class="primario" id="esperar">Esperar unos minutos</button></div>`;
+  let pred = '';
+  if(P.prediccion && !S.pred){
+    pred = `<div class="pregunta"><p>${PRED.pregunta}</p><div class="opciones">${S.predOps.map(o => `<button data-pred="${o}">${o}</button>`).join('')}</div></div>`;
+  }
+  const bloqueado = (P.prediccion && !S.pred) || accion !== '' || pasoListo();
+  let h = `<div class="lab"><div class="mesa">${mesaSVG()}</div><div>
+    <p class="consigna">${P.consigna}</p>
+    ${pred}
+    <p class="estante-eti">Estante</p>
+    <div class="estante">${ORDEN_ESTANTE.map(id => `<button data-i="${id}" class="${S.usados.has(id) ? 'usado' : ''}" ${bloqueado || S.usados.has(id) ? 'disabled' : ''}><span class="ico" aria-hidden="true">${ITEMS[id].ico}</span>${ITEMS[id].nom}</button>`).join('')}</div>
+    ${accion}
+    <p class="fb ${S.msg ? S.msg.tipo : ''}" aria-live="polite">${S.msg ? S.msg.texto : ''}</p>
+    ${pasoListo() ? `<div class="acciones"><button class="primario" id="sig">${S.paso + 1 < PASOS.length ? 'Siguiente paso' : 'Ver qué sacamos'} &rarr;</button></div>` : ''}
+  </div></div>
+  ${S.cuaderno.length ? `<div class="cuaderno"><h2>Cuaderno de laboratorio</h2><ol>${S.cuaderno.map(c => `<li>${c.nota} <span>${c.por}</span></li>`).join('')}</ol></div>` : ''}`;
+  tablero.innerHTML = h;
+  tablero.querySelectorAll('[data-i]').forEach(b => b.onclick = () => elegir(b.dataset.i));
+  tablero.querySelectorAll('[data-pred]').forEach(b => b.onclick = () => predecir(b.dataset.pred));
+  if(el('aplastar')) el('aplastar').onclick = () => { S.aplastado++; if(S.aplastado >= 8){ S.cuaderno.push({ nota:P.nota, por:P.por }); S.msg = { tipo:'ok', texto:'¡Bien aplastada! ' + P.por }; } dibujar(); el('aplastar')?.focus(); };
+  if(el('mezclar')) el('mezclar').onclick = () => { S.mezclado = true; S.msg = { tipo:'ok', texto:'Mezclamos despacio, sin hacer mucha espuma. En unos minutos, el detergente rompe las membranas y el ADN queda suelto en el líquido.' }; dibujar(); };
+  if(el('esperar')) el('esperar').onclick = esperar;
+  if(el('sig')) el('sig').onclick = siguiente;
+}
+
+function pasoListo(){
+  const P = PASOS[S.paso];
+  if(!P.usa.every(x => S.puestos.has(x))) return false;
+  if(P.id === 'romper') return S.aplastado >= 8;
+  if(P.id === 'solucion') return S.mezclado;
+  if(P.id === 'alcohol') return S.esperado;
+  return true;
+}
+
+function elegir(id){
+  const P = PASOS[S.paso];
+  if(P.usa.includes(id)){
+    S.puestos.add(id); S.usados.add(id);
+    if(P.id === 'solucion'){
+      S.cuaderno.push({ nota:P.notas[id], por:P.por[id] });
+      const faltan = P.usa.filter(x => !S.puestos.has(x)).length;
+      S.msg = { tipo:'ok', texto:P.por[id] + (faltan ? ` Falta${faltan > 1 ? 'n' : ''} ${faltan}.` : '') };
+    } else if(P.id === 'romper'){
+      S.msg = { tipo:'ok', texto:'Pusimos la frutilla en la bolsa. Cerrala bien y aplastala con las manos.' };
+    } else if(P.id === 'alcohol'){
+      S.cuaderno.push({ nota:P.nota, por:P.por });
+      S.msg = { tipo:'ok', texto:'El alcohol queda arriba, como una capa transparente, porque es más liviano. Ahora hay que esperar.' };
+    } else {
+      S.cuaderno.push({ nota:P.nota, por:P.por });
+      S.msg = { tipo:'ok', texto:P.por };
+    }
+  } else {
+    errores++;
+    S.msg = { tipo:'pista', texto:porQueNo(id, S.paso) };
+  }
+  dibujar();
+}
+
+function predecir(o){
+  S.pred = o;
+  S.msg = { tipo:o === PRED.correcta ? 'ok' : 'pista', texto:o === PRED.correcta ? PRED.ok : PRED.mal };
+  dibujar();
+}
+
+function esperar(){
+  const reducir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pasos = reducir ? 1 : 10;
+  let k = 0;
+  const b = el('esperar'); if(b) b.disabled = true;
+  const t = setInterval(() => {
+    k++; S.nube = k / pasos;
+    const m = tablero.querySelector('.mesa'); if(m) m.innerHTML = mesaSVG();
+    if(k >= pasos){
+      clearInterval(t);
+      S.esperado = true;
+      S.msg = { tipo:'ok', texto:(S.pred === PRED.correcta ? '¡Tal como predijiste! ' : '') + 'Entre el líquido rosado y el alcohol apareció una <b>nube blanca de hilitos</b>. ¡Es ADN!' };
+      dibujar();
+    }
+  }, 180);
+}
+
+function siguiente(){
+  S.msg = null;
+  if(S.paso + 1 < PASOS.length){ S.paso++; dibujar(); window.scrollTo({ top:0 }); return; }
+  S.fase = 'preguntas'; S.q = 0; nuevaPregunta(); dibujar(); window.scrollTo({ top:0 });
+}
+
+// ---------------------------------------------------------------------------
+// Tres preguntas para pensar lo que se hizo.
+// ---------------------------------------------------------------------------
+function nuevaPregunta(){ const Q = PREGUNTAS[S.q]; S.qOps = mezclar([Q.correcta, ...Q.distractores]); S.qElegidas = new Set(); S.qHecho = false; S.msg = null; }
+function dibujarPreguntas(){
+  const Q = PREGUNTAS[S.q];
+  marcador.textContent = `Para pensar · pregunta ${S.q + 1} de ${PREGUNTAS.length}`;
+  el('barra').style.width = ((PASOS.length + S.q / PREGUNTAS.length) / (PASOS.length + 1) * 100) + '%';
+  tablero.innerHTML = `<div class="lab"><div class="mesa">${mesaSVG()}</div><div>
+    <div class="pregunta"><p style="margin-top:0">${Q.p}</p><div class="opciones">${S.qOps.map(o =>
+      `<button data-q="${o}" class="${S.qHecho && o === Q.correcta ? 'ok' : S.qElegidas.has(o) ? 'mal' : ''}" ${S.qHecho || S.qElegidas.has(o) ? 'disabled' : ''}>${o}</button>`).join('')}</div></div>
+    <p class="fb ${S.msg ? S.msg.tipo : ''}" aria-live="polite">${S.msg ? S.msg.texto : ''}</p>
+    ${S.qHecho ? `<div class="acciones"><button class="primario" id="sigq">${S.q + 1 < PREGUNTAS.length ? 'Siguiente pregunta' : 'Terminar'} &rarr;</button></div>` : ''}
+  </div></div>`;
+  tablero.querySelectorAll('[data-q]').forEach(b => b.onclick = () => {
+    const o = b.dataset.q;
+    if(o === Q.correcta){ S.qHecho = true; S.msg = { tipo:'ok', texto:Q.exp }; }
+    else { S.qElegidas.add(o); errores++; S.msg = { tipo:'pista', texto:'No. Pensá en lo que hiciste en el laboratorio. Elegí otra opción.' }; }
+    dibujarPreguntas();
+  });
+  if(el('sigq')) el('sigq').onclick = () => { if(S.q + 1 < PREGUNTAS.length){ S.q++; nuevaPregunta(); dibujarPreguntas(); } else final(); };
+}
+
+// Una sola vez por visita, igual que en el resto de los juegos.
+function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path:'fin/extraccion-adn', title:'Completó Extracción de ADN', event:true });
+  }
+  marcador.textContent = 'Resultado';
+  el('barra').style.width = '100%';
+  tablero.innerHTML = `<div class="final">
+    <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">¡Sacaste ADN de una frutilla!</h2>
+    <p>${errores === 0 ? 'Hiciste todo el procedimiento sin ningún error.' : `Hiciste todo el procedimiento con ${errores} ${errores === 1 ? 'error' : 'errores'}.`}</p>
+    <div class="receta">
+      <h3>Ahora, de verdad</h3>
+      <p style="margin:0">Con la ayuda de una persona adulta, en casa o en la escuela.</p>
+      <h3>Materiales</h3>
+      <ul>
+        <li>1 frutilla madura, sin el cabito verde</li>
+        <li>1 bolsa con cierre</li>
+        <li>2 cucharadas de agua, 1 cucharadita de detergente y 1 pizca de sal</li>
+        <li>1 filtro de café (o una gasa) y 1 vaso transparente</li>
+        <li>Alcohol etílico de farmacia (96°), guardado en el freezer desde antes</li>
+        <li>1 palito de brochette</li>
+      </ul>
+      <h3>Pasos</h3>
+      <ol>
+        <li>Poné la frutilla en la bolsa, cerrala y aplastala con las manos durante un par de minutos.</li>
+        <li>Mezclá el agua, el detergente y la sal, agregalo a la bolsa y amasá suavemente, sin hacer espuma, durante un minuto.</li>
+        <li>Filtrá el líquido al vaso.</li>
+        <li>Una persona adulta agrega despacio, por el costado del vaso, más o menos la misma cantidad de alcohol frío que de líquido. No hay que mezclar.</li>
+        <li>Esperá unos minutos y mirá la capa entre el líquido y el alcohol. Enrollá la nube blanca con el palito.</li>
+      </ol>
+      <p class="cuidado"><b>Cuidado:</b> el alcohol es inflamable, no se toma y tiene que estar lejos del fuego. Nada de lo que se usa en el experimento se come.</p>
+    </div>
+    <div class="acciones"><button class="primario" id="otra">Hacerlo de nuevo</button></div></div>`;
+  el('otra').onclick = () => { errores = 0; empezar(); window.scrollTo({ top:0 }); };
+}
+
+empezar();
+</script>
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

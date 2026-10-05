@@ -22,6 +22,106 @@ const temas = {
 
 const juegos = [
   {
+    id: "escalera-adn",
+    url: "escalera-adn/",
+    capa: "capas/escalera-adn.svg",
+    // color del logo asignado a este juego (ver capas/escalera-adn.svg)
+    acento: "#0462B7",
+    acentoTexto: "#0462B7",
+    publicado: "2026-10",
+    // Para los más chicos: de 7 a 10 años.
+    nivel: "primaria",
+    duracion: 8,
+    temas: ["herencia"],
+    autores: ["Genética a las Aulas"],
+    es: {
+      nombre: "La escalera del ADN",
+      subtitulo: "Armá, revisá y copiá el ADN",
+      resumen: "Completá la otra mitad de una escalera de ADN eligiendo las letras que encajan, encontrá peldaños mal armados y copiá el ADN como lo hace una célula antes de dividirse.",
+      aprende: ["Las cuatro letras del ADN", "A con T y C con G", "Cómo se copia el ADN", "La doble hélice"]
+    }
+  },
+  {
+    id: "viaje-al-interior",
+    url: "viaje-al-interior/",
+    capa: "capas/viaje-al-interior.svg",
+    // color del logo asignado a este juego (ver capas/viaje-al-interior.svg)
+    acento: "#0B9053",
+    acentoTexto: "#0A874E",
+    publicado: "2026-10",
+    // De 8 a 12 años.
+    nivel: "primaria",
+    duracion: 8,
+    temas: ["herencia"],
+    autores: ["Genética a las Aulas"],
+    es: {
+      nombre: "Viaje al interior",
+      subtitulo: "Del cuerpo al gen, haciendo zoom",
+      resumen: "Hacé zoom desde tu cuerpo hasta un gen: la piel, una célula, el núcleo, un cromosoma y el ADN. En cada parada, una pregunta para seguir bajando.",
+      aprende: ["Dónde está el ADN", "Célula, núcleo, cromosoma y gen", "Escalas: de metros a milésimas de milímetro", "Qué es un gen"]
+    }
+  },
+  {
+    id: "extraccion-adn",
+    url: "extraccion-adn/",
+    capa: "capas/extraccion-adn.svg",
+    // color del logo asignado a este juego (ver capas/extraccion-adn.svg)
+    acento: "#C88705",
+    acentoTexto: "#A06C04",
+    publicado: "2026-10",
+    // De 8 a 12 años; previa de la extracción real en el aula.
+    nivel: "primaria",
+    duracion: 10,
+    temas: ["herencia"],
+    autores: ["Genética a las Aulas"],
+    es: {
+      nombre: "Extracción de ADN",
+      subtitulo: "Sacá el ADN de una frutilla",
+      resumen: "Elegí del estante, paso a paso, lo que hace falta para sacar el ADN de una frutilla y entendé para qué sirve cada cosa. Al final, la receta para hacerlo de verdad.",
+      aprende: ["El ADN está dentro de las células", "Para qué sirven el detergente, la sal y el alcohol", "Los pasos de un procedimiento científico"]
+    }
+  },
+  {
+    id: "detectives-de-familia",
+    url: "detectives-de-familia/",
+    capa: "capas/detectives-de-familia.svg",
+    // color del logo asignado a este juego (ver capas/detectives-de-familia.svg)
+    acento: "#5E0478",
+    acentoTexto: "#5E0478",
+    publicado: "2026-10",
+    // De 9 a 12 años.
+    nivel: "primaria",
+    duracion: 12,
+    temas: ["herencia"],
+    autores: ["Genética a las Aulas"],
+    es: {
+      nombre: "Detectives de familia",
+      subtitulo: "El ADN y la identidad",
+      resumen: "Cachorros perdidos buscan a su familia. Armá la tarjeta de ADN de un cachorro, encontrá a su mamá y a su papá comparando marcas, y reconocé a una nieta a través de sus abuelos.",
+      aprende: ["Heredamos la mitad del ADN de cada progenitor", "Por qué los hermanos no son iguales", "Pruebas de parentesco con ADN", "El derecho a la identidad"]
+    }
+  },
+  {
+    id: "es-merluza",
+    url: "es-merluza/",
+    capa: "capas/es-merluza.svg",
+    // color del logo asignado a este juego (ver capas/es-merluza.svg)
+    acento: "#02A690",
+    acentoTexto: "#018574",
+    publicado: "2026-10",
+    // De 10 a 12 años.
+    nivel: "primaria",
+    duracion: 10,
+    temas: ["evolucion"],
+    autores: ["Genética a las Aulas"],
+    es: {
+      nombre: "¿Es merluza de verdad?",
+      subtitulo: "Código de barras de ADN",
+      resumen: "Compará el código de barras de ADN de una muestra de pescado con una biblioteca de especies y descubrí si la etiqueta dice la verdad, si se vende una especie en peligro o si el pez no está en la biblioteca.",
+      aprende: ["El ADN cambia entre especies", "Comparar secuencias", "Identificación de especies", "Fraude y conservación"]
+    }
+  },
+  {
     id: "arbol-genealogico",
     url: "arbol-genealogico/",
     capa: "capas/arbol-genealogico.svg",

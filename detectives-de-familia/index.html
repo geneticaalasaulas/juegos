@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Detectives de familia · Genética a las Aulas</title>
+<style>
+  :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
+    --juego:#5E0478;          /* violeta del logo — ver capas/detectives-de-familia.svg */
+    --juego-texto:#5E0478;
+    --juego-tinte:#EDE3F0;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--juego-texto); }
+  h1{ font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem); letter-spacing:-0.01em; line-height:1.2; margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem; }
+  .bajada{ max-width:34em; margin:0 auto 1rem; font-size:0.95rem; line-height:1.55; color:var(--muted); text-align:center; padding:0 1rem; }
+  .marcador{ color:var(--muted); font-size:0.95rem; margin:0 0 1rem; text-align:center; }
+  .progreso{ width:min(860px,94vw); height:5px; margin:0 0 1.1rem; background:var(--pista); border-radius:999px; overflow:hidden; }
+  .progreso > i{ display:block; height:100%; width:0; border-radius:999px; background:var(--juego-texto); transition:width .3s ease; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.5rem; width:min(860px,94vw); margin-bottom:1.2rem; }
+
+  button{ min-height:44px; padding:0.55rem 0.9rem; border-radius:6px; font-size:0.97rem; cursor:pointer; font-family:inherit;
+    border:1.5px solid var(--juego); background:#fff; color:var(--ink); transition:background-color .15s ease; }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+
+  .historia{ background:var(--juego-tinte); border-left:4px solid var(--juego); padding:0.8rem 1rem; border-radius:0 6px 6px 0; line-height:1.55; margin:0 0 0.9rem; }
+  .consigna{ font-size:1.05rem; line-height:1.5; margin:0 0 1rem; font-weight:600; }
+  .regla{ font-size:0.93rem; line-height:1.5; color:var(--muted); margin:-0.4rem 0 1rem; }
+
+  .fila-perros{ display:flex; flex-wrap:wrap; gap:0.9rem; justify-content:center; align-items:flex-start; }
+  .perro{ border:1.5px solid #E1E7E5; border-radius:10px; padding:0.6rem 0.7rem 0.7rem; background:#fff; width:190px; text-align:center; }
+  .perro.protagonista{ border-color:var(--juego); border-width:2px; background:#FBF8FC; }
+  .perro.elegido{ border-color:var(--juego); box-shadow:0 0 0 3px var(--juego-tinte); }
+  .perro.descartado{ opacity:0.55; }
+  .perro.correcto{ border-color:var(--ok); border-width:2px; background:#F1FAF5; }
+  .perro h3{ font-size:1rem; margin:0.1rem 0 0.1rem; }
+  .perro .rol{ font-size:0.8rem; color:var(--muted); margin:0 0 0.4rem; }
+  .perro svg.cara{ display:block; margin:0 auto; }
+  .perro .botones{ display:flex; flex-direction:column; gap:0.4rem; margin-top:0.6rem; }
+  .perro .botones button{ min-height:40px; padding:0.35rem 0.6rem; font-size:0.9rem; }
+
+  .tarjeta{ display:grid; grid-template-columns:auto 1fr; gap:3px 6px; align-items:center; margin:0.5rem auto 0; width:max-content; }
+  .tarjeta .num{ font-size:0.72rem; color:var(--muted); text-align:right; }
+  .tarjeta .par{ display:flex; gap:5px; align-items:center; }
+  .marca{ width:34px; height:28px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:0.98rem;
+    border:2px solid transparent; position:relative; padding:0; min-height:0; }
+  button.marca{ cursor:pointer; border:2px solid rgba(22,33,31,0.25); }
+  button.marca:hover{ filter:brightness(1.08); background:inherit; }
+  .marca.vacia{ background:#F4F7F6; border:2px dashed #9AA8A5; color:#9AA8A5; }
+  .marca.coincide{ box-shadow:0 0 0 3px #fff, 0 0 0 6px var(--ok); }
+  .marca.de-mama::after{ content:"m"; position:absolute; right:-4px; bottom:-6px; font-size:0.62rem; background:#fff; color:#3F4B49;
+    border:1px solid #9AA8A5; border-radius:999px; width:14px; height:14px; line-height:12px; text-align:center; font-weight:700; }
+  .marca.elegida{ box-shadow:0 0 0 3px #fff, 0 0 0 6px var(--juego); }
+  .estado-fila{ width:18px; font-weight:700; font-size:0.95rem; text-align:center; }
+  .estado-fila.si{ color:var(--ok); }
+  .estado-fila.no{ color:var(--mal); }
+
+  .leyenda{ font-size:0.85rem; color:var(--muted); text-align:center; margin:0.8rem 0 0; line-height:1.5; }
+  .fb{ font-size:1rem; line-height:1.5; margin:1rem 0 0; padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; }
+  .fb:empty{ display:none; }
+  .fb.pista{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .fb.ok{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .acciones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1rem; justify-content:center; }
+  .opciones{ display:grid; gap:0.5rem; margin-top:0.5rem; }
+  .opciones button{ text-align:left; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.ok:disabled{ opacity:1; }
+  .opciones button.ok::before{ content:"\2713\00a0"; font-weight:700; }
+  .opciones button.mal{ border-color:var(--mal); color:var(--mal); }
+  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
+  .separador{ border:none; border-top:1px dashed #D5DCDA; margin:1rem 0; }
+  .final{ text-align:center; }
+
+  details.docente{ max-width:38em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  @media (max-width:440px){ .perro{ width:100%; } }
+  @media (prefers-reduced-motion:reduce){ .progreso > i{ transition:none; } }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>Detectives de familia</h1>
+<p class="bajada">Después de una tormenta, al refugio llegaron cachorros perdidos. Comparando su ADN, ayudalos a encontrar a su familia.</p>
+<p class="marcador" id="marcador"></p>
+<div class="progreso" aria-hidden="true"><i id="barra"></i></div>
+<div class="tablero" id="tablero"></div>
+
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Primaria (de 9 a 12 años, aproximadamente).</p>
+  <p><b>Conceptos que trabaja:</b> cada individuo tiene dos copias de cada región del ADN, una heredada de la madre y otra del padre; los hermanos reciben mitades distintas; con esas reglas, comparar ADN permite reconocer parentescos, incluso a través de los abuelos. También: parecerse no alcanza para saber quién es de la familia.</p>
+  <p><b>Qué representa la "tarjeta de ADN":</b> cada fila es un marcador, una región del ADN que varía mucho entre individuos. Los números son las variantes que tiene cada uno (en los marcadores reales, del tipo STR, el número indica cuántas veces se repite un fragmento corto). Es la misma lógica de las pruebas de filiación y de identificación forense.</p>
+  <p><b>Lo que simplifica el juego:</b> usa seis marcadores; los laboratorios usan veinte o más, porque con pocos marcadores una persona no emparentada podría coincidir por azar, y el resultado se informa como una probabilidad. Tampoco hay mutaciones: en la vida real, una sola diferencia no alcanza para descartar un parentesco, porque puede deberse a una mutación. Por eso, en el juego, todo candidato que no es de la familia difiere en dos marcadores o más.</p>
+  <p><b>El derecho a la identidad:</b> esta lógica tiene una historia regional. Durante la última dictadura argentina, cientos de niños y niñas fueron apropiados y criados con otra identidad, y también hubo casos de familias uruguayas. Las Abuelas de Plaza de Mayo buscaron a científicos que pudieran demostrar el parentesco aun sin los padres, desaparecidos: así se desarrolló en 1984 el "índice de abuelidad", que compara el ADN de una persona con el de sus posibles abuelos y abuelas (el último nivel del juego). En 1987 Argentina creó el Banco Nacional de Datos Genéticos. Gracias a estos análisis, 140 nietos y nietas recuperaron su identidad (a mediados de 2025), entre ellos hijos e hijas de uruguayos, como Mariana Zaffaroni. El primer caso resuelto con el índice fue el de Paula Logares, en 1984. La versión con animales permite presentar la idea; cada docente decide si y cómo avanzar con el tema.</p>
+  <p><b>Para discutir después de jugar:</b> ¿por qué dos hermanos no tienen la misma tarjeta de ADN? ¿Por qué parecerse no alcanza para decidir quién es la mamá? Si no está ni la mamá ni el papá, ¿qué otros familiares podrían ayudar? ¿Por qué es importante para una persona conocer su origen?</p>
+</details>
+
+<script>
+// ---------------------------------------------------------------------------
+// Modelo: cada perro tiene MARC marcadores; en cada uno, dos variantes
+// (números del 1 al 8), una de la madre y otra del padre.
+// ---------------------------------------------------------------------------
+const MARC = 6, NV = 8;
+const COLOR = { 1:['#0462B7','#fff'], 2:['#BC0440','#fff'], 3:['#0B7A47','#fff'], 4:['#F2A406','#2C1D02'],
+                5:['#5E0478','#fff'], 6:['#7FD3C6','#16211F'], 7:['#D10E18','#fff'], 8:['#B9B2A6','#16211F'] };
+const PELAJES = { canela:['#C98A4B','#8A5A2B'], negro:['#3A3533','#1E1A19'], crema:['#EAD7B0','#B79B6A'], gris:['#9AA3A8','#5E676C'], manchado:['#F4EFE6','#4A3B30'] };
+const azar = n => 1 + Math.floor(Math.random() * n);
+const elegir = a => a[Math.floor(Math.random() * a.length)];
+function mezclar(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const ordenar = par => par[0] <= par[1] ? par : [par[1], par[0]];
+
+const adulto = () => Array.from({length:MARC}, () => ordenar([azar(NV), azar(NV)]));
+const hijo = (m, p) => m.map((_, k) => ordenar([elegir(m[k]), elegir(p[k])]));
+// Filas en las que c NO comparte ninguna variante con el posible progenitor.
+const fallasProgenitor = (c, m) => c.reduce((n, par, k) => n + (m[k].includes(par[0]) || m[k].includes(par[1]) ? 0 : 1), 0);
+// Con la madre conocida: filas en las que no se puede explicar la variante del padre.
+const filaTrio = (c, m, p, k) => (m[k].includes(c[k][0]) && p[k].includes(c[k][1])) || (m[k].includes(c[k][1]) && p[k].includes(c[k][0]));
+const fallasTrio = (c, m, p) => c.reduce((n, _, k) => n + (filaTrio(c, m, p, k) ? 0 : 1), 0);
+// Con la madre conocida y el padre ausente: la variante del padre tiene que
+// estar en alguno de los dos abuelos paternos.
+const filaAbuelos = (c, m, a1, a2, k) => { const ab = [...a1[k], ...a2[k]]; return (m[k].includes(c[k][0]) && ab.includes(c[k][1])) || (m[k].includes(c[k][1]) && ab.includes(c[k][0])); };
+const fallasAbuelos = (c, m, a1, a2) => c.reduce((n, _, k) => n + (filaAbuelos(c, m, a1, a2, k) ? 0 : 1), 0);
+// La variante que vino de la madre, si se puede saber sin ambigüedad.
+function deMama(c, m, k){
+  const [a, b] = c[k];
+  if(a === b) return 0;
+  const ia = m[k].includes(a), ib = m[k].includes(b);
+  return ia && !ib ? 0 : ib && !ia ? 1 : -1;
+}
+const sinAmbiguedad = (c, m) => c.every((_, k) => deMama(c, m, k) >= 0);
+
+// Un candidato que no es de la familia: tiene que fallar en 2 filas o más.
+function impostor(prueba){ for(let t = 0; t < 500; t++){ const x = adulto(); if(prueba(x) >= 2) return x; } return null; }
+
+const NOMBRES_H = ['Canela','Nina','Mora','Lola','Kira','Frida','Olivia','Maga','Tita'];
+const NOMBRES_M = ['Toto','Pancho','Bruno','Coco','Simón','Milo','Tango','Ramón','Zeus'];
+const NOMBRES_C = ['Pipo','Chispa','Bolita','Mate','Copito','Pulga','Nube','Tuti'];
+
+function caraSVG(pelaje, chico, tam = 74){
+  const [c1, c2] = PELAJES[pelaje];
+  const mancha = pelaje === 'manchado' ? `<ellipse cx="30" cy="34" rx="10" ry="12" fill="${c2}"/>` : '';
+  return `<svg class="cara" width="${tam}" height="${tam * 0.86}" viewBox="0 0 80 69" aria-hidden="true">
+    <ellipse cx="17" cy="30" rx="10" ry="${chico ? 15 : 19}" fill="${c2}" transform="rotate(18 17 30)"/>
+    <ellipse cx="63" cy="30" rx="10" ry="${chico ? 15 : 19}" fill="${c2}" transform="rotate(-18 63 30)"/>
+    <ellipse cx="40" cy="38" rx="${chico ? 22 : 24}" ry="${chico ? 22 : 25}" fill="${c1}" stroke="${c2}" stroke-width="1.5"/>${mancha}
+    <ellipse cx="40" cy="50" rx="11" ry="8" fill="#F4EFE6" opacity="0.8"/>
+    <circle cx="32" cy="35" r="3.2" fill="#16211F"/><circle cx="48" cy="35" r="3.2" fill="#16211F"/>
+    <ellipse cx="40" cy="46" rx="4.5" ry="3.2" fill="#16211F"/>
+    <path d="M36 52 Q40 55 44 52" fill="none" stroke="#16211F" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+}
+
+function marcaHTML(v, clases = '', extra = ''){
+  if(v == null) return `<span class="marca vacia ${clases}" ${extra}>?</span>`;
+  const [bg, fg] = COLOR[v];
+  return `<span class="marca ${clases}" style="background:${bg};color:${fg}" ${extra}>${v}</span>`;
+}
+function marcaBoton(v, clases, data, etiqueta){
+  const [bg, fg] = COLOR[v];
+  return `<button class="marca ${clases}" style="background:${bg};color:${fg}" ${data} aria-label="${etiqueta}">${v}</button>`;
+}
+
+// Tarjeta de ADN. opts.marcas(k, i) devuelve clases extra; opts.estado(k) 'si'/'no'/''.
+function tarjetaHTML(adn, o = {}){
+  return `<div class="tarjeta" role="table" aria-label="Tarjeta de ADN">${adn.map((par, k) => `
+    <span class="num" role="rowheader">${k + 1}</span>
+    <span class="par" role="row">${par.map((v, i) => o.boton ? marcaBoton(v, o.marcas ? o.marcas(k, i) : '', `${o.boton}="${k}-${i}"`, `Marcador ${k + 1}: variante ${v}`)
+      : marcaHTML(v, o.marcas ? o.marcas(k, i) : '')).join('')}
+      ${o.estado ? `<span class="estado-fila ${o.estado(k)}" aria-label="${o.estado(k) === 'si' ? 'coincide' : o.estado(k) === 'no' ? 'no coincide' : ''}">${o.estado(k) === 'si' ? '✓' : o.estado(k) === 'no' ? '✗' : ''}</span>` : ''}</span>`).join('')}</div>`;
+}
+
+function perroHTML(p, o = {}){
+  return `<div class="perro ${o.clase || ''}">
+    ${caraSVG(p.pelaje, p.chico)}
+    <h3>${p.nombre}</h3><p class="rol">${p.rol}</p>
+    ${o.tarjeta || tarjetaHTML(p.adn, o)}
+    ${o.botones ? `<div class="botones">${o.botones}</div>` : ''}</div>`;
+}
+
+// ---------------------------------------------------------------------------
+// Casos
+// ---------------------------------------------------------------------------
+function nuevoPerro(nombre, rol, adn, chico){ return { nombre, rol, adn, pelaje:elegir(Object.keys(PELAJES)), chico:!!chico }; }
+
+const CASOS = [
+  { tipo:'armar', titulo:'¿Cómo se hereda?',
+    historia:'Antes de buscar familias, mirá cómo se arma la tarjeta de ADN de un cachorro. Cada perro tiene dos marcas en cada fila: en cada fila, la mamá le pasa al cachorro <b>una</b> de sus dos marcas, y el papá, <b>una</b> de las suyas.',
+    consigna:'Armá la tarjeta de ADN de un cachorro de Luna y Rayo: en cada fila, tocá una marca de la mamá y una del papá.' },
+  { tipo:'madre', titulo:'¿Quién es la mamá?',
+    historia:'Este cachorro llegó solo al refugio. Tres perras dicen que podría ser suyo. Una se le parece mucho, pero... ¿alcanza con parecerse?',
+    consigna:'Compará la tarjeta del cachorro con la de cada perra y encontrá a su mamá.',
+    regla:'Pista: la mamá tiene que tener, en <b>cada fila</b>, al menos una de las dos marcas del cachorro.' },
+  { tipo:'padre', titulo:'¿Quién es el papá?',
+    historia:'Este cachorro ya encontró a su mamá. Ahora buscamos al papá entre tres perros del barrio.',
+    consigna:'Las marcas con una <b>m</b> son las que vinieron de la mamá. ¿Quién tiene, en cada fila, la otra marca?',
+    regla:'Pista: la marca que <b>no</b> vino de la mamá tuvo que venir del papá.' },
+  { tipo:'abuelos', titulo:'Buscando con los abuelos',
+    historia:'Esta cachorra está con su mamá, pero su papá se perdió y nadie sabe dónde está. Dos parejas de perros grandes están buscando a una nieta. Aunque el papá no esté, el ADN de los abuelos puede contar la historia.',
+    consigna:'¿Cuál de las dos parejas son los abuelos de la cachorra (los padres de su papá)?',
+    regla:'Pista: la marca que vino del papá la tuvo que recibir él de su mamá o de su papá. Tiene que estar en alguno de los dos abuelos.' },
+  { tipo:'emparejar', titulo:'Tres cachorros, tres mamás',
+    historia:'Llegaron tres cachorros juntos y tres mamás los están buscando.',
+    consigna:'Tocá un cachorro y después a su mamá. Repetí hasta reunir a las tres familias.' }
+];
+
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+const el = id => document.getElementById(id);
+let caso = 0, S = null, errores = 0, finContado = false;
+
+function empezar(i){
+  caso = i;
+  const C = CASOS[i];
+  S = { msg:null, hecho:false, comparar:new Set(), descartados:new Set(), errCaso:0 };
+  const nc = mezclar(NOMBRES_C), nh = mezclar(NOMBRES_H), nm = mezclar(NOMBRES_M);
+  if(C.tipo === 'armar'){
+    S.mama = nuevoPerro('Luna', 'la mamá', adulto()); S.papa = nuevoPerro('Rayo', 'el papá', adulto());
+    S.elegidas = S.mama.adn.map(() => [null, null]);   // [índice en la mamá, índice en el papá]
+    S.fase = 'armar';
+    S.opciones = mezclar([PREG_HERMANOS.correcta, ...PREG_HERMANOS.distractores]); S.elegidasOp = new Set();
+  } else if(C.tipo === 'madre'){
+    const m = adulto(), p = adulto(), c = hijo(m, p);
+    const cach = nuevoPerro(nc[0], 'cachorro perdido', c, true);
+    const mama = nuevoPerro(nh[0], 'candidata', m);
+    const otras = [0, 1].map(j => nuevoPerro(nh[j + 1], 'candidata', impostor(x => fallasProgenitor(c, x))));
+    // La que se parece: mismo pelaje que el cachorro. La mamá, otro pelaje.
+    otras[0].pelaje = cach.pelaje;
+    mama.pelaje = elegir(Object.keys(PELAJES).filter(x => x !== cach.pelaje));
+    S.cach = cach; S.cands = mezclar([mama, ...otras]); S.buena = mama; S.parecida = otras[0];
+  } else if(C.tipo === 'padre'){
+    let m, p, c;
+    do { m = adulto(); p = adulto(); c = hijo(m, p); } while(!sinAmbiguedad(c, m));
+    S.cach = nuevoPerro(nc[0], 'cachorro', c, true);
+    S.mama = nuevoPerro(nh[0], 'su mamá', m);
+    const papa = nuevoPerro(nm[0], 'candidato', p);
+    const otros = [0, 1].map(j => nuevoPerro(nm[j + 1], 'candidato', impostor(x => fallasTrio(c, m, x))));
+    S.cands = mezclar([papa, ...otros]); S.buena = papa;
+  } else if(C.tipo === 'abuelos'){
+    let a1, a2, m, c;
+    do { a1 = adulto(); a2 = adulto(); m = adulto(); c = hijo(m, hijo(a1, a2)); } while(!sinAmbiguedad(c, m));
+    S.cach = nuevoPerro(nc[0], 'cachorra', c, true);
+    S.mama = nuevoPerro(nh[0], 'su mamá', m);
+    let b1, b2;
+    for(let t = 0; t < 500; t++){ b1 = adulto(); b2 = adulto(); if(fallasAbuelos(c, m, b1, b2) >= 2) break; }
+    const parejas = [
+      { buena:true,  perros:[nuevoPerro(nh[1], 'abuela', a1), nuevoPerro(nm[0], 'abuelo', a2)] },
+      { buena:false, perros:[nuevoPerro(nh[2], 'abuela', b1), nuevoPerro(nm[1], 'abuelo', b2)] }
+    ];
+    S.parejas = mezclar(parejas); S.parejas.forEach((x, j) => x.nombre = `Pareja ${j + 1}`);
+  } else {
+    // Tres familias: cada cachorro es compatible solo con su mamá.
+    let ok = false, ms, cs;
+    while(!ok){
+      ms = [adulto(), adulto(), adulto()]; cs = ms.map(m => hijo(m, adulto()));
+      ok = cs.every((c, a) => ms.every((m, b) => a === b || fallasProgenitor(c, m) >= 2));
+    }
+    S.cachs = cs.map((c, j) => ({ ...nuevoPerro(nc[j], 'cachorro', c, true), fam:j }));
+    S.mamas = mezclar(ms.map((m, j) => ({ ...nuevoPerro(nh[j], 'mamá', m), fam:j })));
+    S.cachs = mezclar(S.cachs);
+    S.selCach = null; S.reunidos = new Set();
+  }
+  marcador.textContent = `Caso ${i + 1} de ${CASOS.length} · ${C.titulo}`;
+  el('barra').style.width = (i / CASOS.length * 100) + '%';
+  dibujar();
+  window.scrollTo({ top:0 });
+}
+
+const PREG_HERMANOS = {
+  pregunta:'Luna y Rayo tuvieron otra cachorra. ¿Por qué su tarjeta de ADN no es igual a la del cachorro que armaste?',
+  correcta:'Porque en cada fila la mamá y el papá pasan una de sus dos marcas al azar, y a cada cachorro le toca una combinación distinta',
+  distractores:['Porque uno de los dos cachorros no es hijo de Luna y Rayo', 'Porque el ADN de los cachorros cambia a medida que crecen']
+};
+
+function dibujar(){
+  const C = CASOS[caso];
+  let h = `<p class="historia">${C.historia}</p><p class="consigna">${C.consigna}</p>${C.regla ? `<p class="regla">${C.regla}</p>` : ''}`;
+  if(C.tipo === 'armar') h += armarHTML();
+  else if(C.tipo === 'madre' || C.tipo === 'padre') h += candidatosHTML(C.tipo);
+  else if(C.tipo === 'abuelos') h += abuelosHTML();
+  else h += emparejarHTML();
+  h += `<p class="fb ${S.msg ? S.msg.tipo : ''}" aria-live="polite">${S.msg ? S.msg.texto : ''}</p>`;
+  if(S.hecho) h += `<div class="acciones"><button class="primario" id="sig">${caso + 1 < CASOS.length ? 'Siguiente caso' : 'Ver el resultado'} &rarr;</button></div>`;
+  tablero.innerHTML = h;
+  conectar();
+}
+
+// --- Caso 1: armar ---------------------------------------------------------
+function armarHTML(){
+  const cach = S.elegidas.map((e, k) => [e[0] == null ? null : S.mama.adn[k][e[0]], e[1] == null ? null : S.papa.adn[k][e[1]]]);
+  const editable = S.fase === 'armar';
+  let h = `<div class="fila-perros">
+    ${perroHTML(S.mama, editable ? { boton:'data-m', marcas:(k, i) => S.elegidas[k][0] === i ? 'elegida' : '' } : { marcas:(k, i) => S.elegidas[k][0] === i ? 'elegida' : '' })}
+    ${perroHTML({ nombre:'Su cachorro', rol:'lo armás vos', pelaje:S.mama.pelaje, chico:true }, { clase:'protagonista',
+      tarjeta:`<div class="tarjeta">${cach.map((par, k) => `<span class="num">${k + 1}</span><span class="par">${marcaHTML(par[0])}${marcaHTML(par[1])}</span>`).join('')}</div>` })}
+    ${perroHTML(S.papa, editable ? { boton:'data-p', marcas:(k, i) => S.elegidas[k][1] === i ? 'elegida' : '' } : { marcas:(k, i) => S.elegidas[k][1] === i ? 'elegida' : '' })}
+  </div>
+  <p class="leyenda">La marca de la izquierda del cachorro viene de la mamá; la de la derecha, del papá.</p>`;
+  if(editable){
+    const listo = S.elegidas.every(e => e[0] != null && e[1] != null);
+    h += `<div class="acciones"><button class="primario" id="listo" ${listo ? '' : 'disabled'}>Listo, ya armé su tarjeta</button></div>`;
+  } else {
+    h += `<hr class="separador"><div class="fila-perros">
+      ${perroHTML({ nombre:'Su cachorro', rol:'el que armaste', pelaje:S.mama.pelaje, chico:true, adn:cach.map(ordenar) })}
+      ${perroHTML(S.hermana)}</div>
+      <div style="margin-top:1rem"><p><b>${PREG_HERMANOS.pregunta}</b></p><div class="opciones">${S.opciones.map(o =>
+        `<button data-o="${o}" class="${S.hecho && o === PREG_HERMANOS.correcta ? 'ok' : S.elegidasOp.has(o) ? 'mal' : ''}" ${S.hecho || S.elegidasOp.has(o) ? 'disabled' : ''}>${o}</button>`).join('')}</div></div>`;
+  }
+  return h;
+}
+
+// --- Casos 2 y 3: candidatos ------------------------------------------------
+function candidatosHTML(tipo){
+  const c = S.cach.adn;
+  // Marcas del cachorro: en el caso del padre, las que vinieron de la mamá llevan una "m".
+  const marcasCach = tipo === 'padre' ? (k, i) => {
+    const dm = deMama(c, S.mama.adn, k);
+    return (c[k][0] === c[k][1] ? i === 0 : dm === i) ? 'de-mama' : '';
+  } : null;
+  let h = `<div class="fila-perros">${tipo === 'padre' ? perroHTML(S.mama, { marcas:(k, i) => S.mama.adn[k][i] === c[k][deMama(c, S.mama.adn, k)] ? 'coincide' : '' }) : ''}
+    ${perroHTML(S.cach, { clase:'protagonista', marcas:marcasCach })}</div><hr class="separador"><div class="fila-perros">`;
+  S.cands.forEach((p, j) => {
+    const comp = S.comparar.has(j), desc = S.descartados.has(j), gano = S.hecho && p === S.buena;
+    const o = { clase:gano ? 'correcto' : desc ? 'descartado' : comp ? 'elegido' : '' };
+    if(comp || gano){
+      if(tipo === 'madre'){
+        o.marcas = (k, i) => c[k].includes(p.adn[k][i]) ? 'coincide' : '';
+        o.estado = k => fallasProgenitor([c[k]], [p.adn[k]]) ? 'no' : 'si';
+      } else {
+        o.marcas = (k, i) => { const dm = deMama(c, S.mama.adn, k), pat = c[k][dm === 0 ? 1 : 0]; return p.adn[k][i] === pat ? 'coincide' : ''; };
+        o.estado = k => filaTrio(c, S.mama.adn, p.adn, k) ? 'si' : 'no';
+      }
+    }
+    if(!S.hecho && !desc) o.botones = `${comp ? '' : `<button data-comp="${j}">Comparar</button>`}<button data-elig="${j}">${tipo === 'madre' ? '¡Es la mamá!' : '¡Es el papá!'}</button>`;
+    h += perroHTML(p, o);
+  });
+  return h + `</div><p class="leyenda">Al comparar, las marcas que coinciden quedan rodeadas en verde: ✓ si la fila puede explicarse, ✗ si no.</p>`;
+}
+
+// --- Caso 4: abuelos --------------------------------------------------------
+function abuelosHTML(){
+  const c = S.cach.adn, m = S.mama.adn;
+  const pat = k => c[k][deMama(c, m, k) === 0 ? 1 : 0];
+  let h = `<div class="fila-perros">${perroHTML(S.mama, { marcas:(k, i) => m[k][i] === c[k][deMama(c, m, k)] ? 'coincide' : '' })}
+    ${perroHTML(S.cach, { clase:'protagonista', marcas:(k, i) => (c[k][0] === c[k][1] ? i === 0 : deMama(c, m, k) === i) ? 'de-mama' : '' })}
+    ${perroHTML({ nombre:'Papá', rol:'no está', pelaje:'gris', adn:m.map(() => [null, null]) }, { clase:'descartado' })}</div>`;
+  S.parejas.forEach((pa, j) => {
+    const comp = S.comparar.has(j), desc = S.descartados.has(j), gano = S.hecho && pa.buena;
+    h += `<hr class="separador"><p style="text-align:center;font-weight:700;margin:0 0 0.4rem">${pa.nombre}${comp || gano ? ` · ${fallasAbuelos(c, m, pa.perros[0].adn, pa.perros[1].adn) ? 'hay filas en las que no aparece la marca del papá' : 'la marca del papá aparece en todas las filas'}` : ''}</p><div class="fila-perros">`;
+    pa.perros.forEach(p => {
+      const o = { clase:gano ? 'correcto' : desc ? 'descartado' : comp ? 'elegido' : '' };
+      if(comp || gano) o.marcas = (k, i) => p.adn[k][i] === pat(k) ? 'coincide' : '';
+      h += perroHTML(p, o);
+    });
+    h += `</div>`;
+    if(!S.hecho && !desc) h += `<div class="acciones">${comp ? '' : `<button data-comp="${j}">Comparar con la cachorra</button>`}<button data-elig="${j}">¡Son sus abuelos!</button></div>`;
+  });
+  return h;
+}
+
+// --- Caso 5: emparejar ------------------------------------------------------
+function emparejarHTML(){
+  let h = `<div class="fila-perros">`;
+  S.cachs.forEach((p, j) => {
+    const reun = S.reunidos.has(p.fam), sel = S.selCach === j;
+    h += perroHTML(p, { clase:reun ? 'correcto' : sel ? 'elegido' : '',
+      botones:reun ? '<span style="color:var(--ok);font-weight:600">¡Con su mamá!</span>' : `<button data-sc="${j}" aria-pressed="${sel}">${sel ? 'Elegido' : 'Elegir este cachorro'}</button>` });
+  });
+  h += `</div><hr class="separador"><div class="fila-perros">`;
+  S.mamas.forEach((p, j) => {
+    const reun = S.reunidos.has(p.fam);
+    const sc = S.selCach != null ? S.cachs[S.selCach] : null;
+    const o = { clase:reun ? 'correcto' : '' };
+    if(sc && !reun) o.marcas = (k, i) => sc.adn[k].includes(p.adn[k][i]) ? 'coincide' : '';
+    o.botones = reun ? '<span style="color:var(--ok);font-weight:600">¡Familia reunida!</span>' : `<button data-sm="${j}" ${S.selCach == null ? 'disabled' : ''}>Es su mamá</button>`;
+    h += perroHTML(p, o);
+  });
+  return h + `</div><p class="leyenda">Cuando elegís un cachorro, en cada mamá quedan rodeadas las marcas que coinciden con él.</p>`;
+}
+
+function conectar(){
+  tablero.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { const [k, i] = b.dataset.m.split('-').map(Number); S.elegidas[k][0] = i; dibujar(); });
+  tablero.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { const [k, i] = b.dataset.p.split('-').map(Number); S.elegidas[k][1] = i; dibujar(); });
+  if(el('listo')) el('listo').onclick = terminarArmado;
+  tablero.querySelectorAll('[data-o]').forEach(b => b.onclick = () => responderHermanos(b.dataset.o));
+  tablero.querySelectorAll('[data-comp]').forEach(b => b.onclick = () => { S.comparar.add(+b.dataset.comp); S.msg = null; dibujar(); });
+  tablero.querySelectorAll('[data-elig]').forEach(b => b.onclick = () => elegirCand(+b.dataset.elig));
+  tablero.querySelectorAll('[data-sc]').forEach(b => b.onclick = () => { S.selCach = +b.dataset.sc; S.msg = null; dibujar(); });
+  tablero.querySelectorAll('[data-sm]').forEach(b => b.onclick = () => elegirMama(+b.dataset.sm));
+  if(el('sig')) el('sig').onclick = () => caso + 1 < CASOS.length ? empezar(caso + 1) : final();
+}
+
+function terminarArmado(){
+  const mio = S.elegidas.map((e, k) => ordenar([S.mama.adn[k][e[0]], S.papa.adn[k][e[1]]]));
+  // Una hermana que difiere del cachorro armado en 2 filas o más (si se puede).
+  let h = null;
+  for(let t = 0; t < 300; t++){
+    h = hijo(S.mama.adn, S.papa.adn);
+    const dif = h.filter((par, k) => par[0] !== mio[k][0] || par[1] !== mio[k][1]).length;
+    if(dif >= 2) break;
+  }
+  S.hermana = { ...nuevoPerro('Su hermana', 'otra cachorra de Luna y Rayo', h, true), pelaje:S.papa.pelaje };
+  S.fase = 'pregunta';
+  S.msg = { tipo:'ok', texto:'¡Listo! Tu cachorro tiene la mitad de su ADN de Luna y la mitad de Rayo. Ahora mirá a su hermana.' };
+  dibujar();
+}
+
+function responderHermanos(o){
+  if(o === PREG_HERMANOS.correcta){
+    S.hecho = true;
+    S.msg = { tipo:'ok', texto:'¡Exacto! Los dos tienen la mitad del ADN de cada progenitor, pero no la misma mitad. Por eso los hermanos se parecen pero no son iguales (salvo los gemelos idénticos, que vienen de una misma célula).' };
+  } else {
+    S.elegidasOp.add(o); errores++;
+    S.msg = { tipo:'pista', texto:'No. Fijate en una fila: ¿la mamá tiene una sola marca para pasar, o dos?' };
+  }
+  dibujar();
+}
+
+function elegirCand(j){
+  const C = CASOS[caso];
+  if(C.tipo === 'abuelos') return elegirAbuelos(j);
+  const p = S.cands[j], c = S.cach.adn;
+  if(p === S.buena){
+    S.hecho = true;
+    S.msg = { tipo:'ok', texto:C.tipo === 'madre'
+      ? `¡Sí! <b>${p.nombre}</b> tiene, en todas las filas, al menos una de las marcas del cachorro. ${S.parecida ? `Y fijate en ${S.parecida.nombre}: se parece mucho, pero en ${fallasProgenitor(c, S.parecida.adn)} filas no tiene ninguna de las marcas del cachorro. <b>Parecerse no alcanza</b>: el pelaje depende de unos pocos genes, y el ADN se compara entero.` : ''}`
+      : `¡Sí! <b>${p.nombre}</b> tiene, en todas las filas, la marca que no vino de la mamá. Es el papá.` };
+  } else {
+    S.descartados.add(j); S.comparar.add(j); errores++;
+    const filas = c.map((_, k) => k).filter(k => C.tipo === 'madre' ? fallasProgenitor([c[k]], [p.adn[k]]) : !filaTrio(c, S.mama.adn, p.adn, k)).map(k => k + 1);
+    S.msg = { tipo:'pista', texto:`No puede ser: mirá la${filas.length > 1 ? 's filas' : ' fila'} <b>${filas.join(', ')}</b>. ${C.tipo === 'madre' ? `${p.nombre} no tiene ninguna de las dos marcas que tiene ahí el cachorro, y la mamá le tuvo que pasar una.` : `${p.nombre} no tiene la marca que el cachorro recibió del papá.`}` };
+  }
+  dibujar();
+}
+
+function elegirAbuelos(j){
+  const pa = S.parejas[j], c = S.cach.adn, m = S.mama.adn;
+  if(pa.buena){
+    S.hecho = true;
+    S.msg = { tipo:'ok', texto:`¡Sí! En todas las filas, la marca que la cachorra recibió de su papá está en su abuela o en su abuelo. Aunque el papá no esté, sus padres guardan su ADN. <b>Así se puede reconocer a una nieta a través de sus abuelos.</b>` };
+  } else {
+    S.descartados.add(j); S.comparar.add(j); errores++;
+    const filas = c.map((_, k) => k).filter(k => !filaAbuelos(c, m, pa.perros[0].adn, pa.perros[1].adn, k)).map(k => k + 1);
+    S.msg = { tipo:'pista', texto:`No pueden ser: en la${filas.length > 1 ? 's filas' : ' fila'} <b>${filas.join(', ')}</b>, la marca que la cachorra recibió del papá no la tiene ni la abuela ni el abuelo. El papá no podría haberla heredado de ellos.` };
+  }
+  dibujar();
+}
+
+function elegirMama(j){
+  const mama = S.mamas[j], cach = S.cachs[S.selCach];
+  if(mama.fam === cach.fam){
+    S.reunidos.add(mama.fam); S.selCach = null;
+    S.msg = { tipo:'ok', texto:`¡${cach.nombre} y ${mama.nombre} están juntos de nuevo!` + (S.reunidos.size === 3 ? ' Reuniste a las tres familias.' : '') };
+    if(S.reunidos.size === 3) S.hecho = true;
+  } else {
+    errores++;
+    const filas = cach.adn.map((_, k) => k).filter(k => fallasProgenitor([cach.adn[k]], [mama.adn[k]])).map(k => k + 1);
+    S.msg = { tipo:'pista', texto:`${mama.nombre} no puede ser la mamá de ${cach.nombre}: en la${filas.length > 1 ? 's filas' : ' fila'} <b>${filas.join(', ')}</b> no tiene ninguna de sus marcas.` };
+  }
+  dibujar();
+}
+
+// Una sola vez por visita, igual que en el resto de los juegos.
+function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path:'fin/detectives-de-familia', title:'Completó Detectives de familia', event:true });
+  }
+  marcador.textContent = 'Resultado';
+  el('barra').style.width = '100%';
+  tablero.innerHTML = `<div class="final">
+    <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">¡Todos los cachorros encontraron a su familia!</h2>
+    <p>${errores === 0 ? 'Resolviste los cinco casos sin ningún error.' : `Resolviste los cinco casos con ${errores} ${errores === 1 ? 'error' : 'errores'}.`}</p>
+    <p style="max-width:34em;margin:0 auto;line-height:1.55;">Lo que hiciste se usa de verdad con personas. Gracias a comparar el ADN con el de sus abuelas y abuelos, muchas personas que habían sido separadas de sus familias cuando eran bebés pudieron saber quiénes eran y recuperar su nombre. Conocer tu origen es un derecho: el <b>derecho a la identidad</b>.</p>
+    <div class="acciones"><button class="primario" id="otra">Jugar de nuevo (con otros cachorros)</button></div></div>`;
+  el('otra').onclick = () => { errores = 0; empezar(0); };
+}
+
+empezar(0);
+</script>
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

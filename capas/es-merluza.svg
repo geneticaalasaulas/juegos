@@ -1,0 +1,14 @@
+<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="200" fill="#02A690"/>
+  <path d="M50 80 C80 36 160 34 196 80 C160 126 80 124 50 80Z" fill="#9ADCD2"/>
+  <path d="M192 80 L236 48 L226 80 L236 112Z" fill="#9ADCD2"/>
+  <circle cx="80" cy="74" r="5" fill="#02A690"/>
+  <g fill="#FFFFFF">
+    <rect x="70" y="140" width="4" height="34"/><rect x="78" y="140" width="8" height="34"/><rect x="90" y="140" width="3" height="34"/>
+    <rect x="97" y="140" width="6" height="34"/><rect x="107" y="140" width="3" height="34"/><rect x="114" y="140" width="9" height="34"/>
+    <rect x="127" y="140" width="4" height="34"/><rect x="135" y="140" width="3" height="34"/><rect x="142" y="140" width="7" height="34"/>
+    <rect x="153" y="140" width="3" height="34"/><rect x="160" y="140" width="5" height="34"/><rect x="169" y="140" width="8" height="34"/>
+    <rect x="181" y="140" width="3" height="34"/><rect x="188" y="140" width="6" height="34"/><rect x="198" y="140" width="4" height="34"/>
+    <rect x="206" y="140" width="9" height="34"/><rect x="219" y="140" width="3" height="34"/><rect x="226" y="140" width="5" height="34"/>
+  </g>
+</svg>

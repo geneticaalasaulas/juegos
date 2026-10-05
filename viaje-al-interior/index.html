@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Viaje al interior · Genética a las Aulas</title>
+<style>
+  :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
+    --juego:#0B9053;          /* verde del logo — ver capas/viaje-al-interior.svg */
+    --juego-texto:#0A824B;
+    --juego-tinte:#E4F3EC;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--juego-texto); }
+  h1{ font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem); letter-spacing:-0.01em; line-height:1.2; margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem; }
+  .bajada{ max-width:34em; margin:0 auto 1rem; font-size:0.95rem; line-height:1.55; color:var(--muted); text-align:center; padding:0 1rem; }
+  .ruta{ display:flex; flex-wrap:wrap; gap:0.3rem; justify-content:center; margin:0 0 1rem; padding:0 1rem; font-size:0.85rem; }
+  .ruta span{ padding:0.15rem 0.6rem; border-radius:999px; background:var(--pista); color:var(--muted); }
+  .ruta span.hecha{ background:var(--juego-tinte); color:var(--juego-texto); }
+  .ruta span.actual{ background:var(--juego-texto); color:#fff; font-weight:600; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.5rem; width:min(720px,94vw); margin-bottom:1.2rem; overflow:hidden; }
+
+  button{ min-height:44px; padding:0.6rem 1rem; border-radius:6px; font-size:1rem; cursor:pointer; font-family:inherit;
+    border:1.5px solid var(--juego); background:#fff; color:var(--ink); transition:background-color .15s ease; }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible, .blanco:focus-visible, input:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+
+  h2.parada{ font-size:1.3rem; font-weight:600; margin:0 0 0.2rem; }
+  .tam{ font-size:0.9rem; color:var(--muted); margin:0 0 0.8rem; }
+  .tam::before{ content:"\1F50D\00a0"; }
+  .texto{ font-size:1.05rem; line-height:1.55; margin:0 0 0.8rem; }
+  .lienzo{ position:relative; border-radius:8px; overflow:hidden; background:#FAFBFB; border:1px solid #E6E9E8; }
+  .lienzo svg{ display:block; width:100%; height:auto; transition:transform .55s ease-in, opacity .55s ease-in; }
+  .lienzo svg.zoom{ opacity:0; }
+  .blanco{ cursor:pointer; }
+  .blanco.activo .aro{ animation:latir 1.4s ease-in-out infinite; }
+  @keyframes latir{ 0%,100%{ stroke-opacity:1; stroke-width:4; } 50%{ stroke-opacity:0.35; stroke-width:7; } }
+  .tarea{ font-size:1.02rem; font-weight:600; color:var(--juego-texto); margin:0.9rem 0 0; }
+  .tarea::before{ content:"\1F449\00a0"; }
+  .pregunta p{ margin:1rem 0 0.4rem; font-weight:600; font-size:1.02rem; }
+  .opciones{ display:grid; gap:0.5rem; }
+  .opciones button{ text-align:left; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.ok:disabled{ opacity:1; }
+  .opciones button.ok::before{ content:"\2713\00a0"; font-weight:700; }
+  .opciones button.mal{ border-color:var(--mal); color:var(--mal); }
+  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
+  .fb{ font-size:1rem; line-height:1.5; margin:0.8rem 0 0; padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; }
+  .fb:empty{ display:none; }
+  .fb.pista{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .fb.ok{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .acciones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.9rem; justify-content:center; }
+  .deslizador{ display:flex; gap:0.8rem; align-items:center; flex-wrap:wrap; margin:0.8rem 0 0; font-size:0.95rem; }
+  .deslizador input{ flex:1 1 220px; accent-color:var(--juego-texto); min-height:32px; }
+  .orden{ display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin:0.6rem 0 0; }
+  .orden button.usado{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .fila-orden{ display:flex; flex-wrap:wrap; gap:0.3rem; align-items:center; justify-content:center; min-height:2.6rem; margin:0.6rem 0 0; font-weight:600; }
+  .fila-orden span.item{ background:var(--juego-tinte); color:var(--juego-texto); padding:0.3rem 0.7rem; border-radius:999px; }
+  .final{ text-align:center; }
+  @keyframes sacudir{ 0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-6px); } 75%{ transform:translateX(6px); } }
+  .sacude{ animation:sacudir .25s ease 2; }
+
+  details.docente{ max-width:38em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  @media (prefers-reduced-motion:reduce){ .lienzo svg{ transition:none; } .blanco.activo .aro, .sacude{ animation:none; } }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>Viaje al interior</h1>
+<p class="bajada">¿Dónde está el ADN? Hacé zoom desde tu cuerpo hasta un gen, pasando por la piel, una célula, el núcleo y un cromosoma.</p>
+<div class="ruta" id="ruta" aria-label="Recorrido"></div>
+<div class="tablero" id="tablero"></div>
+
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Primaria (de 8 a 12 años, aproximadamente).</p>
+  <p><b>Conceptos que trabaja:</b> niveles de organización (organismo, tejido, célula, núcleo, cromosoma, ADN, gen); escala; dónde está el ADN en la célula; qué es un cromosoma y qué es un gen. Ordena el vocabulario que los demás juegos dan por sabido.</p>
+  <p><b>Datos que usa:</b> el cuerpo humano tiene unos 30 millones de millones de células (las estimaciones van de 30 a 37 billones); una célula de la piel mide unas 30 milésimas de milímetro y su núcleo, unas 6; el ADN de una célula humana, estirado, mide unos 2 metros, y su hilo tiene unos 2 nanómetros de ancho; los seres humanos tenemos unos 20.000 genes que codifican proteínas.</p>
+  <p><b>Errores frecuentes que el juego evita:</b> los cromosomas no tienen forma de X todo el tiempo. Mientras la célula no se divide, el ADN está desenrollado y se ve como hilos enredados (la cromatina); la forma de X (o de bastoncito doble) aparece cuando el cromosoma ya se copió y se compacta para la división. Por eso el juego muestra primero los hilos y después la X. Otro: no todas las células tienen núcleo (los glóbulos rojos maduros lo pierden), y las mitocondrias tienen un poco de ADN propio; por eso la pregunta dice "casi todo".</p>
+  <p><b>Sobre "un gen = instrucciones para fabricar algo":</b> la mayoría de los genes conocidos tienen la información para fabricar una proteína; otros dan ARN que cumplen funciones sin traducirse. Para primaria alcanza con "instrucciones para fabricar algo que el cuerpo necesita". Conviene evitar "el gen del color de ojos" o "el gen de la inteligencia": la mayoría de los rasgos dependen de muchos genes y del ambiente.</p>
+  <p><b>Sobre la familia:</b> la pregunta de los cromosomas habla de la madre y el padre biológicos. Si en el grupo hay niños o niñas adoptados o con otras configuraciones familiares, conviene aclarar que se trata del óvulo y el espermatozoide que les dieron origen.</p>
+  <p><b>Para discutir después de jugar:</b> si todas tus células tienen el mismo ADN, ¿por qué una célula de la piel no es igual a una neurona? (Pista: no todos los genes están encendidos en todas las células.) ¿Qué ventaja tiene que el ADN esté tan enrollado?</p>
+</details>
+
+<script>
+// ---------------------------------------------------------------------------
+// Dibujos de cada parada. Cada uno marca con class="blanco" las zonas que se
+// pueden tocar; data-z dice qué es cada zona.
+// ---------------------------------------------------------------------------
+const VERDE = '#0B9053', PIEL = '#F2C9A8', PIEL2 = '#E3A983', NUCLEO = '#7B3F98', ADN_C = { A:'#0B9053', T:'#D10E18', C:'#0462B7', G:'#F2A406' };
+const aro = (cx, cy, r) => `<circle class="aro" cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#C88705" stroke-width="4"/>`;
+
+function dibujoCuerpo(){
+  return `<svg viewBox="0 0 400 300" role="img" aria-label="Una persona; la mano está marcada">
+    <rect width="400" height="300" fill="#EAF4F8"/>
+    <rect y="250" width="400" height="50" fill="#CFE6C8"/>
+    <g fill="${PIEL}" stroke="#8A5A3C" stroke-width="2">
+      <circle cx="200" cy="62" r="30"/>
+    </g>
+    <path d="M170 42 Q200 18 230 42 Q232 30 214 26 Q200 20 186 26 Q170 30 170 42Z" fill="#5A3A22"/>
+    <circle cx="190" cy="62" r="3" fill="#16211F"/><circle cx="210" cy="62" r="3" fill="#16211F"/>
+    <path d="M190 76 Q200 83 210 76" fill="none" stroke="#8A5A3C" stroke-width="2.5" stroke-linecap="round"/>
+    <rect x="165" y="96" width="70" height="90" rx="18" fill="${VERDE}"/>
+    <path d="M168 110 L130 160" stroke="${PIEL}" stroke-width="16" stroke-linecap="round"/>
+    <path d="M232 110 L270 160" stroke="${PIEL}" stroke-width="16" stroke-linecap="round"/>
+    <rect x="172" y="180" width="24" height="72" rx="10" fill="#0462B7"/>
+    <rect x="204" y="180" width="24" height="72" rx="10" fill="#0462B7"/>
+    <ellipse cx="184" cy="254" rx="18" ry="8" fill="#16211F"/><ellipse cx="216" cy="254" rx="18" ry="8" fill="#16211F"/>
+    <circle cx="128" cy="164" r="11" fill="${PIEL}" stroke="#8A5A3C" stroke-width="2"/>
+    <g class="blanco activo" data-z="mano" tabindex="0" role="button" aria-label="Hacer zoom en la mano">
+      <circle cx="272" cy="164" r="11" fill="${PIEL}" stroke="#8A5A3C" stroke-width="2"/>
+      ${aro(272, 164, 22)}<circle cx="272" cy="164" r="28" fill="transparent"/>
+    </g>
+  </svg>`;
+}
+
+// Teselado irregular de células de la piel (hexágonos un poco deformados).
+function dibujoPiel(){
+  let s = `<svg viewBox="0 0 400 300" role="img" aria-label="Células de la piel vistas con microscopio"><rect width="400" height="300" fill="${PIEL2}"/>`;
+  const r = 30, h = r * Math.sqrt(3);
+  let n = 0;
+  const rnd = (i, j, k) => { const x = Math.sin(i * 12.9898 + j * 78.233 + k * 37.719) * 43758.5453; return x - Math.floor(x) - 0.5; };
+  for(let j = -1; j < 8; j++) for(let i = -1; i < 9; i++){
+    const cx = i * r * 1.5 + 10, cy = j * h + (i % 2 ? h / 2 : 0) + 6;
+    let d = '';
+    for(let k = 0; k < 6; k++){
+      const a = Math.PI / 3 * k, rr = r - 2 + rnd(i, j, k) * 6;
+      d += (k ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(1) + ' ' + (cy + rr * Math.sin(a)).toFixed(1) + ' ';
+    }
+    const nx = cx + rnd(i, j, 7) * 8, ny = cy + rnd(i, j, 8) * 8;
+    const centro = i === 4 && j === 3;
+    const cel = `<path d="${d}Z" fill="${PIEL}" stroke="#B9785A" stroke-width="2.5" stroke-linejoin="round"/><circle cx="${nx}" cy="${ny}" r="7" fill="${NUCLEO}" opacity="0.8"/>`;
+    s += `<g class="blanco${centro ? ' activo' : ''}" data-z="celula" ${centro ? 'tabindex="0" role="button" aria-label="Hacer zoom en una célula"' : ''}>${cel}${centro ? aro(cx, cy, r + 4) : ''}</g>`;
+    n++;
+  }
+  return s + '</svg>';
+}
+
+function dibujoCelula(){
+  return `<svg viewBox="0 0 400 300" role="img" aria-label="Una célula con sus partes: membrana, citoplasma, núcleo y mitocondrias">
+    <rect width="400" height="300" fill="#FAFBFB"/>
+    <g class="blanco" data-z="citoplasma" tabindex="0" role="button" aria-label="Citoplasma">
+      <path d="M60 150 C60 70 140 30 210 34 C300 38 352 90 348 160 C344 236 280 272 196 268 C110 264 60 226 60 150Z" fill="#FCE7D6"/>
+    </g>
+    <g class="blanco" data-z="membrana" tabindex="0" role="button" aria-label="Membrana">
+      <path d="M60 150 C60 70 140 30 210 34 C300 38 352 90 348 160 C344 236 280 272 196 268 C110 264 60 226 60 150Z" fill="none" stroke="#C47B54" stroke-width="10"/>
+    </g>
+    <g fill="none" stroke="#D9A07E" stroke-width="2.5">
+      <path d="M120 200 q20 -14 40 0 t40 0"/><path d="M116 214 q20 -14 40 0 t40 0"/>
+      <path d="M250 80 q14 10 28 0 t28 0"/>
+    </g>
+    <g fill="#B9785A">${[[100,120],[140,236],[290,224],[310,110],[240,250],[95,175],[330,180]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="3"/>`).join('')}</g>
+    ${[[110,96,-20],[290,200,25],[250,240,-10]].map(([x,y,a], k) => `<g class="blanco" data-z="mitocondria" tabindex="0" role="button" aria-label="Mitocondria" transform="rotate(${a} ${x} ${y})">
+      <ellipse cx="${x}" cy="${y}" rx="26" ry="13" fill="#F2A406" stroke="#A06C04" stroke-width="2.5"/>
+      <path d="M${x - 16} ${y} q4 -9 8 0 t8 0 t8 0 t8 0" fill="none" stroke="#A06C04" stroke-width="2"/></g>`).join('')}
+    <g class="blanco activo" data-z="nucleo" tabindex="0" role="button" aria-label="Núcleo">
+      <circle cx="205" cy="150" r="58" fill="#D9C2E6" stroke="${NUCLEO}" stroke-width="4"/>
+      <circle cx="222" cy="140" r="14" fill="${NUCLEO}" opacity="0.6"/>
+      <path d="M170 130 q12 -10 24 4 t20 10 M180 172 q14 8 30 -4 t26 6 M168 156 q10 4 14 -8" fill="none" stroke="${NUCLEO}" stroke-width="2" opacity="0.7"/>
+    </g>
+    <g font-family="system-ui,sans-serif" font-size="13" fill="#3F4B49" pointer-events="none">
+      <text x="205" y="226" text-anchor="middle" font-weight="700" fill="${NUCLEO}">núcleo</text>
+      <text x="64" y="66">membrana</text>
+      <text x="298" y="262">mitocondria</text>
+      <text x="318" y="140">citoplasma</text>
+    </g>
+  </svg>`;
+}
+
+// Hilos enredados en el núcleo (cromatina) o 46 cromosomas compactados.
+const COLORES_PAR = ['#0462B7','#BC0440','#0B9053','#C88705','#5E0478','#02A690','#D10E18','#3BA2A5'];
+function dibujoNucleo(compacto){
+  let s = `<svg viewBox="0 0 400 300" role="img" aria-label="${compacto ? 'Los 46 cromosomas compactados, en 23 pares' : 'El núcleo con el ADN en hilos largos y enredados'}">
+    <defs><clipPath id="nuc"><circle cx="200" cy="150" r="134"/></clipPath></defs>
+    <rect width="400" height="300" fill="#FAFBFB"/><circle cx="200" cy="150" r="140" fill="#EFE3F5" stroke="${NUCLEO}" stroke-width="5"/>`;
+  if(!compacto){
+    s += '<g clip-path="url(#nuc)">';
+    let seed = 3; const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    for(let k = 0; k < 46; k++){
+      let x = 200 + (rnd() - 0.5) * 180, y = 150 + (rnd() - 0.5) * 180, d = `M${x.toFixed(0)} ${y.toFixed(0)}`;
+      for(let t = 0; t < 4; t++){
+        const nx = Math.min(310, Math.max(90, x + (rnd() - 0.5) * 110)), ny = Math.min(260, Math.max(40, y + (rnd() - 0.5) * 110));
+        d += ` Q${(x + (rnd() - 0.5) * 80).toFixed(0)} ${(y + (rnd() - 0.5) * 80).toFixed(0)} ${nx.toFixed(0)} ${ny.toFixed(0)}`; x = nx; y = ny;
+      }
+      s += `<path d="${d}" fill="none" stroke="${COLORES_PAR[Math.floor(k / 2) % COLORES_PAR.length]}" stroke-width="2" stroke-linecap="round" opacity="0.75"/>`;
+    }
+    s += '</g>';
+  } else {
+    // 23 pares, de más grande a más chico, en una grilla dentro del núcleo.
+    for(let p = 0; p < 23; p++){
+      const col = p % 6, fila = Math.floor(p / 6), largo = 34 - p * 0.9;
+      const cx = 110 + col * 36, cy = 70 + fila * 54;
+      for(const dx of [-7, 7]){
+        const x = cx + dx, c = COLORES_PAR[p % COLORES_PAR.length];
+        const blanco = p === 0 && dx === -7;
+        const forma = `<path d="M${x - 4} ${cy - largo / 2} L${x + 4} ${cy + largo / 2} M${x + 4} ${cy - largo / 2} L${x - 4} ${cy + largo / 2}" stroke="${c}" stroke-width="5" stroke-linecap="round"/>`;
+        s += blanco ? `<g class="blanco activo" data-z="cromosoma" tabindex="0" role="button" aria-label="Hacer zoom en un cromosoma">${forma}${aro(x, cy, largo / 2 + 8)}<circle cx="${x}" cy="${cy}" r="${largo / 2 + 8}" fill="transparent"/></g>` : forma;
+      }
+    }
+  }
+  return s + '</svg>';
+}
+
+// Cromosoma que se desenrolla: 0 = compacto (X), 1 = fibra con "carreteles",
+// 2 = hilo de ADN estirado.
+function dibujoCromosoma(paso){
+  let s = `<svg viewBox="0 0 400 300" role="img" aria-label="${['Un cromosoma compacto','El ADN enrollado alrededor de proteínas, como hilo en carreteles','El hilo de ADN estirado'][paso]}"><rect width="400" height="300" fill="#FAFBFB"/>`;
+  if(paso === 0){
+    s += `<g stroke="#0462B7" stroke-width="34" stroke-linecap="round"><path d="M160 50 L240 250"/><path d="M240 50 L160 250"/></g>
+      <g stroke="#3C82C8" stroke-width="3" fill="none" opacity="0.8">${Array.from({length:16}, (_, k) => { const t = k / 15, x1 = 160 + 80 * t, y = 50 + 200 * t; return `<path d="M${x1 - 14} ${y} l28 0"/><path d="M${400 - x1 - 14} ${y} l28 0"/>`; }).join('')}</g>
+      <circle cx="200" cy="150" r="13" fill="#16211F" opacity="0.5"/>
+      <text x="300" y="155" font-size="13" fill="#3F4B49" font-family="system-ui,sans-serif">centrómero</text>
+      <path d="M296 150 L218 150" stroke="#3F4B49" stroke-width="1.5"/>`;
+  } else if(paso === 1){
+    let d = 'M20 150';
+    for(let k = 0; k < 9; k++){
+      const x = 40 + k * 42;
+      s += `<circle cx="${x}" cy="150" r="15" fill="#C8B2D6" stroke="${NUCLEO}" stroke-width="2"/>`;
+    }
+    for(let k = 0; k < 9; k++){ const x = 40 + k * 42; d += ` C${x - 30} 130 ${x - 20} 170 ${x} 168 S${x + 22} 128 ${x + 6} 132 S${x + 20} 160 ${x + 21} 150`; }
+    s += `<path d="${d}" fill="none" stroke="#0462B7" stroke-width="3.5"/>
+      <text x="200" y="210" text-anchor="middle" font-size="14" fill="#3F4B49" font-family="system-ui,sans-serif">el ADN da vueltas alrededor de unas proteínas</text>`;
+  } else {
+    s += `<g class="blanco activo" data-z="adn" tabindex="0" role="button" aria-label="Hacer zoom en el ADN">`;
+    for(let k = 0; k < 30; k++){
+      const x = 20 + k * 12.4, a = Math.sin(k / 30 * Math.PI * 4);
+      s += `<line x1="${x}" y1="${150 - 40 * a}" x2="${x}" y2="${150 + 40 * a}" stroke="${['#0B9053','#D10E18','#0462B7','#F2A406'][k % 4]}" stroke-width="5"/>`;
+    }
+    const curva = sg => { let d = ''; for(let t = 0; t <= 120; t++){ const x = 20 + t / 120 * 29 * 12.4, y = 150 - sg * 40 * Math.sin(t / 120 * 29 / 30 * Math.PI * 4); d += (t ? ' L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1); } return d; };
+    s += `<path d="${curva(1)}" fill="none" stroke="#5B6E6B" stroke-width="5"/><path d="${curva(-1)}" fill="none" stroke="#5B6E6B" stroke-width="5"/>
+      ${aro(200, 150, 62)}<rect x="20" y="90" width="360" height="120" fill="transparent"/></g>`;
+  }
+  return s + '</svg>';
+}
+
+// Un tramo de ADN con un gen resaltado.
+function dibujoGen(){
+  const letras = 'ATGCGTACCTGAGGTCATTACGATCGGATCCA';
+  let s = `<svg viewBox="0 0 400 300" role="img" aria-label="Un tramo de ADN con un gen marcado"><rect width="400" height="300" fill="#FAFBFB"/>
+    <rect x="96" y="70" width="210" height="160" rx="10" fill="#FFF4DC" stroke="#C88705" stroke-width="2.5" stroke-dasharray="7 5"/>
+    <text x="201" y="60" text-anchor="middle" font-size="16" font-weight="700" fill="#A06C04" font-family="system-ui,sans-serif">un gen</text>
+    <rect x="14" y="98" width="372" height="8" rx="4" fill="#5B6E6B"/><rect x="14" y="194" width="372" height="8" rx="4" fill="#5B6E6B"/>`;
+  const par = { A:'T', T:'A', C:'G', G:'C' };
+  for(let k = 0; k < 31; k++){
+    const x = 20 + k * 11.8, b = letras[k], c = par[b];
+    s += `<rect x="${x}" y="106" width="9" height="44" fill="${ADN_C[b]}"/><rect x="${x}" y="150" width="9" height="44" fill="${ADN_C[c]}"/>`;
+  }
+  return s + `<text x="200" y="262" text-anchor="middle" font-size="13" fill="#3F4B49" font-family="system-ui,sans-serif">un gen real tiene miles de letras: acá ves solo un pedacito</text></svg>`;
+}
+
+// ---------------------------------------------------------------------------
+// Paradas del viaje
+// ---------------------------------------------------------------------------
+const PARADAS = [
+  { id:'cuerpo', nombre:'Tu cuerpo', tam:'Mide más o menos 1,40 metros.',
+    texto:'Empezamos afuera, mirando a una persona entera.',
+    pregunta:'¿De qué está hecho tu cuerpo?',
+    correcta:'De muchísimas células: unos 30 millones de millones',
+    distractores:['De unas mil células bastante grandes', 'De una sola célula gigante'],
+    explica:'Todos los seres vivos están hechos de células. Tu cuerpo tiene unos <b>30.000.000.000.000</b>: si contaras una por segundo, tardarías casi un millón de años.',
+    tarea:'Tocá la mano para hacer zoom en la piel.', blanco:'mano', dibujo:() => dibujoCuerpo() },
+  { id:'piel', nombre:'La piel', tam:'Este pedacito de piel es más chico que un grano de sal: lo estás viendo con un microscopio.',
+    texto:'Con un microscopio se ve que la piel está hecha de células, una al lado de la otra. El punto violeta de cada una es su núcleo.',
+    pregunta:'¿Por qué no ves tus células cuando te mirás la mano?',
+    correcta:'Porque son tan chicas que hace falta un microscopio',
+    distractores:['Porque están escondidas debajo de la piel', 'Porque solo las tienen los animales chiquitos'],
+    explica:'Una célula de la piel mide unos 0,03 milímetros: en un milímetro entrarían unas 30, en fila. La piel también está hecha de células: las que ves acá.',
+    tarea:'Tocá la célula marcada para entrar en ella.', blanco:'celula', dibujo:() => dibujoPiel() },
+  { id:'celula', nombre:'Una célula', tam:'Mide unos 0,03 milímetros.',
+    texto:'Una célula tiene varias partes: la <b>membrana</b> la rodea, el <b>citoplasma</b> la llena, las <b>mitocondrias</b> le dan energía y el <b>núcleo</b>…',
+    tarea:'Tocá la parte de la célula donde está guardado casi todo el ADN.', blanco:'nucleo', toque:true,
+    respuestas:{
+      membrana:'Esa es la <b>membrana</b>: es como la piel de la célula, la rodea y decide qué entra y qué sale. El ADN está más adentro.',
+      citoplasma:'Ese es el <b>citoplasma</b>: el líquido que llena la célula, donde trabajan sus partes. Casi todo el ADN está guardado en otro lugar.',
+      mitocondria:'¡Bien visto! Las <b>mitocondrias</b> tienen un poquito de ADN propio. Pero casi todo el ADN está en otra parte. ¿Cuál?',
+      nucleo:'¡Sí! Casi todo el ADN está guardado en el <b>núcleo</b>. Vamos a entrar.' },
+    dibujo:() => dibujoCelula() },
+  { id:'nucleo', nombre:'El núcleo', tam:'Mide unos 0,006 milímetros.',
+    texto:'Adentro del núcleo, el ADN está en hilos larguísimos y finos, enredados como fideos. Cada hilo es un <b>cromosoma</b>.',
+    pregunta:'¿Cuántos cromosomas hay en casi todas tus células?',
+    correcta:'46, en 23 pares: de cada par, uno vino de la madre y otro del padre',
+    distractores:['2: uno de la madre y uno del padre', 'Miles: uno para cada cosa del cuerpo'],
+    explica:'Cada persona tiene <b>46 cromosomas</b>, en 23 pares. Los dos de cada par llevan los mismos genes, aunque no necesariamente las mismas versiones.',
+    extra:'Cuando la célula se va a dividir, cada hilo se copia y se enrolla mucho: recién ahí los cromosomas se ven como bastoncitos o equis.',
+    boton:'La célula se va a dividir', tarea:'Tocá un cromosoma para hacer zoom.', blanco:'cromosoma',
+    dibujo:c => dibujoNucleo(c) },
+  { id:'cromosoma', nombre:'Un cromosoma', tam:'Mide unas pocas milésimas de milímetro.',
+    texto:'Este cromosoma está muy enrollado. Mové la barra para desenrollarlo y ver de qué está hecho.',
+    deslizar:true,
+    pregunta:'Si estiraras todo el ADN de una sola de tus células y lo pusieras en fila, ¿cuánto mediría?',
+    correcta:'Unos 2 metros',
+    distractores:['Unos 2 milímetros', 'Unos 2 kilómetros'],
+    explica:'¡Unos <b>2 metros</b>! Entra en un núcleo diminuto porque está muy enrollado alrededor de unas proteínas, como hilo en carreteles.',
+    tarea:'Tocá el hilo de ADN para ver sus letras.', blanco:'adn', dibujo:p => dibujoCromosoma(p) },
+  { id:'gen', nombre:'El ADN y los genes', tam:'El hilo de ADN es tan fino que harían falta unos 500.000, uno al lado del otro, para cubrir un milímetro.',
+    texto:'Llegamos al ADN: una escalera de cuatro letras, A, T, C y G. Algunos tramos de la escalera son <b>genes</b>.',
+    pregunta:'¿Qué es un gen?',
+    correcta:'Un tramo de ADN con las instrucciones para fabricar algo que tu cuerpo necesita',
+    distractores:['Un tipo especial de célula', 'Un cromosoma entero'],
+    explica:'Tenés unos <b>20.000 genes</b>. Por ejemplo, uno tiene las instrucciones para fabricar la hemoglobina, la proteína que lleva el oxígeno en tu sangre.',
+    dibujo:() => dibujoGen() }
+];
+
+const ORDEN = ['Tu cuerpo', 'Un pedacito de piel', 'Una célula', 'El núcleo', 'Un cromosoma', 'Un gen'];
+
+const tablero = document.getElementById('tablero');
+const ruta = document.getElementById('ruta');
+const el = id => document.getElementById(id);
+let p = 0, S = null, errores = 0, finContado = false;
+function mezclar(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function rutaHTML(actual){
+  ruta.innerHTML = [...PARADAS.map(x => x.nombre), 'De grande a chico'].map((n, i) =>
+    `<span class="${i < actual ? 'hecha' : i === actual ? 'actual' : ''}">${n}</span>`).join('');
+}
+
+function ir(i){
+  p = i;
+  const P = PARADAS[i];
+  S = { etapa:P.pregunta ? 'pregunta' : 'tocar', elegidas:new Set(), msg:null, msgT:null, compacto:false, paso:0,
+        opciones:P.pregunta ? mezclar([P.correcta, ...P.distractores]) : [] };
+  if(P.deslizar) S.etapa = 'deslizar';
+  rutaHTML(i);
+  dibujar();
+  window.scrollTo({ top:0 });
+}
+
+function dibujoActual(){
+  const P = PARADAS[p];
+  if(P.id === 'nucleo') return P.dibujo(S.compacto);
+  if(P.id === 'cromosoma') return P.dibujo(S.paso);
+  return P.dibujo();
+}
+
+function dibujar(){
+  const P = PARADAS[p];
+  let h = `<h2 class="parada">${P.nombre}</h2><p class="tam">${P.tam}</p><p class="texto">${P.texto}</p>
+    <div class="lienzo" id="lienzo">${dibujoActual()}</div>`;
+  if(P.deslizar){
+    h += `<div class="deslizador"><label for="desen">Desenrollar:</label><input type="range" id="desen" min="0" max="2" step="1" value="${S.paso}"></div>`;
+  }
+  if(P.pregunta && (S.etapa === 'pregunta' || S.etapa === 'post' || (P.deslizar && S.paso === 2))){
+    const resuelta = S.etapa !== 'pregunta' && S.etapa !== 'deslizar';
+    h += `<div class="pregunta"><p>${P.pregunta}</p><div class="opciones">${S.opciones.map(o =>
+      `<button data-o="${o}" class="${resuelta && o === P.correcta ? 'ok' : S.elegidas.has(o) ? 'mal' : ''}" ${resuelta || S.elegidas.has(o) ? 'disabled' : ''}>${o}</button>`).join('')}</div></div>`;
+  }
+  h += `<p class="fb ${S.msg ? S.msg.tipo : ''}" aria-live="polite">${S.msg ? S.msg.texto : ''}</p>`;
+  if(S.etapa === 'post' && P.boton && !S.compacto){
+    h += `<p class="texto" style="margin-top:0.8rem">${P.extra}</p><div class="acciones"><button class="primario" id="boton">${P.boton}</button></div>`;
+  }
+  if(S.etapa === 'tocar' || (S.etapa === 'post' && P.blanco && (!P.boton || S.compacto))){
+    h += `<p class="tarea">${P.tarea}</p>`;
+    if(S.msgT) h += `<p class="fb ${S.msgT.tipo}" aria-live="polite">${S.msgT.texto}</p>`;
+  }
+  if(S.etapa === 'post' && !P.blanco){
+    h += `<div class="acciones"><button class="primario" id="seguir">Último desafío &rarr;</button></div>`;
+  }
+  tablero.innerHTML = h;
+  conectar();
+}
+
+function tocable(){
+  const P = PARADAS[p];
+  return S.etapa === 'tocar' || (S.etapa === 'post' && P.blanco && (!P.boton || S.compacto));
+}
+
+function conectar(){
+  const P = PARADAS[p];
+  tablero.querySelectorAll('[data-o]').forEach(b => b.onclick = () => responder(b.dataset.o));
+  tablero.querySelectorAll('.blanco').forEach(g => {
+    const f = () => tocar(g.dataset.z);
+    g.onclick = f;
+    g.onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); f(); } };
+  });
+  if(el('boton')) el('boton').onclick = () => { S.compacto = true; dibujar(); };
+  if(el('seguir')) el('seguir').onclick = ordenar;
+  const d = el('desen');
+  if(d) d.oninput = () => {
+    S.paso = +d.value;
+    if(S.paso === 2 && S.etapa === 'deslizar') S.etapa = 'pregunta';
+    dibujar();
+    el('desen').focus();
+  };
+}
+
+function responder(o){
+  const P = PARADAS[p];
+  if(o === P.correcta){
+    S.etapa = 'post';
+    S.msg = { tipo:'ok', texto:P.explica };
+  } else {
+    S.elegidas.add(o); errores++;
+    S.msg = { tipo:'pista', texto:'No es esa. Leé de nuevo lo que dice arriba y mirá el dibujo. Elegí otra opción.' };
+  }
+  dibujar();
+}
+
+function tocar(z){
+  const P = PARADAS[p];
+  if(!tocable()) return;
+  if(P.respuestas){
+    if(z !== P.blanco){
+      errores++;
+      S.msgT = { tipo:'pista', texto:P.respuestas[z] };
+      dibujar(); return;
+    }
+    S.msgT = { tipo:'ok', texto:P.respuestas[z] };
+    dibujar();
+    setTimeout(() => zoom(z), 900);
+    return;
+  }
+  if(z !== P.blanco) return;
+  zoom(z);
+}
+
+// Zoom: el dibujo se agranda hacia la zona tocada y se pasa a la parada siguiente.
+function zoom(z){
+  const svg = el('lienzo').querySelector('svg'), g = svg.querySelector(`.blanco[data-z="${z}"]`);
+  const reducir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(g && !reducir){
+    const b = g.getBBox(), cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+    svg.style.transformOrigin = `${cx / 4}% ${cy / 3}%`;
+    svg.style.transform = 'scale(6)';
+    svg.classList.add('zoom');
+    setTimeout(() => ir(p + 1), 560);
+  } else ir(p + 1);
+}
+
+// Último desafío: ordenar de más grande a más chico.
+let O = null;
+function ordenar(){
+  O = { hechos:[], opciones:mezclar(ORDEN), msg:null };
+  rutaHTML(PARADAS.length);
+  dibujarOrden();
+  window.scrollTo({ top:0 });
+}
+function dibujarOrden(){
+  const listo = O.hechos.length === ORDEN.length;
+  tablero.innerHTML = `<h2 class="parada">De grande a chico</h2>
+    <p class="texto">Tocá las cosas que viste en el viaje, <b>de la más grande a la más chica</b>.</p>
+    <div class="fila-orden" aria-live="polite">${O.hechos.map((x, i) => `${i ? '<span aria-hidden="true">&rsaquo;</span>' : ''}<span class="item">${x}</span>`).join('') || '<span style="color:var(--muted);font-weight:400">(acá van a aparecer en orden)</span>'}</div>
+    <div class="orden">${O.opciones.map(x => `<button data-x="${x}" class="${O.hechos.includes(x) ? 'usado' : ''}" ${O.hechos.includes(x) || listo ? 'disabled' : ''}>${x}</button>`).join('')}</div>
+    <p class="fb ${O.msg ? O.msg.tipo : ''}" aria-live="polite">${O.msg ? O.msg.texto : ''}</p>
+    ${listo ? '<div class="acciones"><button class="primario" id="fin">Terminar el viaje &rarr;</button></div>' : ''}`;
+  tablero.querySelectorAll('[data-x]').forEach(b => b.onclick = () => elegirOrden(b.dataset.x));
+  if(el('fin')) el('fin').onclick = final;
+}
+function elegirOrden(x){
+  const sig = ORDEN[O.hechos.length];
+  if(x === sig){
+    O.hechos.push(x);
+    O.msg = O.hechos.length === ORDEN.length ? { tipo:'ok', texto:'¡Perfecto! Cada cosa está adentro de la anterior: el gen es un tramo del ADN de un cromosoma, que está en el núcleo de una célula, que forma parte de la piel de tu cuerpo.' } : null;
+  } else {
+    errores++;
+    const ix = ORDEN.indexOf(x);
+    O.msg = { tipo:'pista', texto:`Todavía no. <b>${x}</b> está adentro de ${ORDEN[ix - 1].toLowerCase()}`.replace('de el ', 'del ') + `: hay algo más grande que todavía no pusiste.` };
+  }
+  dibujarOrden();
+}
+
+// Una sola vez por visita, igual que en el resto de los juegos.
+function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path:'fin/viaje-al-interior', title:'Completó Viaje al interior', event:true });
+  }
+  ruta.querySelectorAll('span').forEach(s => s.className = 'hecha');
+  tablero.innerHTML = `<div class="final">
+    <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">¡Llegaste al fondo!</h2>
+    <p>${errores === 0 ? 'Hiciste todo el viaje sin ningún error.' : `Hiciste todo el viaje con ${errores} ${errores === 1 ? 'error' : 'errores'}.`}</p>
+    <p style="max-width:34em;margin:0 auto;line-height:1.55;">Casi todas tus células tienen una copia completa de tu ADN: la de la piel, la del ojo, la del hueso. Lo que cambia de una a otra es qué genes están encendidos.</p>
+    <div class="acciones"><button class="primario" id="otra">Hacer el viaje de nuevo</button></div></div>`;
+  el('otra').onclick = () => { errores = 0; ir(0); };
+}
+
+ir(0);
+</script>
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

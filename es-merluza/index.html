@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>¿Es merluza de verdad? · Genética a las Aulas</title>
+<style>
+  :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
+    --juego:#02A690;          /* turquesa del logo — ver capas/es-merluza.svg */
+    --juego-texto:#018574;
+    --juego-tinte:#E0F4F1;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--juego-texto); }
+  h1{ font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem); letter-spacing:-0.01em; line-height:1.2; margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem; }
+  .bajada{ max-width:34em; margin:0 auto 1rem; font-size:0.95rem; line-height:1.55; color:var(--muted); text-align:center; padding:0 1rem; }
+  .marcador{ color:var(--muted); font-size:0.95rem; margin:0 0 1rem; text-align:center; }
+  .progreso{ width:min(760px,94vw); height:5px; margin:0 0 1.1rem; background:var(--pista); border-radius:999px; overflow:hidden; }
+  .progreso > i{ display:block; height:100%; width:0; border-radius:999px; background:var(--juego-texto); transition:width .3s ease; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.5rem; width:min(760px,94vw); margin-bottom:1.2rem; }
+
+  button{ min-height:44px; padding:0.55rem 0.95rem; border-radius:6px; font-size:0.97rem; cursor:pointer; font-family:inherit;
+    border:1.5px solid var(--juego); background:#fff; color:var(--ink); transition:background-color .15s ease; }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+
+  .historia{ display:flex; gap:1rem; align-items:center; background:var(--juego-tinte); border-left:4px solid var(--juego); padding:0.8rem 1rem; border-radius:0 6px 6px 0; line-height:1.55; margin:0 0 1rem; }
+  .historia svg{ flex:none; }
+  .etiqueta{ display:inline-block; background:#fff; border:1.5px dashed #9AA8A5; border-radius:4px; padding:0.05rem 0.5rem; font-weight:700; }
+  h2.paso{ font-size:0.82rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--muted); font-weight:600; margin:1.2rem 0 0.5rem; }
+  .biblioteca{ display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:0.6rem; }
+  .especie{ border:1.5px solid #E1E7E5; border-radius:8px; padding:0.6rem 0.7rem; display:flex; flex-direction:column; gap:0.35rem; }
+  .especie.activa{ border-color:var(--juego); box-shadow:0 0 0 3px var(--juego-tinte); }
+  .especie b{ font-size:0.98rem; }
+  .especie i{ font-size:0.8rem; color:var(--muted); }
+  .especie .res{ font-size:0.9rem; }
+  .especie button{ min-height:38px; padding:0.3rem 0.6rem; font-size:0.9rem; }
+
+  .comparador{ border:1.5px solid var(--juego); border-radius:8px; padding:0.8rem; margin-top:1rem; }
+  .comparador p{ margin:0 0 0.6rem; line-height:1.5; }
+  .sec{ display:flex; gap:3px; align-items:center; margin:0 0 4px; width:max-content; }
+  .letra{ width:26px; height:30px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-weight:700; font-size:1rem; color:#fff; padding:0; min-height:0; border:2px solid transparent; }
+  button.letra{ cursor:pointer; }
+  button.letra:hover{ filter:brightness(1.1); background:inherit; }
+  .letra.encontrada{ box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--mal); }
+  .letra.mal-toque{ box-shadow:0 0 0 2px #fff, 0 0 0 4px #9AA8A5; }
+  .letra.A{ background:#0B9053; } .letra.T{ background:#D10E18; } .letra.C{ background:#0462B7; } .letra.G{ background:#F2A406; color:#2C1D02; }
+  .pares{ display:flex; flex-wrap:wrap; gap:6px 3px; }
+  .pares .col{ display:flex; flex-direction:column; gap:3px; align-items:center; }
+  .pares .col small{ font-size:0.62rem; color:var(--muted); }
+  .sec.envuelve{ flex-wrap:wrap; width:auto; }
+  .contador{ font-weight:700; color:var(--juego-texto); }
+
+  table.resumen{ border-collapse:collapse; width:100%; font-size:0.92rem; margin-top:0.4rem; }
+  table.resumen th, table.resumen td{ text-align:left; padding:0.35rem 0.5rem; border-bottom:1px solid #EEF1F0; }
+  table.resumen th{ font-size:0.78rem; color:var(--muted); font-weight:600; }
+  table.resumen td.num{ font-variant-numeric:tabular-nums; }
+  .barrita{ display:inline-block; height:9px; border-radius:999px; background:var(--juego); vertical-align:middle; margin-left:0.4rem; }
+  .regla{ font-size:0.9rem; color:var(--muted); line-height:1.5; margin:0.5rem 0 0; }
+
+  .opciones{ display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.5rem; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.ok:disabled{ opacity:1; }
+  .opciones button.ok::before{ content:"\2713\00a0"; font-weight:700; }
+  .opciones button.mal{ border-color:var(--mal); color:var(--mal); }
+  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
+  .fb{ font-size:1rem; line-height:1.5; margin:0.9rem 0 0; padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; }
+  .fb:empty{ display:none; }
+  .fb.pista{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .fb.ok{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .acciones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.9rem; justify-content:center; }
+  .final{ text-align:center; }
+
+  details.docente{ max-width:38em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  @media (prefers-reduced-motion:reduce){ .progreso > i{ transition:none; } }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>¿Es merluza de verdad?</h1>
+<p class="bajada">Cada especie tiene un "código de barras" en su ADN. Compará el de una muestra de pescado con los de una biblioteca de especies y descubrí si la etiqueta dice la verdad.</p>
+<p class="marcador" id="marcador"></p>
+<div class="progreso" aria-hidden="true"><i id="barra"></i></div>
+<div class="tablero" id="tablero"></div>
+
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Primaria (de 10 a 12 años, aproximadamente).</p>
+  <p><b>Conceptos que trabaja:</b> el ADN varía entre especies y es parecido dentro de una misma especie; comparar secuencias permite identificar a qué especie pertenece una muestra aunque ya no se pueda reconocer a simple vista (un filete, una milanesa); una biblioteca de referencia es indispensable, y si la especie no está, el método no la puede nombrar.</p>
+  <p><b>Qué es el código de barras de ADN:</b> en animales se usa un tramo de unas 650 letras de un gen mitocondrial (COI). Las diferencias entre individuos de una misma especie suelen ser muy pocas, y entre especies distintas, bastantes más. Una regla de uso común es considerar que una muestra pertenece a una especie si se parece en un 98 % o más a la secuencia de referencia. Las referencias se juntan en bibliotecas públicas como BOLD (Barcode of Life Data System).</p>
+  <p><b>Lo que simplifica el juego:</b> las secuencias son ilustrativas (no son las reales de cada especie) y se muestra solo un pedacito de 20 letras. Los porcentajes de parecido "en el código completo" están inventados para que se ubiquen en rangos realistas. La regla del 98 % es orientativa: en algunos grupos, especies muy emparentadas se parecen más que eso.</p>
+  <p><b>Los casos:</b> la sustitución de pescado está documentada en muchos países con este método. La panga (<i>Pangasianodon hypophthalmus</i>), un pez de criadero importado, aparece a menudo en lugar de especies más caras. Con nombres comerciales como "cazón" se venden varias especies de tiburones chicos, y estudios en la región (por ejemplo, en Brasil) encontraron entre ellas especies amenazadas, como el pez ángel (<i>Squatina guggenheim</i>), en peligro de extinción. El último caso muestra un límite: si la especie no está en la biblioteca, el método no la puede nombrar.</p>
+  <p><b>Para discutir después de jugar:</b> ¿por qué hace falta el ADN para saber qué pescado es un filete? ¿A quién perjudica que se venda un pescado por otro: a quien compra, a los pescadores, a las especies en peligro? ¿Qué habría que hacer si una muestra no se parece a ninguna especie de la biblioteca?</p>
+</details>
+
+<script>
+// ---------------------------------------------------------------------------
+// Casos. Cada referencia difiere de la muestra en "dif" letras del pedacito
+// que se muestra, y "pct" es el parecido en el código completo (~650 letras).
+// La muestra pertenece a una especie si el parecido es de 98 % o más.
+// ---------------------------------------------------------------------------
+const LARGO = 20, UMBRAL = 98;
+const ESPECIES = {
+  merluza:    { nombre:'Merluza',    cient:'Merluccius hubbsi' },
+  brotola:    { nombre:'Brótola',    cient:'Urophycis brasiliensis' },
+  corvina:    { nombre:'Corvina',    cient:'Micropogonias furnieri' },
+  panga:      { nombre:'Panga',      cient:'Pangasianodon hypophthalmus' },
+  abadejo:    { nombre:'Abadejo',    cient:'Genypterus blacodes' },
+  pescadilla: { nombre:'Pescadilla', cient:'Cynoscion guatucupa' },
+  gatuzo:     { nombre:'Gatuzo',     cient:'Mustelus schmitti' },
+  angel:      { nombre:'Pez ángel',  cient:'Squatina guggenheim' },
+  raya:       { nombre:'Raya',       cient:'Atlantoraja castelnaui' }
+};
+const CASOS = [
+  { titulo:'En la feria', lugar:'En un puesto de la feria venden', etiqueta:'Filet de merluza', manual:true,
+    refs:[['merluza',0,99.8], ['brotola',6,85.2], ['corvina',7,83.9]], resp:'merluza',
+    explica:'La muestra se parece en un 99,8 % a la merluza: <b>es merluza de verdad</b>. La etiqueta dice la verdad. Dentro de una misma especie el código casi no cambia; entre especies distintas, bastante más.' },
+  { titulo:'En el restaurante', lugar:'En un restaurante, el menú dice', etiqueta:'Milanesa de merluza',
+    refs:[['merluza',6,86.0], ['panga',0,99.5], ['abadejo',5,88.1], ['pescadilla',7,84.7]], resp:'panga',
+    explica:'¡No era merluza! La muestra se parece en un 99,5 % a la <b>panga</b>, un pez de criadero que viene de Asia y es más barato. Comerla no hace mal, pero te vendieron otra cosa. Con el ADN se puede comprobar aunque el pescado esté empanado y frito.' },
+  { titulo:'En la pescadería', lugar:'En una pescadería venden', etiqueta:'Filet de cazón',
+    refs:[['gatuzo',4,90.3], ['angel',0,99.7], ['raya',7,82.6]], resp:'angel',
+    explica:'"Cazón" es un nombre que se usa para varios tiburones chicos. Esta muestra es de <b>pez ángel</b>, una especie <b>en peligro de extinción</b>. Con el código de barras de ADN se puede controlar qué especies se pescan y se venden, para proteger a las que están amenazadas.' },
+  { titulo:'Un pez misterioso', lugar:'Unos pescadores encontraron en la red un pez raro, y le pusieron', etiqueta:'¿?',
+    refs:[['merluza',6,84.4], ['corvina',5,87.0], ['brotola',7,83.1], ['pescadilla',4,91.2]], resp:null,
+    explica:'La muestra no llega al 98 % con ninguna especie de la biblioteca: <b>no es ninguna de ellas</b>. Puede ser una especie que todavía no está en la biblioteca, o incluso una que nadie describió. El código de barras solo puede nombrar especies que alguien ya agregó a la biblioteca.' }
+];
+
+const BASES = ['A','T','C','G'];
+const azar = arr => arr[Math.floor(Math.random() * arr.length)];
+function mezclar(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const fmt = v => v.toFixed(1).replace('.', ',');
+
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+const el = id => document.getElementById(id);
+let caso = 0, S = null, errores = 0, finContado = false;
+
+function empezar(i){
+  caso = i;
+  const C = CASOS[i];
+  const muestra = Array.from({length:LARGO}, () => azar(BASES));
+  const refs = C.refs.map(([id, dif, pct]) => {
+    const pos = new Set(mezclar([...Array(LARGO).keys()]).slice(0, dif));
+    return { id, dif, pct, pos, sec:muestra.map((b, k) => pos.has(k) ? azar(BASES.filter(x => x !== b)) : b), hecha:false, auto:false };
+  });
+  S = { muestra, refs:mezclar(refs), activa:null, marcadas:new Set(), msg:null, msgR:null, etapa:'comparar', elegidas:new Set(), manuales:0 };
+  marcador.textContent = `Caso ${i + 1} de ${CASOS.length} · ${C.titulo}`;
+  el('barra').style.width = (i / CASOS.length * 100) + '%';
+  dibujar();
+  window.scrollTo({ top:0 });
+}
+
+function pezSVG(){
+  return `<svg width="76" height="44" viewBox="0 0 76 44" aria-hidden="true"><path d="M6 22 C18 4 46 2 60 22 C46 42 18 40 6 22Z" fill="#B9D7DE" stroke="#3F6E78" stroke-width="2"/>
+    <path d="M58 22 L74 8 L70 22 L74 36Z" fill="#B9D7DE" stroke="#3F6E78" stroke-width="2" stroke-linejoin="round"/><circle cx="18" cy="19" r="2.6" fill="#16211F"/>
+    <path d="M28 12 Q34 22 28 32" fill="none" stroke="#3F6E78" stroke-width="1.6"/></svg>`;
+}
+
+function dibujar(){
+  const C = CASOS[caso];
+  const hechas = S.refs.filter(r => r.hecha).length;
+  let h = `<div class="historia">${pezSVG()}<div>${C.lugar} <span class="etiqueta">${C.etiqueta}</span>. En el laboratorio sacamos el ADN de una muestra y leímos su código de barras.</div></div>
+    <h2 class="paso">Código de barras de la muestra (un pedacito)</h2>
+    <div class="sec envuelve">${S.muestra.map(b => `<span class="letra ${b}">${b}</span>`).join('')}</div>
+    <h2 class="paso">Biblioteca de especies</h2>
+    <div class="biblioteca">${S.refs.map((r, j) => {
+      const E = ESPECIES[r.id];
+      return `<div class="especie ${S.activa === j ? 'activa' : ''}"><b>${E.nombre}</b><i>${E.cient}</i>
+        ${r.hecha ? `<span class="res">${r.dif === 0 ? 'Ninguna diferencia' : r.dif === 1 ? '1 diferencia' : r.dif + ' diferencias'}</span>`
+          : S.activa === j ? '<span class="res">Comparando…</span>'
+          : `<button data-comp="${j}" ${S.activa != null || S.etapa !== 'comparar' ? 'disabled' : ''}>Comparar a mano</button>`}</div>`;
+    }).join('')}</div>`;
+  if(S.activa != null){
+    const r = S.refs[S.activa], E = ESPECIES[r.id];
+    h += `<div class="comparador"><p>Tocá en la muestra <b>cada letra que sea distinta</b> de la de ${E.nombre.toLowerCase()} (la que está justo abajo). Cuando no encuentres más, apretá <b>Terminé</b>.</p>
+      <p class="regla" style="margin:0 0 0.4rem">Arriba: <b>muestra</b> · abajo: <b>${E.nombre.toLowerCase()}</b></p>
+      <div class="pares">${S.muestra.map((b, k) => `<div class="col">
+        <button class="letra ${b} ${S.marcadas.has(k) ? 'encontrada' : ''}" data-k="${k}" aria-label="Letra ${k + 1} de la muestra: ${b}${S.marcadas.has(k) ? ', marcada como diferente' : ''}">${b}</button>
+        <span class="letra ${r.sec[k]}" aria-label="Letra ${k + 1} de ${E.nombre.toLowerCase()}: ${r.sec[k]}">${r.sec[k]}</span><small>${k + 1}</small></div>`).join('')}</div>
+      <p style="margin-top:0.5rem">Diferencias marcadas: <span class="contador">${S.marcadas.size}</span></p>
+      <p class="fb ${S.msgR ? S.msgR.tipo : ''}" aria-live="polite">${S.msgR ? S.msgR.texto : ''}</p>
+      <div class="acciones"><button class="primario" id="termine">Terminé</button></div></div>`;
+  }
+  // Después de una comparación a mano (en los casos siguientes al primero), la computadora puede hacer el resto.
+  const faltan = S.refs.filter(r => !r.hecha).length;
+  if(S.activa == null && faltan && S.manuales >= 1 && !C.manual && S.etapa === 'comparar'){
+    h += `<div class="acciones"><button id="auto">Que la computadora compare las que faltan</button></div>`;
+  }
+  if(S.activa == null && !faltan){
+    h += `<h2 class="paso">Resultado del laboratorio (código completo, unas 650 letras)</h2>
+      <table class="resumen"><tr><th>Especie</th><th>Diferencias en el pedacito</th><th>Parecido en el código completo</th></tr>
+      ${[...S.refs].sort((a, b) => b.pct - a.pct).map(r => `<tr><td>${ESPECIES[r.id].nombre}</td><td class="num">${r.dif}</td><td class="num">${fmt(r.pct)} %<span class="barrita" style="width:${Math.max(4, (r.pct - 75) * 4)}px"></span></td></tr>`).join('')}</table>
+      <p class="regla">Regla del laboratorio: si el parecido es de <b>98 % o más</b>, la muestra es de esa especie. Dentro de una especie hay pequeñas diferencias; entre especies distintas, muchas más.</p>
+      <h2 class="paso">¿De qué especie es la muestra?</h2>
+      <div class="opciones">${[...S.refs.map(r => r.id), 'ninguna'].map(id => {
+        const nom = id === 'ninguna' ? 'De ninguna de la biblioteca' : ESPECIES[id].nombre;
+        const bien = id === (C.resp || 'ninguna');
+        return `<button data-r="${id}" class="${S.etapa === 'listo' && bien ? 'ok' : S.elegidas.has(id) ? 'mal' : ''}" ${S.etapa === 'listo' || S.elegidas.has(id) ? 'disabled' : ''}>${nom}</button>`;
+      }).join('')}</div>`;
+  }
+  h += `<p class="fb ${S.msg ? S.msg.tipo : ''}" aria-live="polite">${S.msg ? S.msg.texto : ''}</p>`;
+  if(S.etapa === 'listo') h += `<div class="acciones"><button class="primario" id="sig">${caso + 1 < CASOS.length ? 'Siguiente caso' : 'Ver el resultado'} &rarr;</button></div>`;
+  tablero.innerHTML = h;
+  conectar();
+}
+
+function conectar(){
+  tablero.querySelectorAll('[data-comp]').forEach(b => b.onclick = () => { S.activa = +b.dataset.comp; S.marcadas = new Set(); S.msgR = null; S.msg = null; dibujar(); });
+  tablero.querySelectorAll('[data-k]').forEach(b => b.onclick = () => tocarLetra(+b.dataset.k));
+  if(el('termine')) el('termine').onclick = terminar;
+  if(el('auto')) el('auto').onclick = () => { S.refs.forEach(r => { if(!r.hecha){ r.hecha = true; r.auto = true; } }); dibujar(); };
+  tablero.querySelectorAll('[data-r]').forEach(b => b.onclick = () => responder(b.dataset.r));
+  if(el('sig')) el('sig').onclick = () => caso + 1 < CASOS.length ? empezar(caso + 1) : final();
+}
+
+function tocarLetra(k){
+  const r = S.refs[S.activa];
+  if(S.marcadas.has(k)){ S.marcadas.delete(k); S.msgR = null; }
+  else if(r.pos.has(k)){ S.marcadas.add(k); S.msgR = null; }
+  else {
+    errores++;
+    S.msgR = { tipo:'pista', texto:`La letra ${k + 1} es una <b>${S.muestra[k]}</b> en las dos secuencias: es igual. Buscá las que cambian.` };
+  }
+  dibujar();
+}
+
+function terminar(){
+  const r = S.refs[S.activa], falta = r.dif - S.marcadas.size;
+  if(falta > 0){
+    errores++;
+    S.msgR = { tipo:'pista', texto:`Todavía ${falta === 1 ? 'hay una diferencia' : `hay ${falta} diferencias`} sin marcar. Recorré las dos filas letra por letra, de izquierda a derecha.` };
+    dibujar(); return;
+  }
+  r.hecha = true; S.activa = null; S.manuales++;
+  S.msg = { tipo:'ok', texto:r.dif === 0 ? `¡Ninguna diferencia con ${ESPECIES[r.id].nombre.toLowerCase()} en este pedacito!` : `Encontraste las ${r.dif} diferencias con ${ESPECIES[r.id].nombre.toLowerCase()}.` };
+  dibujar();
+}
+
+function responder(id){
+  const C = CASOS[caso], bien = id === (C.resp || 'ninguna');
+  if(bien){
+    S.etapa = 'listo';
+    S.msg = { tipo:'ok', texto:C.explica };
+  } else {
+    S.elegidas.add(id); errores++;
+    const r = S.refs.find(x => x.id === id);
+    S.msg = { tipo:'pista', texto:r ? `Con ${ESPECIES[id].nombre.toLowerCase()} el parecido es de ${fmt(r.pct)} %: no llega al 98 %. Mirá la tabla otra vez.` : 'Hay una especie de la biblioteca que llega al 98 %. Mirá la tabla otra vez.' };
+  }
+  dibujar();
+}
+
+// Una sola vez por visita, igual que en el resto de los juegos.
+function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path:'fin/es-merluza', title:'Completó ¿Es merluza de verdad?', event:true });
+  }
+  marcador.textContent = 'Resultado';
+  el('barra').style.width = '100%';
+  tablero.innerHTML = `<div class="final">
+    <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">¡Caso cerrado!</h2>
+    <p>${errores === 0 ? 'Resolviste los cuatro casos sin ningún error.' : `Resolviste los cuatro casos con ${errores} ${errores === 1 ? 'error' : 'errores'}.`}</p>
+    <p style="max-width:34em;margin:0 auto;line-height:1.55;">Una merluza era merluza, una "merluza" era panga, un "cazón" era una especie en peligro y un pez no estaba en la biblioteca. Con un pedacito de ADN se puede saber de qué especie es una muestra, aunque ya no tenga ni cabeza ni cola.</p>
+    <div class="acciones"><button class="primario" id="otra">Jugar de nuevo</button></div></div>`;
+  el('otra').onclick = () => { errores = 0; empezar(0); };
+}
+
+empezar(0);
+</script>
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

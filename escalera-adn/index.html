@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La escalera del ADN · Genética a las Aulas</title>
+<style>
+  :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
+    --juego:#0462B7;          /* azul del logo — ver capas/escalera-adn.svg */
+    --juego-texto:#0462B7;
+    --juego-tinte:#E6EFF8;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--juego-texto); }
+  h1{ font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem); letter-spacing:-0.01em; line-height:1.2; margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem; }
+  .bajada{ max-width:34em; margin:0 auto 1rem; font-size:0.95rem; line-height:1.55; color:var(--muted); text-align:center; padding:0 1rem; }
+  .marcador{ color:var(--muted); font-size:0.95rem; margin:0 0 1rem; text-align:center; }
+  .progreso{ width:min(720px,94vw); height:5px; margin:0 0 1.1rem; background:var(--pista); border-radius:999px; overflow:hidden; }
+  .progreso > i{ display:block; height:100%; width:0; border-radius:999px; background:var(--juego-texto); transition:width .3s ease; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.5rem; width:min(720px,94vw); margin-bottom:1.2rem; }
+
+  button{ min-height:44px; padding:0.6rem 1rem; border-radius:6px; font-size:1rem; cursor:pointer; font-family:inherit;
+    border:1.5px solid var(--juego); background:#fff; color:var(--ink); transition:background-color .15s ease; }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible, .peldano:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+
+  .consigna{ font-size:1.08rem; line-height:1.5; margin:0 0 1rem; }
+  .zona{ display:flex; gap:1.4rem; flex-wrap:wrap; align-items:flex-start; justify-content:center; }
+  .escalera{ display:flex; flex-direction:column; align-items:center; }
+  .escalera .eti{ font-size:0.82rem; color:var(--muted); margin:0 0 0.3rem; text-align:center; }
+  .escalera svg{ display:block; width:min(260px,80vw); height:auto; }
+  .peldano{ cursor:pointer; }
+  .peldano:hover .fondo{ fill:#FFF4DC; }
+
+  .letras{ display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin:1.1rem 0 0; }
+  .letras button{ width:110px; height:66px; padding:0; border-width:2px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
+  .letras button svg{ display:block; }
+  .letras-eti{ text-align:center; font-size:0.85rem; color:var(--muted); margin:0.9rem 0 0; }
+
+  .pista{ display:flex; gap:1.2rem; justify-content:center; flex-wrap:wrap; font-size:0.95rem; margin:0 0 1rem; }
+  .pista span{ display:flex; align-items:center; gap:0.35rem; }
+
+  .fb{ font-size:1rem; line-height:1.5; margin:1rem 0 0; padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; }
+  .fb:empty{ display:none; }
+  .fb.pista-msg{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .fb.ok{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .sabias{ background:var(--juego-tinte); border-left:4px solid var(--juego); padding:0.7rem 0.9rem; border-radius:0 6px 6px 0; line-height:1.55; margin:1rem 0 0; }
+  .sabias::before{ content:"¿Sabías que…? "; font-weight:700; color:var(--juego-texto); }
+  .acciones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1rem; justify-content:center; }
+  .opciones{ display:grid; gap:0.5rem; margin-top:0.6rem; }
+  .opciones button{ text-align:left; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.ok:disabled{ opacity:1; }
+  .opciones button.ok::before{ content:"\2713\00a0"; font-weight:700; }
+  .opciones button.mal{ border-color:var(--mal); color:var(--mal); }
+  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
+  .final{ text-align:center; }
+  .final svg{ max-width:100%; height:auto; }
+  @keyframes sacudir{ 0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-6px); } 75%{ transform:translateX(6px); } }
+  .sacude{ animation:sacudir .25s ease 2; }
+
+  details.docente{ max-width:38em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  @media (prefers-reduced-motion:reduce){ .progreso > i{ transition:none; } .sacude{ animation:none; } }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>La escalera del ADN</h1>
+<p class="bajada">El ADN es como una escalera muy larga: cada peldaño está hecho de dos letras que encajan entre sí. Completá escaleras, encontrá peldaños mal armados y mirá cómo se copia el ADN cuando una célula se divide.</p>
+<p class="marcador" id="marcador"></p>
+<div class="progreso" aria-hidden="true"><i id="barra"></i></div>
+<div class="tablero" id="tablero"></div>
+
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Primaria (de 7 a 10 años, aproximadamente).</p>
+  <p><b>Conceptos que trabaja:</b> el ADN tiene dos mitades (dos cadenas) unidas por pares de bases; las bases se aparean siempre igual, A con T y C con G (complementariedad); por eso, conociendo una mitad se puede reconstruir la otra; cuando la célula se divide, cada mitad sirve de molde para fabricar una mitad nueva, y quedan dos copias iguales, cada una con una mitad vieja y una nueva.</p>
+  <p><b>Lo que simplifica el juego:</b> las formas de encastre (triángulo para A y T, redondeado para C y G) son un recurso visual. En la molécula real, las bases se unen por puentes de hidrógeno (dos entre A y T, tres entre C y G), y siempre se aparea una base grande (A o G) con una chica (T o C), por eso el ancho de la escalera es parejo. Los "rieles" son el esqueleto de azúcar y fosfato. Las dos cadenas corren en sentidos opuestos y la escalera está retorcida (la doble hélice); el juego la muestra derecha para que se lea mejor.</p>
+  <p><b>Sobre los errores de copia:</b> en el tercer nivel aparecen peldaños que no encajan. En la célula, la enzima que copia el ADN se equivoca muy pocas veces, y casi todos esos errores se corrigen enseguida. Los pocos que quedan son una de las fuentes de mutaciones.</p>
+  <p><b>Para discutir después de jugar:</b> si alguien te da solo una mitad de la escalera, ¿podés saber cómo es la otra? ¿Por qué es importante que las dos copias salgan iguales cuando una célula se divide? Si se rompe una mitad, ¿qué información queda en la otra?</p>
+</details>
+
+<script>
+// ---------------------------------------------------------------------------
+// Piezas. Cada base tiene un encastre: A y T, triangular; C y G, redondeado.
+// A y G sobresalen, T y C tienen el hueco, así que solo encajan A–T y C–G.
+// ---------------------------------------------------------------------------
+const BASES = {
+  A:{ par:'T', color:'#0B9053', texto:'#FFFFFF', forma:'tri', sale:true,  nombre:'adenina' },
+  T:{ par:'A', color:'#D10E18', texto:'#FFFFFF', forma:'tri', sale:false, nombre:'timina' },
+  C:{ par:'G', color:'#0462B7', texto:'#FFFFFF', forma:'red', sale:false, nombre:'citosina' },
+  G:{ par:'C', color:'#F2A406', texto:'#2C1D02', forma:'red', sale:true,  nombre:'guanina' }
+};
+const LETRAS = ['A','T','C','G'];
+const azar = arr => arr[Math.floor(Math.random() * arr.length)];
+const secuencia = n => Array.from({length:n}, () => azar(LETRAS));
+
+// Geometría de un peldaño (en unidades del viewBox).
+const G = { ancho:260, rielI:30, rielD:230, medio:130, alto:32, sep:9, top:14, enc:18, prof:12 };
+
+// Borde del encastre, recorrido de arriba hacia abajo en x = medio.
+// lado: 'izq' (la pieza está a la izquierda del medio) o 'der'.
+function borde(b, lado, c1, c2){
+  const B = BASES[b], m = G.medio, cm = (c1 + c2) / 2;
+  // Hacia dónde se va la curva: + es a la derecha.
+  const dir = (lado === 'izq') === B.sale ? 1 : -1;
+  if(B.forma === 'tri') return `L ${m + dir * G.prof} ${cm} L ${m} ${c2}`;
+  return `A ${G.enc / 2} ${G.enc / 2} 0 0 ${dir > 0 ? 1 : 0} ${m} ${c2}`;
+}
+function pieza(b, lado, y, extra){
+  const B = BASES[b], c1 = y + (G.alto - G.enc) / 2, c2 = c1 + G.enc;
+  const x0 = lado === 'izq' ? G.rielI + 4 : G.rielD - 4;
+  const d = `M ${x0} ${y} H ${G.medio} V ${c1} ${borde(b, lado, c1, c2)} V ${y + G.alto} H ${x0} Z`;
+  const tx = lado === 'izq' ? (x0 + G.medio) / 2 - 4 : (x0 + G.medio) / 2 + 4;
+  return `<path d="${d}" fill="${B.color}" stroke="#16211F" stroke-opacity="0.35" ${extra || ''}/>
+    <text x="${tx}" y="${y + G.alto / 2 + 7}" text-anchor="middle" font-size="20" font-weight="700" fill="${B.texto}" font-family="system-ui,sans-serif">${b}</text>`;
+}
+function hueco(lado, y, actual){
+  const x0 = lado === 'izq' ? G.rielI + 4 : G.medio, w = G.rielD - 4 - G.medio;
+  return `<rect x="${x0}" y="${y}" width="${w}" height="${G.alto}" rx="4" fill="${actual ? '#FFF4DC' : '#F4F7F6'}"
+    stroke="${actual ? '#C88705' : '#9AA8A5'}" stroke-width="${actual ? 2.5 : 1.2}" stroke-dasharray="${actual ? '' : '5 4'}"/>
+    ${actual ? `<text x="${x0 + w / 2}" y="${y + G.alto / 2 + 7}" text-anchor="middle" font-size="20" font-weight="700" fill="#A06C04" font-family="system-ui,sans-serif">?</text>` : ''}`;
+}
+
+// peldaños: [{ izq, der, nuevaIzq, nuevaDer, mal }]; izq/der null = hueco.
+// actual: { i, lado } del hueco que se está llenando. clic: peldaños tocables.
+function escaleraSVG(pel, o = {}){
+  const h = G.top * 2 + pel.length * (G.alto + G.sep) - G.sep;
+  const colorRiel = nuevo => nuevo ? '#C88705' : '#5B6E6B';
+  const rielNuevoI = pel.some(p => p.nuevaIzq), rielNuevoD = pel.some(p => p.nuevaDer);
+  let s = `<svg viewBox="0 0 ${G.ancho} ${h}" role="img" aria-label="${o.aria || 'Escalera de ADN'}">
+    <rect x="${G.rielI - 6}" y="4" width="10" height="${h - 8}" rx="5" fill="${colorRiel(rielNuevoI)}"/>
+    <rect x="${G.rielD - 4}" y="4" width="10" height="${h - 8}" rx="5" fill="${colorRiel(rielNuevoD)}"/>`;
+  pel.forEach((p, i) => {
+    const y = G.top + i * (G.alto + G.sep);
+    const act = l => o.actual && o.actual.i === i && o.actual.lado === l;
+    let g = '';
+    if(o.clic) g += `<rect class="fondo" x="${G.rielI - 8}" y="${y - 4}" width="${G.rielD - G.rielI + 16}" height="${G.alto + 8}" rx="6" fill="transparent"/>`;
+    // Si el peldaño no encaja, la pieza derecha queda corrida: no entra.
+    const corr = p.mal ? `transform="translate(12 0)"` : '';
+    g += p.izq ? pieza(p.izq, 'izq', y) : hueco('izq', y, act('izq'));
+    g += p.der ? `<g ${corr}>${pieza(p.der, 'der', y)}</g>` : hueco('der', y, act('der'));
+    if(o.clic) s += `<g class="peldano" data-p="${i}" tabindex="0" role="button" aria-label="Peldaño ${i + 1}: ${p.izq} con ${p.der}">${g}</g>`;
+    else s += g;
+  });
+  return s + '</svg>';
+}
+
+// Ícono de una letra (para los botones) y de un par encastrado (para la ayuda).
+function icono(b, lado = 'izq', ancho = 60){
+  const x0 = lado === 'izq' ? G.rielI + 2 : G.medio - G.prof - 2, w = G.rielD - G.medio + G.prof;
+  return `<svg width="${ancho}" height="${Math.round(ancho * (G.alto + 4) / w)}" viewBox="${x0} -2 ${w} ${G.alto + 4}" aria-hidden="true">${pieza(b, lado, 0)}</svg>`;
+}
+const parIcono = (a, b) => `<span><svg width="120" height="${Math.round(120 * (G.alto + 4) / (G.rielD - G.rielI))}" viewBox="${G.rielI + 2} -2 ${G.rielD - G.rielI - 4} ${G.alto + 4}" aria-hidden="true">${pieza(a, 'izq', 0)}${pieza(b, 'der', 0)}</svg></span>`;
+
+// ---------------------------------------------------------------------------
+// Niveles
+// ---------------------------------------------------------------------------
+const NIVELES = [
+  { tipo:'completar', n:6, pista:true, titulo:'Completá la escalera',
+    consigna:'Esta es una mitad de una escalera de ADN. Elegí, una por una, las letras que faltan del otro lado. Fijate en la forma: cada letra encaja solo con una.',
+    sabias:'Las letras del ADN son cuatro: A, T, C y G. Con esas cuatro letras está escrita toda la información de un ser vivo, igual que con 27 letras se escriben todos los libros en castellano.' },
+  { tipo:'completar', n:10, pista:false, titulo:'Una escalera más larga',
+    consigna:'Ahora sin la ayuda a la vista. Completá la otra mitad: ¿con qué letra encaja cada una?',
+    sabias:'Si conocés una mitad de la escalera, sabés exactamente cómo es la otra. Por eso decimos que las dos mitades son <b>complementarias</b>.' },
+  { tipo:'errores', n:10, malos:2, titulo:'Peldaños mal armados',
+    consigna:'En esta escalera hay <b>2 peldaños</b> que no encajan bien. Encontralos y tocalos para arreglarlos.',
+    sabias:'Cuando una célula copia su ADN, muy pocas veces se equivoca, y casi siempre lo corrige enseguida. Los pocos errores que quedan se llaman <b>mutaciones</b>.' },
+  { tipo:'copiar', n:6, titulo:'La célula se divide: copiá el ADN',
+    consigna:'Antes de dividirse, la célula tiene que copiar su ADN para que cada célula hija se lleve una escalera completa. Primero, abrí la escalera por el medio.',
+    pregunta:'¿Cómo son las dos escaleras que quedaron?',
+    correcta:'Iguales entre sí e iguales a la original',
+    distractores:['Distintas: cada una tiene la mitad de la información', 'Una es igual a la original y la otra es al revés'],
+    explicacion:'Cada mitad vieja sirvió de molde para armar una mitad nueva. Como las letras encajan siempre igual, las dos escaleras salen idénticas. Cada célula hija recibe una.',
+    sabias:'Si estiraras todo el ADN que hay dentro de una sola de tus células, mediría unos <b>2 metros</b>. Entra en un espacio muchísimo más chico que la punta de un alfiler porque está muy enrollado.' }
+];
+
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+const el = id => document.getElementById(id);
+let nivel = 0, S = null, erroresTot = 0, piezasTot = 0, finContado = false;
+
+function mezclar(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function empezar(i){
+  nivel = i;
+  const N = NIVELES[i];
+  S = { msg:null, hecho:false, errores:0, verPista:N.pista };
+  if(N.tipo === 'completar'){
+    S.pel = secuencia(N.n).map(b => ({ izq:b, der:null }));
+    S.actual = { i:0, lado:'der' };
+  } else if(N.tipo === 'errores'){
+    S.pel = secuencia(N.n).map(b => ({ izq:b, der:BASES[b].par }));
+    // Peldaños al azar con una letra que no encaja.
+    const pos = mezclar([...Array(N.n).keys()]).slice(0, N.malos);
+    pos.forEach(p => { const mal = azar(LETRAS.filter(l => l !== BASES[S.pel[p].izq].par)); S.pel[p].der = mal; S.pel[p].mal = true; });
+    S.faltan = N.malos;
+  } else {
+    S.orig = secuencia(N.n).map(b => ({ izq:b, der:BASES[b].par }));
+    S.fase = 'entera';
+    S.opciones = mezclar([N.correcta, ...N.distractores]); S.elegidas = new Set(); S.primera = true;
+  }
+  marcador.textContent = `Nivel ${i + 1} de ${NIVELES.length} · ${N.titulo}`;
+  el('barra').style.width = (i / NIVELES.length * 100) + '%';
+  dibujar();
+  window.scrollTo({ top:0 });
+}
+
+function pistaHTML(){
+  return `<div class="pista" aria-label="Ayuda: A encaja con T y C encaja con G">${parIcono('A','T')}${parIcono('C','G')}</div>`;
+}
+function letrasHTML(){
+  return `<p class="letras-eti">Letras sueltas en la célula: tocá la que encaja (o usá las teclas A, T, C, G)</p>
+    <div class="letras">${LETRAS.map(b => `<button data-b="${b}" aria-label="Letra ${b} (${BASES[b].nombre})" ${S.hecho ? 'disabled' : ''}>${icono(b, S.actual && S.actual.lado === 'izq' ? 'izq' : 'der', 92)}</button>`).join('')}</div>`;
+}
+
+function dibujar(){
+  const N = NIVELES[nivel];
+  let h = `<p class="consigna">${N.consigna}</p>`;
+  if(N.tipo === 'completar'){
+    if(S.verPista) h += pistaHTML();
+    h += `<div class="zona"><div class="escalera">${escaleraSVG(S.pel, { actual:S.hecho ? null : S.actual, aria:'Escalera para completar' })}</div></div>`;
+    if(!S.hecho){
+      h += letrasHTML();
+      if(!N.pista) h += `<div class="acciones"><button id="ver-pista">${S.verPista ? 'Ocultar la ayuda' : '¿Cómo encajan? Ver la ayuda'}</button></div>`;
+    }
+  } else if(N.tipo === 'errores'){
+    h += pistaHTML();
+    h += `<div class="zona"><div class="escalera">${escaleraSVG(S.pel, { clic:!S.hecho, aria:'Escalera con peldaños para revisar' })}</div></div>`;
+  } else {
+    h += copiarHTML(N);
+  }
+  h += `<p class="fb ${S.msg ? S.msg.tipo : ''}" aria-live="polite">${S.msg ? S.msg.texto : ''}</p>`;
+  if(S.hecho){
+    h += `<p class="sabias">${N.sabias}</p>
+      <div class="acciones"><button class="primario" id="sig">${nivel + 1 < NIVELES.length ? 'Siguiente nivel' : 'Ver el resultado'} &rarr;</button></div>`;
+  }
+  tablero.innerHTML = h;
+  conectar();
+}
+
+function copiarHTML(N){
+  if(S.fase === 'entera'){
+    return `<div class="zona"><div class="escalera"><p class="eti">ADN original</p>${escaleraSVG(S.orig, { aria:'Escalera de ADN original' })}</div></div>
+      <div class="acciones"><button class="primario" id="abrir">Abrir la escalera por el medio</button></div>`;
+  }
+  let h = '';
+  if(S.fase === 'llenar') h += `<p class="consigna" style="margin-top:-0.4rem">Cada mitad quedó sola. Completá las dos escaleras nuevas, empezando por la de la izquierda.</p>`;
+  h += `<div class="zona">
+    <div class="escalera"><p class="eti">Copia 1</p>${escaleraSVG(S.c1, { actual:S.fase === 'llenar' && S.cual === 1 ? S.actual : null, aria:'Primera copia' })}</div>
+    <div class="escalera"><p class="eti">Copia 2</p>${escaleraSVG(S.c2, { actual:S.fase === 'llenar' && S.cual === 2 ? S.actual : null, aria:'Segunda copia' })}</div>
+  </div>
+  <p class="letras-eti"><svg width="26" height="10" aria-hidden="true"><rect width="26" height="10" rx="5" fill="#5B6E6B"/></svg> mitad original &nbsp; <svg width="26" height="10" aria-hidden="true"><rect width="26" height="10" rx="5" fill="#C88705"/></svg> mitad nueva</p>`;
+  if(S.fase === 'llenar') h += letrasHTML();
+  if(S.fase === 'pregunta' || S.fase === 'listo'){
+    h += `<div style="margin-top:1rem"><p><b>${N.pregunta}</b></p><div class="opciones">${S.opciones.map(o =>
+      `<button data-o="${o}" class="${S.fase === 'listo' && o === N.correcta ? 'ok' : S.elegidas.has(o) ? 'mal' : ''}" ${S.fase === 'listo' || S.elegidas.has(o) ? 'disabled' : ''}>${o}</button>`).join('')}</div></div>`;
+  }
+  return h;
+}
+
+function conectar(){
+  tablero.querySelectorAll('[data-b]').forEach(b => b.onclick = () => poner(b.dataset.b));
+  tablero.querySelectorAll('.peldano').forEach(g => {
+    g.onclick = () => revisar(+g.dataset.p);
+    g.onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); revisar(+g.dataset.p); } };
+  });
+  tablero.querySelectorAll('[data-o]').forEach(b => b.onclick = () => responder(b.dataset.o));
+  if(el('ver-pista')) el('ver-pista').onclick = () => { S.verPista = !S.verPista; dibujar(); };
+  if(el('abrir')) el('abrir').onclick = abrir;
+  if(el('sig')) el('sig').onclick = () => nivel + 1 < NIVELES.length ? empezar(nivel + 1) : final();
+}
+
+// Escalera sobre la que se está trabajando ahora.
+function escaleraActual(){
+  const N = NIVELES[nivel];
+  if(N.tipo === 'completar') return S.pel;
+  return S.cual === 1 ? S.c1 : S.c2;
+}
+
+function poner(b){
+  if(S.hecho || !S.actual) return;
+  const pel = escaleraActual(), p = pel[S.actual.i];
+  const otra = S.actual.lado === 'der' ? p.izq : p.der;
+  if(BASES[otra].par !== b){
+    S.errores++; erroresTot++;
+    S.msg = { tipo:'pista-msg', texto:`La <b>${b}</b> no encaja con la <b>${otra}</b>: mirá las formas. La ${otra} encaja solo con una letra.` };
+    dibujar();
+    const cont = S.cual === 2 ? tablero.querySelectorAll('.escalera')[1] : tablero.querySelector('.escalera');
+    if(cont){ cont.classList.add('sacude'); setTimeout(() => cont.classList.remove('sacude'), 600); }
+    return;
+  }
+  piezasTot++;
+  if(S.actual.lado === 'der'){ p.der = b; if(S.c1) p.nuevaDer = true; }
+  else { p.izq = b; p.nuevaIzq = true; }
+  S.msg = null;
+  S.actual.i++;
+  if(S.actual.i >= pel.length){
+    const N = NIVELES[nivel];
+    if(N.tipo === 'completar'){
+      S.hecho = true; S.actual = null;
+      S.msg = { tipo:'ok', texto:S.errores === 0 ? '<b>¡Perfecto!</b> Todos los peldaños encajan, sin ningún error.' : `<b>¡Completaste la escalera!</b> Todos los peldaños encajan (tuviste ${S.errores} ${S.errores === 1 ? 'intento fallido' : 'intentos fallidos'}).` };
+    } else if(S.cual === 1){
+      S.cual = 2; S.actual = { i:0, lado:'izq' };
+      S.msg = { tipo:'ok', texto:'¡Primera copia lista! Ahora completá la segunda: a esta le falta la mitad de la izquierda.' };
+    } else {
+      S.fase = 'pregunta'; S.actual = null;
+      S.msg = null;
+    }
+  }
+  dibujar();
+}
+
+function abrir(){
+  // Cada copia se queda con una mitad original y tiene huecos del otro lado.
+  S.c1 = S.orig.map(p => ({ izq:p.izq, der:null }));
+  S.c2 = S.orig.map(p => ({ izq:null, der:p.der }));
+  S.fase = 'llenar'; S.cual = 1; S.actual = { i:0, lado:'der' };
+  dibujar();
+}
+
+function revisar(i){
+  if(S.hecho) return;
+  const p = S.pel[i];
+  if(p.mal){
+    const vieja = p.der;
+    p.der = BASES[p.izq].par; p.mal = false; S.faltan--;
+    piezasTot++;
+    S.msg = { tipo:'ok', texto:`¡Encontraste uno! La <b>${vieja}</b> no encaja con la <b>${p.izq}</b>; ahora tiene una <b>${p.der}</b>.` + (S.faltan ? ` Falta ${S.faltan === 1 ? 'uno' : S.faltan}.` : '') };
+    if(!S.faltan){
+      S.hecho = true;
+      S.msg.texto = `¡Encontraste los dos! ${S.errores ? `(Tocaste ${S.errores} ${S.errores === 1 ? 'peldaño que estaba bien' : 'peldaños que estaban bien'}.)` : 'Sin tocar ninguno que estuviera bien.'} Ahora todos los peldaños encajan.`;
+    }
+  } else {
+    S.errores++; erroresTot++;
+    S.msg = { tipo:'pista-msg', texto:`Ese peldaño está bien: la <b>${p.izq}</b> encaja con la <b>${p.der}</b>. Buscá uno en el que las piezas no entren una en la otra.` };
+  }
+  dibujar();
+}
+
+function responder(o){
+  const N = NIVELES[nivel];
+  if(o === N.correcta){
+    S.fase = 'listo'; S.hecho = true;
+    S.msg = { tipo:'ok', texto:N.explicacion };
+  } else {
+    S.elegidas.add(o); S.errores++; erroresTot++;
+    S.msg = { tipo:'pista-msg', texto:'No. Compará las dos copias letra por letra: ¿en qué se diferencian? Elegí otra opción.' };
+  }
+  dibujar();
+}
+
+document.addEventListener('keydown', e => {
+  if(e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key.toUpperCase();
+  if(LETRAS.includes(k) && S && S.actual && !S.hecho && document.activeElement?.tagName !== 'INPUT') poner(k);
+});
+
+// Doble hélice para la pantalla final: la misma escalera, retorcida.
+function heliceSVG(){
+  let s = '<svg width="320" height="150" viewBox="0 0 320 150" role="img" aria-label="La escalera de ADN retorcida: una doble hélice">';
+  const pares = secuencia(16);
+  for(let i = 0; i < 16; i++){
+    const x = 20 + i * 18.5, a = Math.sin(i / 16 * Math.PI * 3.2), y1 = 75 - 50 * a, y2 = 75 + 50 * a;
+    const b = pares[i], c = BASES[b].par, ym = (y1 + y2) / 2;
+    s += `<line x1="${x}" y1="${y1}" x2="${x}" y2="${ym}" stroke="${BASES[b].color}" stroke-width="7"/>
+      <line x1="${x}" y1="${ym}" x2="${x}" y2="${y2}" stroke="${BASES[c].color}" stroke-width="7"/>`;
+  }
+  const curva = s0 => { let d = ''; for(let t = 0; t <= 200; t++){ const x = 20 + t / 200 * 15 * 18.5, y = 75 - s0 * 50 * Math.sin(t / 200 * 15 / 16 * Math.PI * 3.2); d += (t ? ' L ' : 'M ') + x.toFixed(1) + ' ' + y.toFixed(1); } return d; };
+  s += `<path d="${curva(1)}" fill="none" stroke="#5B6E6B" stroke-width="6" stroke-linecap="round"/>
+    <path d="${curva(-1)}" fill="none" stroke="#5B6E6B" stroke-width="6" stroke-linecap="round"/></svg>`;
+  return s;
+}
+
+// Una sola vez por visita, igual que en el resto de los juegos.
+function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path:'fin/escalera-adn', title:'Completó La escalera del ADN', event:true });
+  }
+  marcador.textContent = 'Resultado';
+  el('barra').style.width = '100%';
+  tablero.innerHTML = `<div class="final">
+    <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">¡Terminaste!</h2>
+    <p>Pusiste <b>${piezasTot}</b> piezas en su lugar ${erroresTot === 0 ? 'sin ningún error' : `con ${erroresTot} ${erroresTot === 1 ? 'intento fallido' : 'intentos fallidos'}`}.</p>
+    ${heliceSVG()}
+    <p style="max-width:34em;margin:0.6rem auto 0;line-height:1.55;">En realidad la escalera del ADN no es derecha: está retorcida, como una escalera caracol. Por eso se la llama <b>doble hélice</b>. Las letras se siguen apareando igual: A con T y C con G.</p>
+    <div class="acciones"><button class="primario" id="otra">Jugar de nuevo</button></div></div>`;
+  el('otra').onclick = () => { erroresTot = 0; piezasTot = 0; empezar(0); };
+}
+
+empezar(0);
+</script>
+<script data-goatcounter="https://gaa.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
