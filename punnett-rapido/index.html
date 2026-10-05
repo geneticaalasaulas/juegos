@@ -3,26 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Punnett rápido · Genética a las Aulas</title>
+<title>Punnett: de los gametos a la camada · Genética a las Aulas</title>
 <style>
   :root{
     --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B;
-    /* Una sola paleta de texto: --ink y --muted sirven tanto sobre la
-       pagina como sobre el tablero, porque los dos son claros. */
-    --enfasis:#986704;        /* enfasis del texto, en el color del juego */
+    --enfasis:#986704;
     --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
     --juego:#C88705;          /* amarillo del logo — ver capas/punnett-rapido.svg */
     --juego-texto:#986704;    /* misma familia, oscurecido hasta 4.5:1 sobre blanco */
-    --juego-tinte:#FEF5E4;    /* fondo del boton al pasar el mouse */
-    --pista:#E2E8E6;             /* pista de la barra de progreso */
-    --foco:#16211F;              /* anillo de foco: igual en todo el sitio, maxima visibilidad */
+    --juego-tinte:#FEF5E4;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
+    --dom:#7A5203;            /* alelo / fenotipo dominante */
+    --rec:#FFF8E8;            /* alelo / fenotipo recesivo */
     --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
   *{box-sizing:border-box;}
   body{
     margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
-    font-family:var(--fuente);
-    display:flex; flex-direction:column; align-items:center;
+    font-family:var(--fuente); display:flex; flex-direction:column; align-items:center;
+    padding-bottom:5rem; /* lugar para el aviso fijo de abajo */
   }
   a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
   a.volver:hover{ color:var(--juego-texto); }
@@ -31,73 +31,163 @@
     letter-spacing:-0.01em; line-height:1.2;
     margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem;
   }
+  .marcador{ color:var(--muted); font-size:0.95rem; margin:0 0 1rem; text-align:center; padding:0 1rem; }
   .franja{ display:flex; gap:1.4rem; color:var(--muted); font-size:0.92rem; margin-bottom:1rem; }
   .franja b{ color:var(--enfasis); }
   .tablero{
-    background:var(--card); color:var(--ink); border-radius:8px;
-    border:1px solid #E1E7E5;
+    background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
     box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05);
-    padding:1.6rem; width:min(520px,92vw); margin-bottom:1.4rem; text-align:center;
+    padding:1.5rem; width:min(720px,94vw); margin-bottom:1.4rem;
   }
-  .gen{ font-size:1.3rem; font-weight:700; margin-bottom:0.3rem; }
-  .rasgo{ color:var(--muted); font-size:0.92rem; margin-bottom:1.1rem; }
-  .opciones{ display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; }
-  .opciones button{
-    min-height:44px; padding:0.75rem 0.5rem; border-radius:4px; border:1.5px solid var(--juego);
-    background:#fff; color:var(--ink); font-size:0.98rem; cursor:pointer;
-    transition:background-color .15s ease, border-color .15s ease, opacity .15s ease;
-  }
-  .opciones button:hover{ background:var(--juego-tinte); }
-  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
-  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
-  .inicio, .final{ text-align:center; }
-  .inicio button, .final button{
-    margin-top:0.8rem; background:var(--accent); color:#2C1D02; border:none;
-    padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer;
-  }
+  .progreso{ width:min(720px,94vw); height:5px; margin:0 0 1.1rem; background:var(--pista); border-radius:999px; overflow:hidden; }
+  .progreso > i{ display:block; height:100%; width:0; border-radius:999px; background:var(--juego-texto); transition:width .3s ease; }
+  /* en el modo contrarreloj la barra se vacia, y va en ambar (urgencia) */
+  .progreso.tiempo > i{ background:var(--enfasis); width:100%; }
 
-  /* --- I1 · foco visible para navegacion con teclado --- */
-  .opciones button:focus-visible, .siguiente:focus-visible,
-  a.volver:focus-visible, summary:focus-visible, #seguir:focus-visible{
+  button{
+    min-height:44px; padding:0.6rem 1rem; border-radius:6px; font-size:0.95rem;
+    cursor:pointer; font-family:inherit; border:1.5px solid var(--juego);
+    background:#fff; color:var(--ink);
+    transition:background-color .15s ease, border-color .15s ease;
+  }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button[aria-pressed="true"]{ background:var(--juego-texto); border-color:var(--juego-texto); color:#fff; font-weight:600; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible, [tabindex]:focus-visible{
     outline:3px solid var(--foco); outline-offset:2px;
   }
-  /* --- I2 · senal de acierto/error que no depende del color ---
-     verde y rojo son indistinguibles en la forma mas frecuente de daltonismo */
+
+  .enunciado{ font-size:1rem; line-height:1.55; margin:0 0 1rem; }
+  .estado{ display:flex; gap:1.4rem; flex-wrap:wrap; font-size:0.95rem; margin:0 0 0.8rem; color:var(--muted); }
+  .estado b{ color:var(--ink); font-variant-numeric:tabular-nums; }
+  h2.etapa{ font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); font-weight:700; margin:1.4rem 0 0.5rem; }
+  h2.etapa .n{ display:inline-block; min-width:1.4em; height:1.4em; line-height:1.4em; text-align:center; border-radius:50%; background:var(--juego-texto); color:#fff; margin-right:0.4rem; }
+  .instr{ font-size:0.97rem; line-height:1.5; margin:0 0 0.7rem; }
+
+  /* Alelos: la letra ya dice cuál es cuál; el color solo refuerza */
+  .alelo{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:2.6rem; height:2.6rem; border-radius:8px; font-size:1.45rem; font-weight:700;
+    border:2px solid var(--dom); user-select:none; -webkit-user-select:none; touch-action:none;
+  }
+  .alelo.dom{ background:var(--dom); color:#fff; }
+  .alelo.rec{ background:var(--rec); color:var(--dom); }
+  .alelo.mueve{ cursor:grab; }
+  .alelo.usado{ opacity:0.25; cursor:default; }
+  .alelo.sel{ box-shadow:0 0 0 3px #fff, 0 0 0 6px var(--accent); }
+  .fantasma{ position:fixed; z-index:60; pointer-events:none; transform:translate(-50%,-50%) scale(1.1); box-shadow:0 6px 14px rgba(22,33,31,0.3); }
+
+  .padres{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  .padre{ border:1px solid #E1E7E5; border-radius:8px; padding:0.8rem; text-align:center; }
+  .padre .quien{ font-weight:600; }
+  .padre .fen{ font-size:0.88rem; color:var(--muted); margin:0.1rem 0 0.6rem; min-height:1.2em; }
+  .padre .geno{ display:flex; gap:0.4rem; justify-content:center; }
+  .flecha{ color:var(--muted); font-size:0.85rem; margin:0.5rem 0 0.4rem; }
+  .gametos{ display:flex; gap:0.7rem; justify-content:center; }
+  .gameto{
+    width:3.6rem; height:3.6rem; border-radius:50%; border:2px dashed var(--juego);
+    display:flex; align-items:center; justify-content:center; gap:2px;
+  }
+  .gameto.lleno{ border-style:solid; background:#FFFDF7; }
+  .elige-geno{ display:flex; gap:0.4rem; justify-content:center; flex-wrap:wrap; }
+  .elige-geno button{ min-width:3.6rem; font-size:1.1rem; font-weight:600; }
+  .elige-geno button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+
+  .cuadro{ display:grid; grid-template-columns:auto repeat(2, minmax(0,1fr)); gap:0.4rem; max-width:420px; margin:0 auto; }
+  .cuadro .cab{ display:flex; align-items:center; justify-content:center; }
+  .cuadro .cab .gameto{ width:3rem; height:3rem; }
+  .celda{
+    min-height:5.2rem; border:2px solid #E1E7E5; border-radius:8px; background:#FFFDF7;
+    display:flex; align-items:center; justify-content:center; gap:0.3rem; position:relative;
+  }
+  .celda .hueco{ width:2.6rem; height:2.6rem; border-radius:8px; border:2px dashed #D8C9A6; }
+  .celda.objetivo{ border-color:var(--juego); }
+  .celda.marcada{ border-color:var(--juego-texto); box-shadow:inset 0 0 0 3px var(--accent); background:#FFF1D1; }
+  .celda.marcada::after{ content:"\2713"; position:absolute; top:4px; right:7px; font-weight:700; color:var(--juego-texto); }
+  .celda.elegible{ cursor:pointer; }
+  .celda.ok{ background:#DDF1E6; }
+  .celda.mal{ background:#FBDADB; }
+  .paleta{ display:flex; gap:0.8rem; justify-content:center; align-items:center; margin:0.9rem 0 0; flex-wrap:wrap; }
+  .paleta .eti{ font-size:0.88rem; color:var(--muted); }
+  [data-drop].sobre{ outline:3px solid var(--accent); outline-offset:2px; }
+
+  .resultado-cuadro{ background:var(--juego-tinte); border-left:4px solid var(--juego); padding:0.7rem 1rem; border-radius:0 6px 6px 0; margin:0.9rem 0 0; line-height:1.55; }
+  .fila-ctrl{ display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; }
+  .fila-ctrl input{ width:4ch; min-height:44px; font-size:1.3rem; text-align:center; font-family:inherit; border:1.5px solid var(--juego); border-radius:6px; }
+  .camada{ display:flex; flex-wrap:wrap; gap:0.4rem; margin:0.8rem 0; }
+  .cria{ width:3rem; height:3rem; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.95rem; border:2px solid var(--dom); animation:aparece .35s ease both; }
+  .cria.dom{ background:var(--dom); color:#fff; }
+  .cria.rec{ background:var(--rec); color:var(--dom); }
+  @keyframes aparece{ from{ transform:scale(0.3); opacity:0; } to{ transform:none; opacity:1; } }
+  .leyenda{ font-size:0.85rem; color:var(--muted); display:flex; gap:1rem; flex-wrap:wrap; }
+  .leyenda i{ display:inline-block; width:0.9rem; height:0.9rem; border-radius:50%; border:2px solid var(--dom); vertical-align:-2px; margin-right:0.3rem; }
+  .obs{ font-size:1rem; line-height:1.5; }
+  svg.puntos{ width:100%; max-width:560px; height:auto; display:block; margin:0.6rem 0; }
+  svg.puntos text{ font-size:11px; fill:var(--muted); font-family:var(--fuente); }
+  .acciones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.8rem; }
+  .explica{ font-size:0.95rem; line-height:1.55; border-top:1px solid #E6E9E8; padding-top:0.9rem; margin-top:1rem; }
+
+  .aviso{
+    position:fixed; left:50%; bottom:max(1rem, env(safe-area-inset-bottom, 0px)); transform:translateX(-50%);
+    width:min(640px,94vw); background:var(--ink); color:#fff; border-radius:8px;
+    padding:0.8rem 1.1rem; font-size:1rem; line-height:1.45; z-index:40;
+    box-shadow:0 8px 24px rgba(22,33,31,0.25);
+  }
+  .aviso.ok{ background:var(--ok); }
+  .aviso.pista{ background:#5C3F04; }
+  .aviso.pista::before{ content:"Pista: "; font-weight:700; }
+
+  .inicio p{ line-height:1.6; margin:0 0 0.9rem; }
+  .niveles{ list-style:none; padding:0; margin:1.2rem 0; display:grid; gap:0.6rem; }
+  .niveles button{ width:100%; text-align:left; display:flex; gap:0.9rem; align-items:baseline; }
+  .niveles .n{ font-weight:700; color:var(--juego-texto); white-space:nowrap; }
+  .niveles .d{ color:var(--muted); font-size:0.88rem; }
+  .niveles .hecho::after{ content:"\2713"; margin-left:auto; color:var(--ok); font-weight:700; }
+  .final{ text-align:center; }
+  .final .acciones{ justify-content:center; }
+  .final table{ border-collapse:collapse; margin:1rem auto; font-size:0.92rem; }
+  .final td, .final th{ padding:0.35rem 0.8rem; border-bottom:1px solid #E6E9E8; text-align:left; }
+
+  /* --- Modo rápido (el contrarreloj original) --- */
+  .rapido{ text-align:center; }
+  .rapido .gen{ font-size:1.3rem; font-weight:700; margin-bottom:0.3rem; }
+  .rapido .rasgo{ color:var(--muted); font-size:0.92rem; margin-bottom:1.1rem; }
+  .opciones{ display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; }
+  .opciones button{ border-radius:4px; font-size:0.98rem; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
   .opciones button.ok::before{  content:"\2713\00a0"; font-weight:700; }
   .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
-  /* --- I3 · los botones ya respondidos dejan de parecer clickeables --- */
-  .opciones button:disabled{ cursor:default; }
   .opciones button:disabled:not(.ok):not(.mal){ opacity:0.45; border-color:#C9CFCE; }
-  /* --- I4 · en pantallas chicas, una sola columna de opciones --- */
-  @media (max-width:520px){ .opciones{ grid-template-columns:1fr; } }
+  @media (max-width:520px){ .opciones{ grid-template-columns:1fr; } .padres{ gap:0.5rem; } .padre{ padding:0.6rem 0.3rem; } }
 
-  /* --- V1 · el verde del logo como color de estructura, compartido con la portada.
-     El ambar queda reservado para la accion principal y el enfasis del texto. --- */
-  /* --- V2 · barra de progreso --- */
-  .progreso{
-    width:min(560px,92vw); height:5px; margin:0 0 1.1rem;
-    background:var(--pista); border-radius:999px; overflow:hidden;
-  }
-  .progreso > i{
-    display:block; height:100%; width:0; border-radius:999px;
-    background:var(--juego-texto); transition:width .3s ease;
-  }
-  /* en los juegos contrarreloj la barra se vacia, y va en ambar (urgencia) */
-  .progreso.tiempo > i{ background:var(--enfasis); width:100%; }
+  details.docente{ max-width:38em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  .opciones-doc{ background:#fff; border:1px solid #E1E7E5; border-radius:6px; padding:0.7rem 0.9rem; margin-top:0.8rem; color:var(--ink); }
+  .opciones-doc label{ display:flex; gap:0.5rem; align-items:center; min-height:36px; cursor:pointer; }
+  .opciones-doc input{ width:20px; height:20px; }
+  .opciones-doc code{ font-size:0.85rem; word-break:break-all; }
+  @media (prefers-reduced-motion:reduce){ .cria{ animation:none; } .progreso > i{ transition:none; } }
 </style>
 </head>
 <body>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
-<h1>Punnett rápido</h1>
-<div class="franja" id="franja"></div>
-<div class="progreso tiempo" aria-hidden="true"><i id="barra"></i></div>
+<h1>Punnett: de los gametos a la camada</h1>
+<p class="marcador" id="marcador">Armá la cruza, predecí y comprobalo</p>
+<div class="franja" id="franja" hidden></div>
+<div class="progreso" id="progreso" aria-hidden="true"><i id="barra"></i></div>
 <div class="tablero" id="tablero"></div>
+<div class="aviso" id="aviso" role="status" aria-live="polite" hidden></div>
 
 <script>
 // Rasgos con herencia monogénica y dominancia completa bien establecida, para que
 // el cuadro de Punnett se corresponda con la genética real del carácter.
 // (Se dejaron de lado lóbulo de la oreja, pico de viuda, pulgar y pecas: son
 // poligénicos, aunque muchos libros de texto los presenten como mendelianos.)
+// En todos se usa A para el alelo dominante y a para el recesivo.
 const rasgos = [
   {nombre:"tipo de cera del oído (gen ABCC11)",
    dominante:"cera húmeda", recesivo:"cera seca"},
@@ -106,29 +196,492 @@ const rasgos = [
   {nombre:"persistencia de lactasa (regulador del gen LCT)",
    dominante:"sigue produciendo lactasa de adulto", recesivo:"deja de producir lactasa de adulto"},
   {nombre:"forma de la semilla de arveja (uno de los caracteres de Mendel)",
-   dominante:"lisa", recesivo:"rugosa"},
+   dominante:"semilla lisa", recesivo:"semilla rugosa"},
   {nombre:"color de la semilla de arveja (uno de los caracteres de Mendel)",
-   dominante:"amarilla", recesivo:"verde"}
+   dominante:"semilla amarilla", recesivo:"semilla verde"}
 ];
 
-const TIEMPO_TOTAL = 60;
-let tiempo, timer, puntaje = 0, racha = 0, jugando = false, errores = [];
+// Rondas. En el nivel 3 los genotipos no se dan: hay que deducirlos de los
+// fenotipos y de un dato de la familia.
+const NIVELES = [
+  {n:1, desc:'Genotipos dados: armá gametos, cuadro, predicción y camada.'},
+  {n:2, desc:'Todas las combinaciones: a veces se pregunta por el rasgo dominante y otras por el recesivo.'},
+  {n:3, desc:'Primero deducí los genotipos a partir de la familia.'}
+];
+const FIJAS = {
+  1: [ {rasgo:0, g1:'Aa', g2:'Aa', pide:'recesivo'},
+       {rasgo:3, g1:'Aa', g2:'aa', pide:'dominante'} ],
+  3: [ {rasgo:0, g1:'Aa', g2:'aa', pide:'recesivo', deducir:true,
+        d1:{texto:'Tiene cera húmeda. Su madre tiene cera seca.', pariente:'madre', parFen:'recesivo'},
+        d2:{texto:'Tiene cera seca.'}},
+       {rasgo:1, g1:'Aa', g2:'Aa', pide:'recesivo', deducir:true,
+        d1:{texto:'Es Rh positivo. Su padre es Rh negativo.', pariente:'padre', parFen:'recesivo'},
+        d2:{texto:'Es Rh positiva. Su madre es Rh negativa.', pariente:'madre', parFen:'recesivo'}} ]
+};
+// El nivel 2 se sortea: tres cruzas distintas, con rasgo y pregunta al azar.
+function rondasNivel2(){
+  // Dos de las cruzas con heterocigotos y una de las "extremas", sin repetir.
+  const variadas = [['AA','Aa'],['Aa','Aa'],['Aa','aa']], extremas = [['AA','aa'],['aa','aa'],['AA','AA']];
+  const elegidas = mezclar(variadas).slice(0, 2).concat([mezclar(extremas)[0]]);
+  return mezclar(elegidas).map(par => {
+    const [g1, g2] = mezclar(par);
+    return { rasgo:Math.floor(Math.random() * rasgos.length), g1, g2, pide: Math.random() < 0.5 ? 'recesivo' : 'dominante' };
+  });
+}
+function armarRondas(){
+  return [...FIJAS[1].map(r => ({...r, nivel:1})), ...rondasNivel2().map(r => ({...r, nivel:2})), ...FIJAS[3].map(r => ({...r, nivel:3}))];
+}
+let RONDAS = armarRondas();
+
+const params = new URLSearchParams(location.search);
+const OPC = { crono: params.get('crono') === '1', errores: params.get('errores') === '1' };
 
 const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
 const franja = document.getElementById('franja');
+const aviso = document.getElementById('aviso');
+let S = null, reloj = null, finContado = false;
+const resultados = {};
 
-function genotipoAleatorio(){
-  const opciones = ["AA","Aa","aa"];
-  return opciones[Math.floor(Math.random()*3)];
+function el(id){ return document.getElementById(id); }
+function mezclar(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function mmss(s){ return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+function segundos(){ return S ? Math.round(((S.fin || Date.now()) - S.inicio) / 1000) : 0; }
+function ordenar(alelos){ return alelos.slice().sort().join(''); }   // "aA" -> "Aa": la mayúscula va primero
+function fenotipo(g){ return g.includes('A') ? 'dominante' : 'recesivo'; }
+function alelo(a, extra){ return `<span class="alelo ${a === 'A' ? 'dom' : 'rec'}${extra ? ' ' + extra : ''}" data-alelo="${a}">${a}</span>`; }
+function deCada4(n){ return n === 0 ? 'ninguna' : n === 4 ? 'todas' : `${n} de cada 4`; }
+function pct(x){ return (Math.round(x * 10) / 10).toString().replace('.', ',') + ' %'; }
+
+let tAviso = null;
+function avisar(texto, tipo){
+  clearTimeout(tAviso);
+  aviso.className = 'aviso' + (tipo ? ' ' + tipo : '');
+  aviso.textContent = texto; aviso.hidden = false;
+  tAviso = setTimeout(() => { aviso.hidden = true; }, tipo === 'pista' ? 9000 : 3000);
+}
+function callar(){ clearTimeout(tAviso); aviso.hidden = true; }
+function error(texto){ S.errores++; actualizarEstado(); avisar(texto, 'pista'); }
+function progreso(){ el('barra').style.width = (Object.keys(resultados).length / RONDAS.length * 100) + '%'; }
+
+// ---------------------------------------------------------------------------
+// Inicio
+// ---------------------------------------------------------------------------
+function inicio(){
+  S = null; clearInterval(reloj); clearInterval(timerRapido); jugando = false; callar();
+  franja.hidden = true; el('progreso').classList.remove('tiempo');
+  marcador.textContent = 'Armá la cruza, predecí y comprobalo';
+  progreso();
+  tablero.innerHTML = `
+    <div class="inicio">
+      <p>Cada progenitor tiene dos copias de un gen y le pasa <b>una sola</b> a cada gameto. El <b>cuadro de Punnett</b> combina los gametos de los dos y muestra qué crías son posibles y con qué probabilidad.</p>
+      <p>En cada cruza vas a <b>armar los gametos</b>, <b>llenar el cuadro</b>, predecir qué proporción de la descendencia muestra un rasgo y después <b>simular camadas</b> para comparar lo esperado con lo que pasa de verdad.</p>
+      <ul class="niveles">${NIVELES.map(nv => {
+        const idx = RONDAS.map((r, i) => i).filter(i => RONDAS[i].nivel === nv.n);
+        return `<li><button data-r="${idx[0]}" class="${idx.every(i => resultados[i]) ? 'hecho' : ''}"><span class="n">Nivel ${nv.n}</span><span class="d">${nv.desc}</span></button></li>`;
+      }).join('')}
+      <li><button id="rapido"><span class="n">Modo rápido</span><span class="d">Cruzas contrarreloj durante 60 segundos, para repasar.</span></button></li></ul>
+      <div class="acciones"><button class="primario" id="empezar">Empezar por el nivel 1</button></div>
+    </div>`;
+  tablero.querySelectorAll('[data-r]').forEach(b => b.onclick = () => empezar(+b.dataset.r));
+  el('empezar').onclick = () => empezar(0);
+  el('rapido').onclick = inicioRapido;
 }
 
+// ---------------------------------------------------------------------------
+// Una cruza
+// ---------------------------------------------------------------------------
+function empezar(i){
+  const r = RONDAS[i];
+  S = { i, r, rasgo:rasgos[r.rasgo], errores:0, inicio:Date.now(), fin:null, sel:null,
+        etapa: r.deducir ? 'deducir' : 'gametos',
+        conocido:{1:!r.deducir, 2:!r.deducir},
+        gam:{1:[[],[]], 2:[[],[]]}, usado:{1:[false,false], 2:[false,false]},
+        celdas:[[[],[]],[[],[]]], marcadas:new Set(), sims8:[], sims200:[], pred:null };
+  callar();
+  const enNivel = RONDAS.filter(x => x.nivel === r.nivel);
+  marcador.textContent = `Nivel ${r.nivel} de ${NIVELES.length} · Cruza ${enNivel.indexOf(r) + 1} de ${enNivel.length}`;
+  progreso();
+  clearInterval(reloj);
+  reloj = setInterval(() => { if(S && !S.fin && OPC.crono && el('st-t')) el('st-t').textContent = mmss(segundos()); }, 1000);
+  dibujar();
+  window.scrollTo({ top:0 });
+}
+
+function fenTexto(f){ return f === 'dominante' ? S.rasgo.dominante : S.rasgo.recesivo; }
+function genoDe(p){ return p === 1 ? S.r.g1 : S.r.g2; }
+function gametoTxt(p, k){ return S.gam[p][k].join(''); }
+
+function dibujar(){
+  const r = S.r, ras = S.rasgo;
+  const quien = p => r.rasgo >= 3 ? `Planta ${p}` : `Progenitor ${p}`;
+  const padre = p => {
+    const g = genoDe(p), d = r.deducir ? r['d' + p] : null;
+    let geno;
+    if(S.conocido[p]) geno = `<div class="geno">${g.split('').map((a, k) => alelo(a, 'mueve' + (S.usado[p][k] ? ' usado' : '') + (S.sel && S.sel.p === p && S.sel.k === k ? ' sel' : '')).replace('<span', `<span data-p="${p}" data-k="${k}" tabindex="${S.etapa === 'gametos' && !S.usado[p][k] ? 0 : -1}" role="button" aria-label="Alelo ${a} del ${quien(p).toLowerCase()}"`)).join('')}</div>`;
+    else geno = `<p class="instr" style="margin:0 0 0.4rem;">¿Qué genotipo tiene?</p><div class="elige-geno">${['AA','Aa','aa'].map(x => `<button data-dp="${p}" data-g="${x}">${x}</button>`).join('')}</div>`;
+    const gametos = `<div class="flecha">&darr; gametos</div><div class="gametos">${[0,1].map(k =>
+      `<div class="gameto${S.gam[p][k].length ? ' lleno' : ''}" data-drop="g-${p}-${k}" role="button" tabindex="${S.etapa === 'gametos' ? 0 : -1}" aria-label="Gameto ${k + 1} del ${quien(p).toLowerCase()}">${S.gam[p][k].map(a => alelo(a)).join('')}</div>`).join('')}</div>`;
+    return `<div class="padre"><div class="quien">${quien(p)}</div>
+      <div class="fen">${d ? d.texto : 'Fenotipo: ' + fenTexto(fenotipo(g))}</div>${geno}${S.etapa === 'deducir' ? '' : gametos}</div>`;
+  };
+
+  let html = `
+    <p class="enunciado">Rasgo: <b>${ras.nombre}</b>. El alelo <b>A</b> es dominante (${ras.dominante}); <b>a</b> es recesivo (${ras.recesivo}).</p>
+    <div class="estado">
+      <span id="st-crono" ${OPC.crono ? '' : 'hidden'}>Tiempo: <b id="st-t">${mmss(segundos())}</b></span>
+      <span id="st-err" ${OPC.errores ? '' : 'hidden'}>Errores: <b id="st-e">${S.errores}</b></span>
+    </div>`;
+  let n = 1;
+  if(r.deducir){
+    html += `<h2 class="etapa"><span class="n">${n++}</span>Genotipos</h2>`;
+    if(S.etapa === 'deducir') html += `<p class="instr">No sabemos los genotipos, pero sí algo de cada familia. Deducilos.</p>`;
+  }
+  if(S.etapa !== 'deducir') html += `<h2 class="etapa"><span class="n">${n++}</span>Gametos</h2>`;
+  if(S.etapa === 'gametos') html += `<p class="instr">Arrastrá cada alelo de los progenitores a un gameto (o tocá el alelo y después el gameto).</p>`;
+  html += `<div class="padres">${padre(1)}${padre(2)}</div>`;
+
+  if(['cuadro','fenotipo','camada'].includes(S.etapa)){
+    html += `<h2 class="etapa"><span class="n">${n++}</span>Cuadro de Punnett</h2>`;
+    if(S.etapa === 'cuadro') html += `<p class="instr">Llená cada casilla con los alelos que reciben las crías: uno del gameto de la columna y uno del gameto de la fila. Tocá un alelo de abajo y después los huecos, o arrastralo.</p>`;
+    html += `<div class="cuadro" id="cuadro"><div></div>` +
+      [0,1].map(j => `<div class="cab"><div class="gameto lleno" aria-label="Gameto ${gametoTxt(1, j)} de la columna">${S.gam[1][j].map(a => alelo(a)).join('')}</div></div>`).join('') +
+      [0,1].map(i => `<div class="cab"><div class="gameto lleno" aria-label="Gameto ${gametoTxt(2, i)} de la fila">${S.gam[2][i].map(a => alelo(a)).join('')}</div></div>` +
+        [0,1].map(j => {
+          const c = S.celdas[i][j];
+          const marc = S.marcadas.has(i + '' + j) ? ' marcada' : '';
+          const eleg = S.etapa === 'fenotipo' ? ' elegible' : '';
+          const huecos = [0,1].map(h => c[h] ? alelo(c[h]) : '<span class="hueco"></span>').join('');
+          return `<div class="celda${marc}${eleg}" data-drop="c-${i}-${j}" data-celda="${i}${j}" role="button" tabindex="${S.etapa === 'cuadro' || S.etapa === 'fenotipo' ? 0 : -1}" aria-label="Casilla fila ${i + 1}, columna ${j + 1}${c.length ? ': ' + ordenar(c) : ''}">${c.length === 2 ? ordenar(c).split('').map(a => alelo(a)).join('') : huecos}</div>`;
+        }).join('')).join('') + `</div>`;
+    if(S.etapa === 'cuadro')
+      html += `<div class="paleta"><span class="eti">Alelos:</span>${['A','a'].map(a => alelo(a, 'mueve' + (S.sel && S.sel.paleta && S.sel.alelo === a ? ' sel' : '')).replace('<span', `<span data-paleta="${a}" tabindex="0" role="button" aria-label="Alelo ${a}"`)).join('')}</div>`;
+  }
+  if(S.etapa === 'fenotipo'){
+    html += `<h2 class="etapa"><span class="n">${n++}</span>Predicción</h2>
+      <p class="instr">Tocá en el cuadro <b>todas</b> las casillas de crías con <b>${fenTexto(r.pide)}</b> (el rasgo ${r.pide}). Si no hay ninguna, no marques nada.</p>
+      <div class="acciones"><button class="primario" id="listo-fen">Listo</button></div>`;
+  }
+  if(S.etapa === 'camada'){
+    html += `<div class="resultado-cuadro" id="res-cuadro">${resumenCuadro()}</div>`;
+    html += `<h2 class="etapa"><span class="n">${n++}</span>Camada</h2><div id="camada-zona"></div>`;
+  }
+  tablero.innerHTML = html;
+  conectar();
+  if(S.etapa === 'camada') dibujarCamada();
+}
+
+function conteo(){
+  const c = S.celdas.flat().map(ordenar);
+  return { AA:c.filter(g => g === 'AA').length, Aa:c.filter(g => g === 'Aa').length, aa:c.filter(g => g === 'aa').length,
+           pide:c.filter(g => fenotipo(g) === S.r.pide).length };
+}
+function resumenCuadro(){
+  const k = conteo();
+  const gen = [['AA', k.AA], ['Aa', k.Aa], ['aa', k.aa]].filter(x => x[1]).map(x => `${x[1]} ${x[0]}`).join(' : ');
+  return `Genotipos en el cuadro: <b>${gen}</b>. Crías con ${fenTexto(S.r.pide)}: <b>${deCada4(k.pide)}</b> (${pct(k.pide / 4 * 100)}).`;
+}
+
+// ---------------------------------------------------------------------------
+// Interacción: tocar y tocar, o arrastrar con pointer events
+// ---------------------------------------------------------------------------
+function conectar(){
+  tablero.querySelectorAll('[data-dp]').forEach(b => b.onclick = () => deducir(+b.dataset.dp, b.dataset.g, b));
+  tablero.querySelectorAll('.alelo[data-p], .alelo[data-paleta]').forEach(nodo => {
+    const info = nodo.dataset.paleta ? { paleta:true, alelo:nodo.dataset.paleta }
+      : { p:+nodo.dataset.p, k:+nodo.dataset.k, alelo:nodo.dataset.alelo };
+    nodo.addEventListener('pointerdown', e => tomar(e, info, nodo));
+    nodo.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); seleccionar(info); } });
+  });
+  tablero.querySelectorAll('[data-drop]').forEach(d => {
+    const go = () => {
+      if(S.etapa === 'fenotipo' && d.dataset.celda){ marcar(d.dataset.celda); return; }
+      if(S.sel) soltarEn(S.sel, d.dataset.drop);
+      else if(S.etapa === 'gametos') avisar('Primero tocá (o arrastrá) un alelo de un progenitor.');
+      else if(S.etapa === 'cuadro') avisar('Primero tocá un alelo de abajo (A o a), o arrastralo hasta la casilla.');
+    };
+    d.addEventListener('click', go);
+    d.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
+  });
+  const lf = el('listo-fen'); if(lf) lf.onclick = verificarFenotipo;
+}
+
+function seleccionar(info){
+  if(!info){ S.sel = null; dibujar(); return; }
+  if(info.p && (S.etapa !== 'gametos' || S.usado[info.p][info.k])) return;
+  const igual = S.sel && S.sel.paleta === info.paleta && S.sel.p === info.p && S.sel.k === info.k && S.sel.alelo === info.alelo;
+  S.sel = igual ? null : info;
+  dibujar();
+}
+
+let arr = null;
+function tomar(e, info, nodo){
+  if(e.button > 0) return;
+  if(info.p && (S.etapa !== 'gametos' || S.usado[info.p][info.k])) return;
+  e.preventDefault();
+  arr = { info, nodo, x0:e.clientX, y0:e.clientY, mov:false, id:e.pointerId };
+  window.addEventListener('pointermove', mover);
+  window.addEventListener('pointerup', soltar);
+  window.addEventListener('pointercancel', cancelar);
+}
+function destinoEn(x, y){ const t = document.elementFromPoint(x, y); return t ? t.closest('[data-drop]') : null; }
+function mover(e){
+  if(!arr || e.pointerId !== arr.id) return;
+  if(!arr.mov){
+    if(Math.hypot(e.clientX - arr.x0, e.clientY - arr.y0) < 6) return;
+    arr.mov = true;
+    arr.fantasma = arr.nodo.cloneNode(true);
+    arr.fantasma.classList.add('fantasma'); arr.fantasma.classList.remove('sel');
+    document.body.appendChild(arr.fantasma);
+    autoScroll();
+  }
+  arr.py = e.clientY;
+  arr.fantasma.style.left = e.clientX + 'px'; arr.fantasma.style.top = e.clientY + 'px';
+  const d = destinoEn(e.clientX, e.clientY);
+  document.querySelectorAll('.sobre').forEach(x => { if(x !== d) x.classList.remove('sobre'); });
+  if(d) d.classList.add('sobre');
+}
+function terminar(){
+  window.removeEventListener('pointermove', mover);
+  window.removeEventListener('pointerup', soltar);
+  window.removeEventListener('pointercancel', cancelar);
+  document.querySelectorAll('.sobre').forEach(x => x.classList.remove('sobre'));
+  const a = arr; arr = null;
+  if(a && a.fantasma) a.fantasma.remove();
+  return a;
+}
+function soltar(e){
+  if(!arr || e.pointerId !== arr.id) return;
+  const d = arr.mov ? destinoEn(e.clientX, e.clientY) : null;
+  const a = terminar();
+  if(!a.mov){ seleccionar(a.info); return; }
+  if(d) soltarEn(a.info, d.dataset.drop);
+}
+function cancelar(e){ if(arr && e.pointerId === arr.id) terminar(); }
+function autoScroll(){
+  if(!arr || !arr.mov) return;
+  if(arr.py != null){
+    if(arr.py < 60) window.scrollBy(0, -12);
+    else if(arr.py > window.innerHeight - 60) window.scrollBy(0, 12);
+  }
+  requestAnimationFrame(autoScroll);
+}
+
+function soltarEn(info, destino){
+  const [tipo, x, y] = destino.split('-');
+  if(tipo === 'g'){
+    if(S.etapa !== 'gametos') return;
+    const p = +x, k = +y;
+    if(info.paleta){ avisar('Los alelos de los gametos salen de los progenitores: arrastralos desde arriba.'); return; }
+    if(info.p !== p){ error(`Los gametos de un progenitor llevan sus propios alelos. Ese alelo es del otro progenitor.`); return; }
+    if(S.gam[p][k].length){ error('Cada gameto lleva un solo alelo de cada gen: al formarse los gametos, los dos alelos de un progenitor se separan.'); return; }
+    S.gam[p][k] = [info.alelo]; S.usado[p][info.k] = true; S.sel = null;
+    if([1,2].every(q => S.gam[q].every(g => g.length))){
+      S.etapa = 'cuadro';
+      avisar('Gametos listos. Cada uno lleva un solo alelo.', 'ok');
+    }
+    dibujar();
+  } else if(tipo === 'c'){
+    if(S.etapa !== 'cuadro') return;
+    const i = +x, j = +y, c = S.celdas[i][j];
+    if(c.length === 2){ avisar('Esa casilla ya está completa.'); return; }
+    const col = S.gam[1][j][0], fila = S.gam[2][i][0];
+    const resta = [col, fila];
+    c.forEach(a => resta.splice(resta.indexOf(a), 1));
+    if(!resta.includes(info.alelo)){
+      flash(destino, 'mal');
+      error(`Cada casilla lleva un alelo del gameto de su columna (${col}) y uno del gameto de su fila (${fila}).` + (c.length ? ` Ya tiene ${c[0]}: ¿qué alelo falta?` : ` Ninguno de los dos es ${info.alelo}.`));
+      return;
+    }
+    c.push(info.alelo);
+    if(info.p) S.sel = null;
+    if(S.celdas.flat().every(z => z.length === 2)){
+      S.etapa = 'fenotipo'; S.sel = null;
+      avisar('¡Cuadro completo!', 'ok');
+    }
+    dibujar();
+    if(c.length === 2) flash(destino, 'ok');
+  }
+}
+function flash(destino, clase){
+  const n = tablero.querySelector(`[data-drop="${destino}"]`);
+  if(!n) return;
+  n.classList.add(clase); setTimeout(() => n.classList.remove(clase), 700);
+}
+
+// --- Nivel 3: deducir genotipos ---
+function deducir(p, g, boton){
+  const d = S.r['d' + p], real = genoDe(p);
+  if(g === real){
+    S.conocido[p] = true;
+    if(S.conocido[1] && S.conocido[2]){ S.etapa = 'gametos'; avisar('Genotipos deducidos. Ahora, los gametos.', 'ok'); }
+    else avisar(`Sí: ${g}.`, 'ok');
+    dibujar();
+    return;
+  }
+  const fenReal = fenotipo(real);
+  if(fenotipo(g) !== fenReal)
+    error(`Con ${g} tendría ${fenTexto(fenotipo(g))}, pero tiene ${fenTexto(fenReal)}.`);
+  else if(d.pariente && g === 'AA')
+    error(`Fijate en la familia: su ${d.pariente} tiene ${fenTexto(d.parFen)}, o sea que es aa. ¿Qué alelo le pasó sí o sí?`);
+  else
+    error('Revisá el fenotipo y el dato de la familia.');
+}
+
+// --- Predicción sobre el cuadro ---
+function marcar(id){
+  if(S.marcadas.has(id)) S.marcadas.delete(id); else S.marcadas.add(id);
+  dibujar();
+}
+function verificarFenotipo(){
+  const pide = S.r.pide;
+  const correctas = new Set();
+  [0,1].forEach(i => [0,1].forEach(j => { if(fenotipo(ordenar(S.celdas[i][j])) === pide) correctas.add(i + '' + j); }));
+  const sobran = [...S.marcadas].filter(x => !correctas.has(x));
+  const faltan = [...correctas].filter(x => !S.marcadas.has(x));
+  if(!sobran.length && !faltan.length){
+    S.etapa = 'camada'; S.pred = null;
+    avisar('¡Bien! Esa es la proporción esperada.', 'ok');
+    dibujar();
+    return;
+  }
+  if(sobran.length){
+    const g = ordenar(S.celdas[+sobran[0][0]][+sobran[0][1]]);
+    error(pide === 'recesivo'
+      ? `Marcaste una casilla ${g}: tiene un alelo A, que es dominante, así que muestra ${S.rasgo.dominante}. El rasgo recesivo solo aparece con aa.`
+      : `Marcaste una casilla aa: no tiene ningún alelo A, así que muestra ${S.rasgo.recesivo}.`);
+  } else {
+    error(`Te falta alguna: ¿hay otra casilla con ${fenTexto(pide)}? ` + (pide === 'dominante' ? 'Alcanza con un solo alelo A.' : ''));
+  }
+}
+
+// --- Camada: lo esperado frente a lo observado ---
+function cria(){
+  const a = S.r.g1[Math.floor(Math.random() * 2)], b = S.r.g2[Math.floor(Math.random() * 2)];
+  return ordenar([a, b]);
+}
+function simular(n){
+  const crias = Array.from({length:n}, cria);
+  return { n, crias, k:crias.filter(g => fenotipo(g) === S.r.pide).length };
+}
+function dibujarCamada(){
+  const z = el('camada-zona'), esp = conteo().pide * 2, fen = fenTexto(S.r.pide);
+  if(S.pred === null){
+    z.innerHTML = `<p class="instr">Si esta pareja tuviera <b>8 crías</b>, ¿cuántas esperás que tengan <b>${fen}</b>?</p>
+      <div class="fila-ctrl">
+        <button id="p-menos" aria-label="Una menos">&minus;</button>
+        <input id="p-n" inputmode="numeric" maxlength="1" value="" aria-label="Cantidad de crías">
+        <button id="p-mas" aria-label="Una más">+</button>
+        <button class="primario" id="p-ok">Confirmar</button>
+      </div>`;
+    const inp = el('p-n');
+    inp.oninput = () => { inp.value = inp.value.replace(/[^0-8]/g, ''); };
+    el('p-menos').onclick = () => { inp.value = Math.max(0, (parseInt(inp.value || '4', 10)) - (inp.value ? 1 : 0)); };
+    el('p-mas').onclick = () => { inp.value = Math.min(8, (parseInt(inp.value || '4', 10)) + (inp.value ? 1 : 0)); };
+    el('p-ok').onclick = () => {
+      if(inp.value === ''){ avisar('Escribí un número de 0 a 8.'); return; }
+      const v = +inp.value;
+      if(v !== esp){ error(`En el cuadro, las crías con ${fen} son ${deCada4(conteo().pide)}. Si fueran 8 crías, ¿cuántas serían?`); return; }
+      S.pred = v;
+      dibujarCamada();
+    };
+    return;
+  }
+  const ultima = S.ultima;
+  const ver8 = S.sims8.length, ver200 = S.sims200.length;
+  let html = `<p class="instr">Esperás <b>${S.pred} de 8</b> con ${fen}. Pero cada cría es un sorteo: simulá y fijate qué pasa.</p>
+    <div class="acciones">
+      <button class="primario" id="s8">${ver8 ? 'Otra camada de 8' : 'Simular una camada de 8'}</button>
+      <button id="s200" ${ver8 ? '' : 'disabled'}>Simular 200 crías</button>
+    </div>`;
+  if(ultima){
+    html += `<div class="leyenda" style="margin-top:0.8rem;"><span><i style="background:var(--dom)"></i>${S.rasgo.dominante}</span><span><i style="background:var(--rec)"></i>${S.rasgo.recesivo}</span></div>`;
+    if(ultima.n <= 8) html += `<div class="camada">${ultima.crias.map((g, i) => `<span class="cria ${fenotipo(g) === 'dominante' ? 'dom' : 'rec'}" style="animation-delay:${i * 0.08}s" title="${g}">${g}</span>`).join('')}</div>`;
+    else html += `<p class="obs" style="margin:0.8rem 0 0;">200 crías: ${['AA','Aa','aa'].map(g => `${ultima.crias.filter(x => x === g).length} ${g}`).join(' · ')}</p>`;
+    html += `<p class="obs">Observado: <b>${ultima.k} de ${ultima.n}</b> con ${fen} (${pct(ultima.k / ultima.n * 100)}). Esperado: <b>${pct(esp / 8 * 100)}</b>.</p>`;
+    html += puntosSVG(esp / 8 * 100);
+  }
+  if(ver8 && ver200){
+    const p = esp / 8;
+    html += `<div class="explica">${p === 0 || p === 1
+      ? `Cuando la probabilidad es ${p === 0 ? '0 %' : '100 %'}, el azar no cambia nada: todas las crías salen iguales, sea la camada chica o grande.`
+      : `Lo esperado es una <b>probabilidad</b>. Con 8 crías el resultado varía mucho de una camada a otra; con 200 se acerca a ${pct(p * 100)}. Cada cría es un sorteo independiente: que las primeras salgan de un tipo no cambia la probabilidad de la siguiente.`}</div>
+      <div class="acciones"><button class="primario" id="sig-cruza">${S.i + 1 < RONDAS.length ? 'Siguiente cruza' : 'Ver el resumen'} &rarr;</button><button id="ini">Elegir otro nivel</button></div>`;
+  } else if(ver8){
+    html += `<p class="instr" style="margin-top:0.8rem;">Simulá varias camadas de 8 y después 200 crías juntas. ¿Qué cambia?</p>`;
+  }
+  z.innerHTML = html;
+  el('s8').onclick = () => { S.ultima = simular(8); S.sims8.push(S.ultima.k / 8 * 100); dibujarCamada(); };
+  el('s200').onclick = () => { S.ultima = simular(200); S.sims200.push(S.ultima.k / 200 * 100); dibujarCamada(); };
+  const sc = el('sig-cruza');
+  if(sc){
+    sc.onclick = cerrarCruza;
+    el('ini').onclick = () => { cerrarCruza(true); };
+  }
+}
+
+// Gráfico de puntos: cada simulación es un punto; la línea es lo esperado.
+function puntosSVG(esperado){
+  const x = v => 70 + v * 4.5;
+  const fila = (vals, y) => {
+    const pilas = {};
+    return vals.map(v => { const key = Math.round(v); const h = pilas[key] = (pilas[key] || 0) + 1;
+      return `<circle cx="${x(v)}" cy="${y - (h - 1) * 7}" r="4.2" fill="var(--juego-texto)" fill-opacity="0.75"/>`; }).join('');
+  };
+  const marcas = [0,25,50,75,100].map(v => `<line x1="${x(v)}" y1="112" x2="${x(v)}" y2="116" stroke="#9AA9A6"/><text x="${x(v)}" y="128" text-anchor="middle">${v} %</text>`).join('');
+  return `<svg class="puntos" viewBox="0 0 540 134" role="img" aria-label="Resultados de las simulaciones comparados con lo esperado">
+    <text x="0" y="52">camadas</text><text x="0" y="64">de 8</text>
+    <text x="0" y="98">grupos</text><text x="0" y="110">de 200</text>
+    <line x1="${x(0)}" y1="112" x2="${x(100)}" y2="112" stroke="#9AA9A6"/>${marcas}
+    <line x1="${x(esperado)}" y1="6" x2="${x(esperado)}" y2="112" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3"/>
+    <text x="${x(esperado)}" y="12" text-anchor="${esperado > 85 ? 'end' : esperado < 15 ? 'start' : 'middle'}" style="fill:var(--juego-texto);font-weight:700">esperado ${pct(esperado)}</text>
+    ${fila(S.sims8, 60)}${fila(S.sims200, 104)}
+  </svg>`;
+}
+
+function cerrarCruza(aInicio){
+  S.fin = Date.now();
+  resultados[S.i] = { errores:S.errores, segundos:segundos() };
+  progreso();
+  if(Object.keys(resultados).length === RONDAS.length) contarFin();
+  if(aInicio === true){ inicio(); return; }
+  if(S.i + 1 < RONDAS.length) empezar(S.i + 1); else final();
+}
+function actualizarEstado(){ const e = el('st-e'); if(e) e.textContent = S.errores; }
+
+// Una sola vez por visita, igual que en el resto de los juegos.
+function contarFin(){
+  if(finContado) return;
+  finContado = true;
+  window.goatcounter?.count({ path:'fin/punnett-rapido', title:'Completó Punnett', event:true });
+}
+
+function final(){
+  S = null; clearInterval(reloj); callar();
+  marcador.textContent = 'Resumen';
+  const filas = RONDAS.map((r, i) => resultados[i] ? `<tr><td>Nivel ${r.nivel}</td><td>${r.g1} × ${r.g2}</td><td>${rasgos[r.rasgo].nombre.split(' (')[0]}</td>${OPC.crono ? `<td>${mmss(resultados[i].segundos)}</td>` : ''}${OPC.errores ? `<td>${resultados[i].errores}</td>` : ''}</tr>` : '').join('');
+  tablero.innerHTML = `
+    <div class="final">
+      <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">Terminaste las cruzas</h2>
+      <table><tr><th>Nivel</th><th>Cruza</th><th>Rasgo</th>${OPC.crono ? '<th>Tiempo</th>' : ''}${OPC.errores ? '<th>Errores</th>' : ''}</tr>${filas}</table>
+      <div class="acciones"><button class="primario" id="ini">Volver a los niveles</button><button id="rap">Probar el modo rápido</button></div>
+    </div>`;
+  el('ini').onclick = inicio;
+  el('rap').onclick = inicioRapido;
+}
+
+// ---------------------------------------------------------------------------
+// Modo rápido: el contrarreloj original, para repasar
+// ---------------------------------------------------------------------------
+const TIEMPO_TOTAL = 60;
+let tiempo, timerRapido, puntaje = 0, racha = 0, jugando = false, errores = [];
+function genotipoAleatorio(){ return ["AA","Aa","aa"][Math.floor(Math.random()*3)]; }
 // Las cuatro casillas del cuadro de Punnett de una cruza monohíbrida.
 function casillas(g1,g2){
   const out = [];
   g1.split("").forEach(a => g2.split("").forEach(b => out.push([a,b].sort().join(""))));
   return out;
 }
-
 function etiqueta(n, total){
   if(n === 0) return "ninguno";
   if(n === total) return "todos";
@@ -137,16 +690,11 @@ function etiqueta(n, total){
   if(n*4 === total*3) return "3 de cada 4";
   return n+"/"+total;
 }
-
-// Se pregunta por el fenotipo recesivo o por el dominante, y se permite la cruza
-// aa × aa. Con las dos variantes, las cinco etiquetas de respuesta son alcanzables
-// (antes "3 de cada 4" y "todos" nunca podían ser correctas).
 function proporcion(g1, g2, pide){
   const c = casillas(g1,g2);
   const rec = c.filter(x => x === "aa").length;
   return etiqueta(pide === "recesivo" ? rec : c.length - rec, c.length);
 }
-
 function explicacionCruza(g1, g2, rasgo){
   const c = casillas(g1,g2);
   const rec = c.filter(x => x === "aa").length;
@@ -155,25 +703,22 @@ function explicacionCruza(g1, g2, rasgo){
        + `${rec} ${rec === 1 ? "es" : "son"} aa (${rasgo.recesivo}) y ${dom} `
        + `${dom === 1 ? "tiene" : "tienen"} al menos una A (${rasgo.dominante}).`;
 }
-
 function nuevaPregunta(){
   const g1 = genotipoAleatorio(), g2 = genotipoAleatorio();
   const rasgo = rasgos[Math.floor(Math.random()*rasgos.length)];
   const pide = Math.random() < 0.5 ? "recesivo" : "dominante";
   const correcta = proporcion(g1, g2, pide);
-  const fenotipo = pide === "recesivo" ? rasgo.recesivo : rasgo.dominante;
+  const fen = pide === "recesivo" ? rasgo.recesivo : rasgo.dominante;
   const todas = ["ninguno","1 de cada 4","1 de cada 2","3 de cada 4","todos"];
-  const opciones = [correcta, ...todas.filter(o=>o!==correcta).sort(()=>Math.random()-0.5).slice(0,3)]
-    .sort(()=>Math.random()-0.5);
-
+  const opciones = mezclar([correcta, ...mezclar(todas.filter(o=>o!==correcta)).slice(0,3)]);
   tablero.innerHTML = `
+    <div class="rapido">
     <p class="gen">${g1} &times; ${g2}</p>
-    <p class="rasgo">Rasgo: <b>${rasgo.nombre}</b> — el alelo <b>A</b> es dominante (${rasgo.dominante}), <b>a</b> es recesivo (${rasgo.recesivo}).<br>¿Qué proporción de la descendencia esperás que muestre el rasgo <b>${pide}</b> (<b>${fenotipo}</b>)?</p>
+    <p class="rasgo">Rasgo: <b>${rasgo.nombre}</b> — el alelo <b>A</b> es dominante (${rasgo.dominante}), <b>a</b> es recesivo (${rasgo.recesivo}).<br>¿Qué proporción de la descendencia esperás que muestre el rasgo <b>${pide}</b> (<b>${fen}</b>)?</p>
     <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
-    <p id="explica" style="font-size:0.92rem;line-height:1.55;color:#16211F;background:#F4F6F5;border-left:3px solid #E1A73B;padding:0.7rem 0.9rem;margin-top:1rem;text-align:left;display:none;"></p>
-    <button id="seguir" style="display:none;width:fit-content;margin-left:auto;margin-top:1rem;padding:0.55rem 1.4rem;border:1px solid #16211F;background:#16211F;color:#fff;border-radius:6px;font-size:0.95rem;cursor:pointer;">Seguir &rarr;</button>
-  `;
-
+    <p id="explica" style="font-size:0.92rem;line-height:1.55;color:#16211F;background:#F4F6F5;border-left:3px solid #E1A73B;padding:0.7rem 0.9rem;margin-top:1rem;text-align:left;" hidden></p>
+    <div class="acciones" style="justify-content:flex-end;"><button id="seguir" hidden>Seguir &rarr;</button></div>
+    </div>`;
   tablero.querySelectorAll('.opciones button').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       if(!jugando) return;
@@ -186,7 +731,6 @@ function nuevaPregunta(){
       if(acierto){ racha++; puntaje += 10 + (racha>=3 ? 5 : 0); }
       else { racha = 0; }
       actualizarFranja();
-
       const exp = explicacionCruza(g1, g2, rasgo);
       if(acierto){
         // Acierto: se sigue rápido para no cortar el ritmo del contrarreloj.
@@ -194,78 +738,112 @@ function nuevaPregunta(){
       } else {
         // Error: se muestra la explicación y se avanza al hacer clic. El reloj
         // sigue corriendo, así que la pausa la decide quien juega.
-        errores.push({cruza:`${g1} × ${g2}`, pide, fenotipo, correcta, elegida:btn.dataset.o, exp});
-        const e = document.getElementById('explica');
-        e.style.display = 'block';
+        errores.push({cruza:`${g1} × ${g2}`, pide, fen, correcta, elegida:btn.dataset.o, exp});
+        const e = el('explica');
+        e.hidden = false;
         e.innerHTML = `La respuesta correcta era <b>${correcta}</b>. ${exp}`;
-        const sig = document.getElementById('seguir');
-        sig.style.display = 'block';
+        const sig = el('seguir');
+        sig.hidden = false;
         sig.onclick = () => { if(jugando) nuevaPregunta(); };
       }
     });
   });
 }
-
 function actualizarFranja(){
   franja.innerHTML = `<span>Tiempo: <b>${tiempo}s</b></span><span>Puntaje: <b>${puntaje}</b></span><span>Racha: <b>${racha}</b></span>`;
-  // La barra se vacia a medida que corre el reloj.
-  const b = document.getElementById('barra');
-  if(b) b.style.width = Math.max(0, tiempo / TIEMPO_TOTAL * 100) + '%';
+  el('barra').style.width = Math.max(0, tiempo / TIEMPO_TOTAL * 100) + '%';
 }
-
-function iniciar(){
+function inicioRapido(){
+  S = null; clearInterval(reloj); callar();
+  marcador.textContent = 'Modo rápido · 60 segundos';
+  franja.hidden = false; el('progreso').classList.add('tiempo');
+  tiempo = TIEMPO_TOTAL; puntaje = 0; racha = 0;
+  actualizarFranja();
+  tablero.innerHTML = `
+    <div class="rapido">
+      <p>Resolvé cruzamientos monohíbridos antes de que se acabe el tiempo. Sumás puntos extra si encadenás 3 aciertos seguidos. Atención: unas veces se pregunta por el rasgo recesivo y otras por el dominante.</p>
+      <div class="acciones" style="justify-content:center;"><button class="primario" id="ir">Empezar (60 s)</button><button id="volver">Volver a los niveles</button></div>
+    </div>`;
+  el('ir').onclick = iniciarRapido;
+  el('volver').onclick = inicio;
+}
+function iniciarRapido(){
   puntaje = 0; racha = 0; errores = []; tiempo = TIEMPO_TOTAL; jugando = true;
   actualizarFranja();
   nuevaPregunta();
-  timer = setInterval(()=>{
+  clearInterval(timerRapido);
+  timerRapido = setInterval(()=>{
     tiempo--;
     actualizarFranja();
-    if(tiempo <= 0){ clearInterval(timer); jugando=false; final(); }
+    if(tiempo <= 0){ clearInterval(timerRapido); jugando=false; finalRapido(); }
   },1000);
 }
-
 function repaso(){
-  if(errores.length === 0) return `<div style="font-size:0.88rem;color:#5B6E6B;max-width:36em;margin:1.4rem auto;line-height:1.55;text-align:left;border-top:1px solid #E6E9E8;padding-top:1rem;"><b>No erraste ninguna.</b></div>`;
+  if(errores.length === 0) return `<p style="font-size:0.88rem;color:var(--muted);"><b>No erraste ninguna.</b></p>`;
   const filas = errores.map(e =>
-    `<li style="margin-bottom:0.6rem;"><b>${e.cruza}</b> — rasgo ${e.pide} (${e.fenotipo}).
+    `<li style="margin-bottom:0.6rem;"><b>${e.cruza}</b> — rasgo ${e.pide} (${e.fen}).
       Respondiste <i>${e.elegida}</i>; era <b>${e.correcta}</b>.<br>${e.exp}</li>`).join('');
-  return `<div style="font-size:0.88rem;color:#5B6E6B;max-width:36em;margin:1.4rem auto;line-height:1.55;text-align:left;border-top:1px solid #E6E9E8;padding-top:1rem;"><b>Para repasar — las que erraste:</b><ul style="margin:0.7rem 0 0;padding-left:1.2rem;">${filas}</ul></div>`;
+  return `<div style="font-size:0.88rem;color:var(--muted);max-width:36em;margin:1.4rem auto;line-height:1.55;text-align:left;border-top:1px solid #E6E9E8;padding-top:1rem;"><b>Para repasar — las que erraste:</b><ul style="margin:0.7rem 0 0;padding-left:1.2rem;">${filas}</ul></div>`;
 }
-
-// Aca final() la llama el reloj, y "Jugar de nuevo" reinicia sin recargar la
-// pagina: sin la bandera, cada partida terminada contaria de nuevo.
-let finContado = false;
-function final(){
-  if(!finContado){
-    finContado = true;
-    window.goatcounter?.count({ path: 'fin/punnett-rapido',
-      title: 'Completó Punnett rápido', event: true });
-  }
-  const mejor = Math.max(puntaje, parseInt(localStorage.getItem('punnett-mejor')||"0"));
-  localStorage.setItem('punnett-mejor', mejor);
+function finalRapido(){
+  contarFin();
+  let mejor = puntaje;
+  try {
+    mejor = Math.max(puntaje, parseInt(localStorage.getItem('punnett-mejor') || "0", 10));
+    localStorage.setItem('punnett-mejor', mejor);
+  } catch(e){}
   tablero.innerHTML = `
-    <div class="final">
+    <div class="rapido">
       <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">¡Se acabó el tiempo!</h2>
       <p>Puntaje: ${puntaje}<br>Mejor puntaje en este dispositivo: ${mejor}</p>
       ${repaso()}
-      <button onclick="iniciar()">Jugar de nuevo</button>
+      <div class="acciones" style="justify-content:center;"><button class="primario" id="otra">Jugar de nuevo</button><button id="volver">Volver a los niveles</button></div>
     </div>`;
+  el('otra').onclick = iniciarRapido;
+  el('volver').onclick = inicio;
 }
 
-tablero.innerHTML = `
-  <div class="inicio">
-    <p>Resolvé cruzamientos monohíbridos antes de que se acabe el tiempo. Sumás puntos extra si encadenás 3 aciertos seguidos. Atención: unas veces se pregunta por el rasgo recesivo y otras por el dominante.</p>
-    <button onclick="iniciar()">Empezar (60s)</button>
-  </div>`;
-franja.innerHTML = `<span>Tiempo: <b>${TIEMPO_TOTAL}s</b></span><span>Puntaje: <b>0</b></span><span>Racha: <b>0</b></span>`;
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && S && S.sel){ S.sel = null; dibujar(); } });
+inicio();
 </script>
 
-<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:var(--muted);line-height:1.55;text-align:left;">
-  <summary style="cursor:pointer;font-weight:700;color:var(--ink);font-size:0.95rem;">Para el/la docente</summary>
-  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Secundaria</p>
-  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Cruza monohíbrida y cuadro de Punnett; genotipo y fenotipo; dominancia completa; proporciones 1:2:1 (genotipos) y 3:1 (fenotipos).</p>
-  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> Los cinco rasgos de este juego son monogénicos de verdad. Varios de los que aparecen en los libros de texto — lóbulo de la oreja, pico de viuda, pulgar de autoestopista, pecas — resultaron ser poligénicos cuando se los estudió con datos genómicos. ¿Cómo se podría averiguar si un rasgo se hereda de forma mendeliana simple?</p>
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Secundaria.</p>
+  <p><b>Conceptos que trabaja:</b> segregación de los alelos al formarse los gametos (primera ley de Mendel); cruza monohíbrida y cuadro de Punnett; genotipo y fenotipo; dominancia completa; proporciones 1:2:1 (genotipos) y 3:1 (fenotipos); probabilidad y variación por azar en muestras chicas.</p>
+  <p><b>Cómo avanza:</b> en cada cruza se arman los gametos, se llena el cuadro, se marca en él qué crías muestran el rasgo pedido y se simulan camadas. El nivel 1 tiene dos cruzas fijas; el 2 sortea tres combinaciones; en el 3 los genotipos de los progenitores no se dan y hay que deducirlos a partir del fenotipo y de un familiar. El modo rápido es el contrarreloj original, para repasar.</p>
+  <p><b>Sobre la simulación:</b> cada cría recibe un alelo al azar de cada progenitor, de forma independiente. Por eso una camada de 8 casi nunca da exactamente lo esperado, y 200 crías juntas se acercan mucho más. Es un buen momento para hablar de la "falacia del jugador": si ya nacieron tres crías con el rasgo recesivo, la siguiente sigue teniendo la misma probabilidad.</p>
+  <p><b>Para discutir después de jugar:</b> los cinco rasgos de este juego son monogénicos de verdad. Varios de los que aparecen en los libros de texto — lóbulo de la oreja, pico de viuda, pulgar de autoestopista, pecas — resultaron ser poligénicos cuando se los estudió con datos genómicos. ¿Cómo se podría averiguar si un rasgo se hereda de forma mendeliana simple? En el caso del Rh, el alelo "a" corresponde a la ausencia del gen RHD: ¿un alelo recesivo puede ser la falta de un gen?</p>
+  <div class="opciones-doc">
+    <b>Opciones para la clase</b>
+    <label><input type="checkbox" id="o-crono"> Mostrar cronómetro</label>
+    <label><input type="checkbox" id="o-errores"> Mostrar contador de errores</label>
+    <p style="margin:0.4rem 0 0;font-size:0.85rem;color:var(--muted);">Enlace con esta configuración para compartir: <code id="o-link"></code></p>
+  </div>
 </details>
+
+<script>
+// Panel de opciones del docente: actualiza la URL para que se pueda compartir.
+(function(){
+  const c = document.getElementById('o-crono'), e = document.getElementById('o-errores');
+  const link = document.getElementById('o-link');
+  c.checked = OPC.crono; e.checked = OPC.errores;
+  function aplicar(){
+    OPC.crono = c.checked; OPC.errores = e.checked;
+    const p = new URLSearchParams();
+    if(OPC.crono) p.set('crono', '1');
+    if(OPC.errores) p.set('errores', '1');
+    const q = p.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
+    link.textContent = location.href;
+    const sc = document.getElementById('st-crono'), se = document.getElementById('st-err');
+    if(sc) sc.hidden = !OPC.crono;
+    if(se) se.hidden = !OPC.errores;
+  }
+  c.onchange = aplicar; e.onchange = aplicar;
+  link.textContent = location.href;
+})();
+</script>
 
 <script data-goatcounter="https://gaa.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>

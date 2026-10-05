@@ -1,8 +1,8 @@
 # Juegos — Genética a las Aulas
 
 Sitio estático, sin build, sin framework, sin dependencias: solo HTML, CSS
-y un catálogo en JavaScript. Incluye 12 juegos: Árbol genealógico, Punnett
-rápido, Cariotipo: armá y diagnosticá, Selección natural simulada, Árbol filogenético: armalo vos,
+y un catálogo en JavaScript. Incluye 12 juegos: Árbol genealógico, Punnett: de los gametos
+a la camada, Cariotipo: armá y diagnosticá, Selección natural simulada, Árbol filogenético: armalo vos,
 Cuello de botella, Resistencia a antibióticos, Nutrigenética (lactosa),
 CRISPR simplificado, Farmacogenómica exprés, Detective de enfermedades
 genéticas y Epigenética con interruptores.

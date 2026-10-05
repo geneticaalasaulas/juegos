@@ -49,14 +49,14 @@ const juegos = [
     acentoTexto: "#A06C04",
     publicado: "2026-09",
     nivel: "secundaria",
-    duracion: 5,
+    duracion: 15,
     temas: ["herencia"],
     autores: ["Genética a las Aulas"],
     es: {
-      nombre: "Punnett rápido",
-      subtitulo: "Cruzas contrarreloj",
-      resumen: "Resolvé cruzas monohíbridas antes de que se acabe el tiempo y sumá racha de aciertos.",
-      aprende: ["Cuadros de Punnett", "Proporciones genotípicas y fenotípicas", "Dominancia y recesividad"]
+      nombre: "Punnett: de los gametos a la camada",
+      subtitulo: "Armá la cruza, predecí y simulá",
+      resumen: "Separá los alelos en gametos, llená el cuadro de Punnett y marcá qué crías muestran el rasgo. Después simulá camadas para comparar lo esperado con lo observado. Incluye un modo contrarreloj para repasar.",
+      aprende: ["Segregación de alelos en los gametos", "Cuadros de Punnett", "Proporciones genotípicas y fenotípicas", "Probabilidad y azar en muestras chicas"]
     }
   },
   {
