@@ -30,14 +30,14 @@ const juegos = [
     acentoTexto: "#0462B7",
     publicado: "2026-09",
     nivel: "secundaria",
-    duracion: 8,
+    duracion: 15,
     temas: ["herencia"],
     autores: ["Genética a las Aulas"],
     es: {
-      nombre: "Árbol genealógico",
-      subtitulo: "Predecí el patrón de herencia",
-      resumen: "Analizá cruzas en un árbol genealógico y predecí qué fracción de los hijos va a estar afectada, según el patrón de herencia.",
-      aprende: ["Herencia autosómica dominante y recesiva", "Herencia ligada al cromosoma X", "Lectura de árboles genealógicos"]
+      nombre: "Árbol genealógico: poné a prueba tu hipótesis",
+      subtitulo: "Inferí el modo de herencia",
+      resumen: "Cada familia se genera con un modo de herencia oculto. Proponé una hipótesis, mirá si es compatible con el árbol y ponela a prueba: elegí una pareja, predecí su descendencia y mirá nacer una nueva generación.",
+      aprende: ["Herencia autosómica dominante y recesiva", "Herencia ligada al cromosoma X", "Lectura de árboles genealógicos", "Poner a prueba una hipótesis"]
     }
   },
   {

@@ -3,27 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Árbol genealógico · Genética a las Aulas</title>
+<title>Árbol genealógico: poné a prueba tu hipótesis · Genética a las Aulas</title>
 <style>
   :root{
     --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B;
-    /* Una sola paleta de texto: --ink y --muted sirven tanto sobre la
-       pagina como sobre el tablero, porque los dos son claros. */
-    --enfasis:#0462B7;        /* enfasis del texto, en el color del juego */
+    --enfasis:#0462B7;
     --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
     --juego:#0462B7;          /* azul del logo — ver capas/arbol-genealogico.svg */
-    --juego-texto:#0462B7;    /* misma familia, oscurecido hasta 4.5:1 sobre blanco */
-    --juego-tinte:#E3EEF7;    /* fondo del boton al pasar el mouse */
-    --pista:#E2E8E6;             /* pista de la barra de progreso */
-    --foco:#16211F;              /* anillo de foco: igual en todo el sitio, maxima visibilidad */
+    --juego-texto:#0462B7;
+    --juego-tinte:#E3EEF7;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
     --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
   *{box-sizing:border-box;}
-  body{
-    margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
-    font-family:var(--fuente);
-    display:flex; flex-direction:column; align-items:center;
-  }
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
   a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
   a.volver:hover{ color:var(--juego-texto); }
   h1{
@@ -31,250 +25,781 @@
     letter-spacing:-0.01em; line-height:1.2;
     margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem;
   }
-  .marcador{ color:var(--muted); font-size:0.9rem; margin-bottom:1rem; }
-  .tablero{
-    background:var(--card); color:var(--ink); border-radius:8px;
-    border:1px solid #E1E7E5;
+  .marcador{ color:var(--muted); font-size:0.95rem; margin:0 0 1rem; text-align:center; padding:0 1rem; }
+  .progreso{ width:min(860px,94vw); height:5px; margin:0 0 1.1rem; background:var(--pista); border-radius:999px; overflow:hidden; }
+  .progreso > i{ display:block; height:100%; width:0; border-radius:999px; background:var(--juego-texto); transition:width .3s ease; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
     box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05);
-    padding:1.6rem; width:min(560px,92vw); margin-bottom:1.2rem;
-  }
-  .enunciado{ font-size:0.98rem; margin:0 0 1rem; line-height:1.5; }
-  .enunciado b{ color:var(--enfasis); }
-  svg.arbol{ width:100%; height:auto; display:block; margin:0 auto 1.2rem; }
-  .opciones{ display:grid; grid-template-columns:repeat(2,1fr); gap:0.6rem; }
-  .opciones button{
-    min-height:44px; padding:0.7rem 0.5rem; border-radius:4px; border:1.5px solid var(--juego);
-    background:#fff; color:var(--ink); font-size:0.95rem; cursor:pointer;
-    transition:background-color .15s ease, border-color .15s ease, opacity .15s ease;
-  }
-  .opciones button:hover{ background:var(--juego-tinte); }
-  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
-  .opciones button.mal{ background:var(--mal); border-color:var(--mal); color:#fff; }
-  .feedback{ min-height:1.4rem; margin-top:0.9rem; font-size:0.92rem; }
-  .siguiente{
-    margin-top:0.6rem; width:fit-content; margin-left:auto; background:var(--accent);
-    color:#2C1D02; border:none; padding:0.6rem 1.2rem; border-radius:4px;
-    font-weight:600; cursor:pointer; display:none;
-  }
-  .final{ text-align:center; }
-  .final button{
-    margin-top:1rem; background:var(--accent); color:#2C1D02; border:none;
-    padding:0.7rem 1.4rem; border-radius:4px; font-weight:600; cursor:pointer;
-  }
+    padding:1.5rem; width:min(860px,94vw); margin-bottom:1.2rem; }
 
-  /* --- I1 · foco visible para navegacion con teclado --- */
-  .opciones button:focus-visible, .siguiente:focus-visible,
-  a.volver:focus-visible, summary:focus-visible, #seguir:focus-visible{
+  button{
+    min-height:44px; padding:0.6rem 1rem; border-radius:6px; font-size:0.95rem;
+    cursor:pointer; font-family:inherit; border:1.5px solid var(--juego);
+    background:#fff; color:var(--ink);
+    transition:background-color .15s ease, border-color .15s ease;
+  }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button[aria-pressed="true"]{ background:var(--juego-texto); border-color:var(--juego-texto); color:#fff; font-weight:600; }
+  button.descartada{ text-decoration:line-through; color:var(--muted); border-color:#C9CFCE; }
+  button.descartada[aria-pressed="true"]{ background:#5B6E6B; border-color:#5B6E6B; color:#fff; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible, svg [tabindex]:focus-visible{
     outline:3px solid var(--foco); outline-offset:2px;
   }
-  /* --- I2 · senal de acierto/error que no depende del color ---
-     verde y rojo son indistinguibles en la forma mas frecuente de daltonismo */
-  .opciones button.ok::before{  content:"\2713\00a0"; font-weight:700; }
-  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
-  /* --- I3 · los botones ya respondidos dejan de parecer clickeables --- */
-  .opciones button:disabled{ cursor:default; }
-  .opciones button:disabled:not(.ok):not(.mal){ opacity:0.45; border-color:#C9CFCE; }
-  /* --- I4 · en pantallas chicas, una sola columna de opciones --- */
-  @media (max-width:520px){ .opciones{ grid-template-columns:1fr; } }
 
-  /* --- V1 · el verde del logo como color de estructura, compartido con la portada.
-     El ambar queda reservado para la accion principal y el enfasis del texto. --- */
-  /* --- V2 · barra de progreso --- */
-  .progreso{
-    width:min(560px,92vw); height:5px; margin:0 0 1.1rem;
-    background:var(--pista); border-radius:999px; overflow:hidden;
-  }
-  .progreso > i{
-    display:block; height:100%; width:0; border-radius:999px;
-    background:var(--juego-texto); transition:width .3s ease;
-  }
-  /* en los juegos contrarreloj la barra se vacia, y va en ambar (urgencia) */
-  .progreso.tiempo > i{ background:var(--enfasis); width:100%; }
+  .enunciado{ font-size:1rem; line-height:1.55; margin:0 0 0.8rem; }
+  .estado{ display:flex; gap:1.4rem; flex-wrap:wrap; font-size:0.95rem; margin:0 0 0.8rem; color:var(--muted); }
+  .estado b{ color:var(--ink); font-variant-numeric:tabular-nums; }
+  .arbol-wrap{ overflow-x:auto; background:#FAFCFB; border:1px solid #E1E7E5; border-radius:8px; padding:0.3rem; }
+  svg.genealogia{ display:block; margin:0 auto; height:auto; }
+  svg.genealogia .linea{ stroke:var(--ink); stroke-width:2; fill:none; }
+  svg.genealogia .simbolo{ stroke:var(--ink); stroke-width:2; }
+  svg.genealogia .eti{ font-size:13px; fill:var(--muted); font-family:var(--fuente); text-anchor:middle; }
+  svg.genealogia .eti.nuevo{ fill:var(--juego-texto); font-weight:700; }
+  svg.genealogia .gen{ font-size:14px; font-weight:700; fill:var(--muted); font-family:var(--fuente); }
+  svg.genealogia .anillo{ fill:none; stroke:var(--juego); stroke-width:2; stroke-dasharray:4 3; }
+  svg.genealogia .anillo.sel{ stroke:var(--accent); stroke-width:4; stroke-dasharray:none; }
+  svg.genealogia .hit{ fill:transparent; cursor:pointer; }
+  .leyenda{ display:flex; gap:1.2rem; flex-wrap:wrap; font-size:0.85rem; color:var(--muted); margin:0.5rem 0 0; align-items:center; }
+  .leyenda svg{ vertical-align:middle; margin-right:0.3rem; }
+
+  .paso{ border-top:1px solid #E6E9E8; margin-top:1.1rem; padding-top:0.9rem; }
+  .paso h2{ font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); font-weight:700; margin:0 0 0.6rem; }
+  .paso h2 .n{ display:inline-block; min-width:1.4em; height:1.4em; line-height:1.4em; text-align:center; border-radius:50%; background:var(--juego-texto); color:#fff; margin-right:0.4rem; }
+  .paso p{ line-height:1.5; margin:0 0 0.6rem; }
+  .fila-btn{ display:flex; gap:0.5rem; flex-wrap:wrap; margin:0 0 0.7rem; }
+  .pred{ display:grid; grid-template-columns:auto 1fr; gap:0.4rem 0.8rem; align-items:center; margin:0 0 0.7rem; }
+  .pred .fila-btn{ margin:0; }
+  @media (max-width:560px){ .pred{ grid-template-columns:1fr; } }
+  .fb{ font-size:0.97rem; line-height:1.5; margin:0.6rem 0 0; }
+  .fb:empty{ display:none; }
+  .fb.pista{ background:#FFF4DC; border-left:3px solid var(--accent); padding:0.6rem 0.8rem; }
+  .fb.ok{ background:#E2F3EA; border-left:3px solid var(--ok); padding:0.6rem 0.8rem; }
+  .fb.info{ background:var(--juego-tinte); border-left:3px solid var(--juego); padding:0.6rem 0.8rem; }
+  .explica{ font-size:0.95rem; line-height:1.55; }
+  .acciones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.8rem; }
+
+  .inicio p{ line-height:1.6; margin:0 0 0.9rem; }
+  .niveles{ list-style:none; padding:0; margin:1.2rem 0; display:grid; gap:0.6rem; }
+  .niveles button{ width:100%; text-align:left; display:flex; gap:0.9rem; align-items:baseline; }
+  .niveles .n{ font-weight:700; color:var(--juego-texto); white-space:nowrap; }
+  .niveles .d{ color:var(--muted); font-size:0.88rem; }
+  .niveles .hecho::after{ content:"\2713"; margin-left:auto; color:var(--ok); font-weight:700; }
+  .final{ text-align:center; }
+  .final .acciones{ justify-content:center; }
+  .final table{ border-collapse:collapse; margin:1rem auto; font-size:0.92rem; }
+  .final td, .final th{ padding:0.35rem 0.8rem; border-bottom:1px solid #E6E9E8; text-align:left; }
+
+  details.docente{ max-width:40em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  .opciones-doc{ background:#fff; border:1px solid #E1E7E5; border-radius:6px; padding:0.7rem 0.9rem; margin-top:0.8rem; color:var(--ink); }
+  .opciones-doc label{ display:flex; gap:0.5rem; align-items:center; min-height:36px; cursor:pointer; }
+  .opciones-doc input{ width:20px; height:20px; }
+  .opciones-doc code{ font-size:0.85rem; word-break:break-all; }
+  @media (prefers-reduced-motion:reduce){ .progreso > i{ transition:none; } }
 </style>
 </head>
 <body>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
-<h1>Árbol genealógico</h1>
-<p class="marcador" id="marcador">Ronda 1 de 6 · Aciertos: 0</p>
+<h1>Árbol genealógico: poné a prueba tu hipótesis</h1>
+<p class="marcador" id="marcador">Inferí el modo de herencia y ponelo a prueba</p>
 <div class="progreso" aria-hidden="true"><i id="barra"></i></div>
 <div class="tablero" id="tablero"></div>
 
 <script>
-// Notación: A/a para autosómica recesiva (a = alelo de la enfermedad),
-// D/d para autosómica dominante (D = alelo de la enfermedad). Se usan letras
-// distintas a propósito: así "Aa" significa siempre portador/a sano/a, y no
-// cambia de significado entre una ronda y la siguiente.
-// estado: "afectado" | "portador" | "sano" — define el relleno del símbolo,
-// siguiendo la convención de genealogías (relleno = afectado, punto = portador).
-const rondas = [
-  { patron:"autosómica recesiva", pregunta:"hijos e hijas", correcta:"25%",
-    varon:{g:"Aa", estado:"portador"}, mujer:{g:"Aa", estado:"portador"},
-    texto:"Los dos progenitores son <b>portadores</b> (Aa) de una enfermedad autosómica recesiva. Ninguno de los dos está afectado." },
-  { patron:"autosómica recesiva", pregunta:"hijos e hijas", correcta:"50%",
-    varon:{g:"Aa", estado:"portador"}, mujer:{g:"aa", estado:"afectado"},
-    texto:"El padre es <b>portador</b> (Aa) y la madre está <b>afectada</b> (aa) por una enfermedad autosómica recesiva." },
-  { patron:"autosómica dominante", pregunta:"hijos e hijas", correcta:"50%",
-    varon:{g:"Dd", estado:"afectado"}, mujer:{g:"dd", estado:"sano"},
-    texto:"El padre está <b>afectado</b> (Dd) por una enfermedad autosómica dominante; la madre no tiene el alelo D (dd)." },
-  { patron:"autosómica dominante", pregunta:"hijos e hijas", correcta:"75%",
-    varon:{g:"Dd", estado:"afectado"}, mujer:{g:"Dd", estado:"afectado"},
-    texto:"Los dos progenitores están <b>afectados</b> (Dd) por una enfermedad autosómica dominante." },
-  { patron:"autosómica recesiva", pregunta:"hijos e hijas", correcta:"100%",
-    varon:{g:"aa", estado:"afectado"}, mujer:{g:"aa", estado:"afectado"},
-    texto:"Los dos progenitores están <b>afectados</b> (aa) por una enfermedad autosómica recesiva." },
-  { patron:"ligada al X recesiva", pregunta:"varones", correcta:"50% de los varones",
-    varon:{g:"XAY", estado:"sano"}, mujer:{g:"XAXa", estado:"portador"},
-    texto:"La madre es <b>portadora</b> (X<sup>A</sup>X<sup>a</sup>) de una enfermedad recesiva ligada al cromosoma X. El padre no está afectado (X<sup>A</sup>Y)." }
-];
+// ---------------------------------------------------------------------------
+// Modelo genético
+// Genotipo k = cantidad de copias de la variante:
+//   autosómico: 0, 1 o 2 · ligado al X: mujeres 0, 1 o 2; varones 0 o 1.
+// Supuestos (los mismos que se explican en la sección docente):
+//   penetrancia completa, sin mutaciones nuevas, condición poco frecuente:
+//   quien se suma a la familia sin estar afectado/a no porta la variante, y
+//   quien está afectado/a por una condición dominante es heterocigota.
+// ---------------------------------------------------------------------------
+const MODOS = {
+  AD:{ nombre:'autosómica dominante', corto:'Autosómica dominante' },
+  AR:{ nombre:'autosómica recesiva',  corto:'Autosómica recesiva' },
+  XR:{ nombre:'recesiva ligada al X', corto:'Recesiva ligada al X' },
+  XD:{ nombre:'dominante ligada al X', corto:'Dominante ligada al X' }
+};
+const esX = H => H === 'XR' || H === 'XD';
+const dominante = H => H === 'AD' || H === 'XD';
+function afectado(H, sexo, k){
+  if(H === 'AR') return k === 2;
+  if(H === 'XR') return sexo === 'M' ? k === 1 : k === 2;
+  return k >= 1;
+}
+// Genotipo de alguien que se suma a la familia y está afectado/a.
+function kExternoAfectado(H, sexo){ return H === 'AR' ? 2 : H === 'XR' ? (sexo === 'M' ? 1 : 2) : 1; }
+// Distribución del genotipo de una cría según los de sus progenitores.
+function distHijo(H, kpad, kmad, sexo){
+  const d = [0, 0, 0];
+  if(!esX(H)){
+    const a = kpad / 2, b = kmad / 2;
+    d[0] = (1-a)*(1-b); d[1] = a*(1-b) + (1-a)*b; d[2] = a*b;
+  } else {
+    const m = kmad / 2;
+    if(sexo === 'M'){ d[0] = 1 - m; d[1] = m; }   // el varón recibe el Y del padre
+    else { d[kpad] += 1 - m; d[kpad + 1] += m; }  // la mujer recibe el X del padre
+  }
+  return d;
+}
+function sortear(H, kpad, kmad, sexo){
+  const d = distHijo(H, kpad, kmad, sexo); let r = Math.random();
+  for(let k = 0; k < 3; k++){ if(r < d[k]) return k; r -= d[k]; }
+  return 0;
+}
+// Notación de genotipos, para las pistas.
+function genoTxt(H, k, sexo){
+  if(H === 'AD') return ['dd','Dd','DD'][k];
+  if(H === 'AR') return ['AA','Aa','aa'][k];
+  const [s, n] = H === 'XR' ? ['A','a'] : ['d','D'];   // sano / variante
+  const x = v => `X<sup>${v ? n : s}</sup>`;
+  if(sexo === 'M') return x(k) + 'Y';
+  return k === 0 ? x(0) + x(0) : k === 1 ? (H === 'XR' ? x(0) + x(1) : x(1) + x(0)) : x(1) + x(1);
+}
 
-let ronda = 0, aciertos = 0;
+// ---------------------------------------------------------------------------
+// Familia
+// ---------------------------------------------------------------------------
+let fam = [], nId = 0;
+const porId = id => fam.find(p => p.id === id);
+const ROMANOS = ['I','II','III','IV','V','VI'];
+const lab = p => ROMANOS[p.gen] + '-' + p.num;
+const afectTxt = p => p.sexo === 'M' ? 'afectado' : 'afectada';
+function persona(o, H){
+  const p = { id:nId++, sexo:o.sexo, gen:o.gen, padre:o.padre ?? null, madre:o.madre ?? null, pareja:null,
+              externo:!!o.externo, fundador:!!o.fundador, k:o.k, num:o.num || 0, nuevo:false };
+  p.afectado = o.afectado ?? afectado(H, p.sexo, p.k);
+  fam.push(p);
+  return p;
+}
+function casar(a, b){ a.pareja = b.id; b.pareja = a.id; }
+const sexoAzar = () => Math.random() < 0.5 ? 'M' : 'F';
+const otro = s => s === 'M' ? 'F' : 'M';
+
+function generarFamilia(H){
+  fam = []; nId = 0;
+  // Fundadores, según el modo real
+  let kM = 0, kF = 0;
+  if(H === 'AD' || H === 'XD'){ if(Math.random() < 0.5) kM = 1; else kF = 1; }
+  if(H === 'AR'){ kM = 1; kF = 1; }
+  if(H === 'XR'){ kF = 1; }
+  const I1 = persona({sexo:'M', gen:0, k:kM, fundador:true}, H);
+  const I2 = persona({sexo:'F', gen:0, k:kF, fundador:true}, H);
+  casar(I1, I2);
+  const nII = 3 + Math.floor(Math.random() * 2);
+  const II = Array.from({length:nII}, () => { const s = sexoAzar(); return persona({sexo:s, gen:1, padre:I1.id, madre:I2.id, k:sortear(H, kM, kF, s)}, H); });
+  // Dos de los hijos o hijas forman pareja con alguien de afuera (no portador/a)
+  mezclar(II).slice(0, 2).forEach(p => {
+    const e = persona({sexo:otro(p.sexo), gen:1, k:0, externo:true}, H);
+    casar(p, e);
+    const [pa, ma] = p.sexo === 'M' ? [p, e] : [e, p];
+    const n = 2 + Math.floor(Math.random() * 2);
+    for(let i = 0; i < n; i++){ const s = sexoAzar(); persona({sexo:s, gen:2, padre:pa.id, madre:ma.id, k:sortear(H, pa.k, ma.k, s)}, H); }
+  });
+  numerar();
+}
+// Numeración de izquierda a derecha en cada generación. Se hace una sola vez:
+// quienes se suman después reciben el número siguiente, así nadie cambia de nombre.
+function numerar(){
+  const pos = disposicion().pos;
+  const filas = {};
+  fam.forEach(p => { (filas[p.gen] = filas[p.gen] || []).push(p); });
+  Object.values(filas).forEach(f => f.sort((a, b) => pos.get(a.id).x - pos.get(b.id).x).forEach((p, i) => { p.num = i + 1; }));
+}
+function siguienteNum(gen){ return Math.max(0, ...fam.filter(p => p.gen === gen).map(p => p.num)) + 1; }
+
+// ---------------------------------------------------------------------------
+// ¿Es compatible un modo de herencia con la familia?
+// Se busca si existe alguna asignación de genotipos para todas las personas que
+// respete los fenotipos, los supuestos y las reglas de Mendel. Como no hay
+// uniones entre parientes, la genealogía es un árbol: se recorre de arriba
+// hacia abajo preguntando, para cada persona y genotipo posible, si lo que
+// está debajo (su pareja y su descendencia) se puede explicar. Con memoria,
+// el costo crece en forma lineal con el tamaño de la familia.
+// ---------------------------------------------------------------------------
+function posibles(H, p){
+  const base = (p.sexo === 'M' && esX(H)) ? [0, 1] : [0, 1, 2];
+  if(p.externo) return [p.afectado ? kExternoAfectado(H, p.sexo) : 0];
+  let c = base.filter(k => afectado(H, p.sexo, k) === p.afectado);
+  if(p.fundador && dominante(H)) c = c.filter(k => k <= 1);
+  return c;
+}
+function compatible(H, fijos){
+  const dom = p => { const c = posibles(H, p); return fijos && fijos.has(p.id) ? c.filter(k => k === fijos.get(p.id)) : c; };
+  const memo = new Map();
+  // ¿Puede p tener el genotipo k y que su descendencia quede explicada?
+  function abajo(p, k){
+    const clave = p.id * 3 + k;
+    if(memo.has(clave)) return memo.get(clave);
+    let r = true;
+    if(p.pareja != null){
+      const s = porId(p.pareja);
+      const hijos = fam.filter(c => c.padre === p.id || c.madre === p.id);
+      r = dom(s).some(ks => {
+        const [kp, km] = p.sexo === 'M' ? [k, ks] : [ks, k];
+        return hijos.every(c => dom(c).some(kc => distHijo(H, kp, km, c.sexo)[kc] > 0 && abajo(c, kc)));
+      });
+    }
+    memo.set(clave, r);
+    return r;
+  }
+  const fundador = fam.find(p => p.fundador && p.sexo === 'M');
+  return dom(fundador).some(k => abajo(fundador, k));
+}
+function genotiposPosibles(H, p){ return [0, 1, 2].filter(k => compatible(H, new Map([[p.id, k]]))); }
+
+// Verosimilitud: qué tan probable es lo que muestra el árbol si la hipótesis
+// fuera cierta (con los genotipos de los fundadores que mejor lo expliquen).
+// Hace falta porque hay hipótesis que nunca se pueden refutar con lógica: por
+// ejemplo, la autosómica dominante permite cualquier descendencia de una
+// persona afectada, así que solo los números la distinguen de la dominante
+// ligada al X.
+function verosimilitud(H){
+  const memo = new Map();
+  const hijosDe = p => fam.filter(c => c.padre === p.id || c.madre === p.id);
+  const crias = (p, k, s, ks) => {
+    const [kp, km] = p.sexo === 'M' ? [k, ks] : [ks, k];
+    return hijosDe(p).reduce((acc, c) => acc * posibles(H, c).reduce((a, kc) => a + distHijo(H, kp, km, c.sexo)[kc] * abajo(c, kc), 0), 1);
+  };
+  function abajo(p, k){
+    const clave = p.id * 3 + k;
+    if(memo.has(clave)) return memo.get(clave);
+    let r = 1;
+    if(p.pareja != null){ const s = porId(p.pareja); r = Math.max(...posibles(H, s).map(ks => crias(p, k, s, ks))); }
+    memo.set(clave, r);
+    return r;
+  }
+  const f = fam.find(p => p.fundador && p.sexo === 'M');
+  return Math.max(0, ...posibles(H, f).map(k => abajo(f, k)));
+}
+// Una hipótesis se descarta si es imposible, o si con ella lo observado sería
+// al menos UMBRAL veces menos probable que con la mejor hipótesis.
+const UMBRAL = 32;
+function estado(H){
+  if(!compatible(H)) return { tipo:'imposible' };
+  const vs = S.modos.map(m => [m, verosimilitud(m)]).sort((a, b) => b[1] - a[1]);
+  const v = vs.find(x => x[0] === H)[1], [mejor, vm] = vs[0];
+  if(mejor !== H && v * UMBRAL < vm) return { tipo:'improbable', mejor, veces:Math.round(vm / v) };
+  return { tipo:'posible' };
+}
+const viable = H => estado(H).tipo === 'posible';
+function textoImprobable(H, e){
+  return `Con herencia ${MODOS[H].nombre}, lo que muestra el árbol es posible, pero unas <b>${e.veces.toLocaleString('es')} veces menos probable</b> que con herencia ${MODOS[e.mejor].nombre}. Es como sacar muchas veces seguidas el mismo lado de una moneda: puede pasar, pero es tan raro que la hipótesis se descarta.`;
+}
+
+// Explicación de por qué un modo no es compatible: se busca una familia
+// (pareja + crías) que no se pueda explicar y se describe el problema.
+function motivo(H){
+  const parejas = [];
+  fam.forEach(c => { if(c.padre != null && !parejas.some(x => x[0] === c.padre && x[1] === c.madre)) parejas.push([c.padre, c.madre]); });
+  for(const [ip, im] of parejas){
+    const P = porId(ip), M = porId(im);
+    const hijos = fam.filter(c => c.padre === ip && c.madre === im);
+    const local = posibles(H, P).some(kp => posibles(H, M).some(km =>
+      hijos.every(c => posibles(H, c).some(k => distHijo(H, kp, km, c.sexo)[k] > 0))));
+    if(local) continue;
+    for(const c of hijos){
+      if(dominante(H) && c.afectado && !P.afectado && !M.afectado)
+        return `${lab(c)} está ${afectTxt(c)} y ninguno de sus progenitores lo está. Con herencia dominante alcanza una copia para estar ${afectTxt(c)}: ¿de quién la habría recibido?`;
+      if(H === 'AR' && c.afectado){
+        const ext = [P, M].find(x => x.externo && !x.afectado);
+        if(ext) return `${lab(c)} está ${afectTxt(c)}: con herencia autosómica recesiva necesita recibir la variante de cada progenitor, pero ${lab(ext)} se sumó a la familia desde afuera y suponemos que no la porta, porque la condición es poco frecuente.`;
+      }
+      if(H === 'AR' && !c.afectado && P.afectado && M.afectado)
+        return `${lab(P)} y ${lab(M)} están afectados: con herencia autosómica recesiva los dos son aa y solo pueden pasar el alelo a. Todas sus crías tendrían que estar afectadas, pero ${lab(c)} no lo está.`;
+      if(H === 'XR' && c.afectado && c.sexo === 'F' && !P.afectado)
+        return `${lab(c)} es una mujer afectada: con herencia recesiva ligada al X necesita la variante en sus dos X, y uno de ellos viene de su padre, ${lab(P)}, que no está afectado.`;
+      if(H === 'XR' && c.afectado && c.sexo === 'F' && M.externo && !M.afectado)
+        return `${lab(c)} es una mujer afectada: con herencia recesiva ligada al X necesita la variante en sus dos X, pero uno viene de su madre, ${lab(M)}, que se sumó a la familia desde afuera y suponemos que no la porta.`;
+      if(esX(H) && c.afectado && c.sexo === 'M' && M.externo && !M.afectado)
+        return `${lab(c)} es un varón afectado: su único X viene de su madre, ${lab(M)}, que se sumó a la familia desde afuera y suponemos que no porta la variante.`;
+      if(H === 'XR' && !c.afectado && c.sexo === 'M' && M.afectado)
+        return `${lab(M)} está afectada, así que sus dos X llevan la variante: todos sus hijos varones tendrían que estar afectados, pero ${lab(c)} no lo está.`;
+      if(H === 'XD' && !c.afectado && c.sexo === 'F' && P.afectado)
+        return `${lab(P)} está afectado: con herencia ligada al X le pasa su único X a todas sus hijas, así que todas tendrían que estar afectadas, pero ${lab(c)} no lo está.`;
+      if(H === 'XD' && c.afectado && c.sexo === 'M' && !M.afectado)
+        return `${lab(c)} es un varón afectado: su X viene de su madre, ${lab(M)}, que no está afectada. Con herencia dominante, portar la variante ya es estar afectada.`;
+      if(H === 'XR' && c.afectado && c.sexo === 'M' && !M.afectado && M.padre != null && !porId(M.padre).afectado && porId(M.madre).externo)
+        return `${lab(c)} es un varón afectado, así que su madre, ${lab(M)}, tendría que ser portadora. Pero ella no pudo recibir la variante: su padre no está afectado y su madre se sumó desde afuera.`;
+    }
+    return `La familia de ${lab(P)} y ${lab(M)} con sus crías no se puede explicar con herencia ${MODOS[H].nombre}.`;
+  }
+  return 'Cada familia por separado parece posible, pero no hay una forma de asignar genotipos a todas las personas a la vez. Revisá a quienes son hijos o hijas y a la vez tienen descendencia.';
+}
+
+// ---------------------------------------------------------------------------
+// Disposición en pantalla: cada persona de la familia forma una unidad con su
+// pareja; las crías de la pareja quedan centradas debajo.
+// ---------------------------------------------------------------------------
+const SLOT = 64, FILA = 110, MARGEN_X = 56, MARGEN_Y = 38, R = 15, HUECO = 0.5;
+function disposicion(){
+  const ordenar = ms => ms.slice().sort((a, b) => a.sexo === 'M' ? -1 : b.sexo === 'M' ? 1 : 0);
+  const hijosDe = ms => { const ids = ms.map(m => m.id); return fam.filter(c => c.padre != null && ids.includes(c.padre) && ids.includes(c.madre)).sort((a, b) => a.id - b.id); };
+  const unidad = p => { const ms = p.pareja != null ? ordenar([p, porId(p.pareja)]) : [p]; return { ms, desc:p, hijos:hijosDe(ms).map(unidad) }; };
+  const raiz = { ms:ordenar(fam.filter(p => p.fundador)) };
+  raiz.hijos = hijosDe(raiz.ms).map(unidad);
+  const ancho = u => {
+    const ch = u.hijos.length ? u.hijos.reduce((s, h) => s + ancho(h), 0) + HUECO * (u.hijos.length - 1) : 0;
+    return u.w = Math.max(u.ms.length, ch);
+  };
+  ancho(raiz);
+  const pos = new Map(), unidades = [];
+  const colocar = (u, izq) => {
+    unidades.push(u);
+    const ch = u.hijos.reduce((s, h) => s + h.w, 0) + HUECO * Math.max(0, u.hijos.length - 1);
+    let x = izq + (u.w - ch) / 2;
+    u.hijos.forEach(h => { colocar(h, x); x += h.w + HUECO; });
+    u.centro = izq + u.w / 2;
+    u.ms.forEach((m, i) => pos.set(m.id, { x:u.centro + (i - (u.ms.length - 1) / 2), y:m.gen }));
+  };
+  colocar(raiz, 0);
+  return { pos, unidades, w:raiz.w };
+}
+
+function svgFamilia(o){
+  const { pos, unidades, w } = disposicion();
+  const X = x => MARGEN_X + x * SLOT, Y = g => MARGEN_Y + g * FILA;
+  const maxGen = Math.max(...fam.map(p => p.gen));
+  const W = MARGEN_X * 2 + w * SLOT - SLOT * 0.2, H = Y(maxGen) + 40;
+  let lineas = '', simb = '', gens = '';
+  for(let g = 0; g <= maxGen; g++) gens += `<text class="gen" x="8" y="${Y(g) + 5}">${ROMANOS[g]}</text>`;
+  unidades.forEach(u => {
+    if(u.ms.length === 2){
+      const [a, b] = u.ms.map(m => pos.get(m.id));
+      lineas += `<line class="linea" x1="${X(a.x) + R}" y1="${Y(a.y)}" x2="${X(b.x) - R}" y2="${Y(b.y)}"/>`;
+    }
+    if(u.hijos.length){
+      const g = u.ms[0].gen, yMedio = Y(g) + FILA / 2;
+      const xs = u.hijos.map(h => X(pos.get(h.desc.id).x));
+      const cx = X(u.centro);
+      lineas += `<line class="linea" x1="${cx}" y1="${Y(g)}" x2="${cx}" y2="${yMedio}"/>`;
+      lineas += `<line class="linea" x1="${Math.min(cx, ...xs)}" y1="${yMedio}" x2="${Math.max(cx, ...xs)}" y2="${yMedio}"/>`;
+      xs.forEach(x => { lineas += `<line class="linea" x1="${x}" y1="${yMedio}" x2="${x}" y2="${Y(g + 1) - R}"/>`; });
+    }
+  });
+  fam.forEach(p => {
+    const q = pos.get(p.id), x = X(q.x), y = Y(q.y);
+    const relleno = p.afectado ? 'var(--juego)' : '#fff';
+    simb += p.sexo === 'M'
+      ? `<rect class="simbolo" x="${x - R}" y="${y - R}" width="${2*R}" height="${2*R}" fill="${relleno}"/>`
+      : `<circle class="simbolo" cx="${x}" cy="${y}" r="${R}" fill="${relleno}"/>`;
+    simb += `<text class="eti${p.nuevo ? ' nuevo' : ''}" x="${x}" y="${y + R + 21}">${lab(p)}</text>`;
+    const eleg = o.elegibles && o.elegibles.has(p.id), sel = o.sel === p.id;
+    if(eleg || sel){
+      simb += `<rect class="anillo${sel ? ' sel' : ''}" x="${x - R - 6}" y="${y - R - 6}" width="${2*R + 12}" height="${2*R + 12}" rx="8"/>`;
+      if(eleg) simb += `<rect class="hit" x="${x - R - 8}" y="${y - R - 8}" width="${2*R + 16}" height="${2*R + 34}" data-p="${p.id}" tabindex="0" role="button" aria-label="Elegir a ${lab(p)}"/>`;
+    }
+  });
+  return `<svg class="genealogia" viewBox="0 0 ${W} ${H}" width="${W}" style="max-width:100%;min-width:${Math.min(W, 700)}px" role="img" aria-label="Árbol genealógico de la familia">${gens}${lineas}${simb}</svg>`;
+}
+
+// ---------------------------------------------------------------------------
+// Niveles y rondas
+// ---------------------------------------------------------------------------
+const NIVELES = [
+  { n:1, modos:['AD','AR'], desc:'Dominante o recesiva: el árbol alcanza para decidir.' },
+  { n:2, modos:['AD','AR','XR'], desc:'Se suma la herencia ligada al X: vas a tener que poner a prueba tu hipótesis.' },
+  { n:3, modos:['AD','AR','XR','XD'], desc:'Los cuatro modos, incluida la dominante ligada al X.' }
+];
+function armarRondas(){
+  const azar = l => l[Math.floor(Math.random() * l.length)];
+  return [
+    ...mezclar(['AD','AR']).map(m => ({ nivel:1, modo:m })),
+    ...mezclar(['XR', azar(['AD','AR'])]).map(m => ({ nivel:2, modo:m })),
+    ...mezclar(['XD', azar(['AD','AR','XR'])]).map(m => ({ nivel:3, modo:m }))
+  ];
+}
+const RONDAS = armarRondas();
+const MAX_PRUEBAS = 6;
+const CRIAS_POR_SEXO = 3;
+
+const EXPLICA = {
+  AD:'Aparece en todas las generaciones, en varones y mujeres por igual, y toda persona afectada tiene un progenitor afectado. Una persona afectada (heterocigota) con una no afectada tiene, en promedio, la mitad de la descendencia afectada.',
+  AR:'Suele "saltear" generaciones: aparecen hijos e hijas afectados de progenitores no afectados, que son portadores. Afecta por igual a varones y mujeres.',
+  XR:'Afecta sobre todo a varones y pasa a través de mujeres portadoras. Un varón afectado no se la pasa a sus hijos varones (les da el Y), pero todas sus hijas son portadoras.',
+  XD:'Un varón afectado se la pasa a todas sus hijas y a ninguno de sus hijos varones. Una mujer afectada (heterocigota) se la pasa a la mitad de su descendencia, sin importar el sexo.'
+};
+
+const params = new URLSearchParams(location.search);
+const OPC = { crono: params.get('crono') === '1', errores: params.get('errores') === '1' };
 const tablero = document.getElementById('tablero');
 const marcador = document.getElementById('marcador');
+let S = null, reloj = null, finContado = false;
+const resultados = {};
 
-// Actualiza el marcador y la barra de progreso. `hechas` = rondas ya respondidas.
-function marcar(hechas){
-  marcador.textContent = `Ronda ${ronda+1} de ${rondas.length} · Aciertos: ${aciertos}`;
-  const b = document.getElementById('barra');
-  if(b) b.style.width = (hechas / rondas.length * 100) + '%';
+function el(id){ return document.getElementById(id); }
+function mezclar(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function mmss(s){ return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+function segundos(){ return S ? Math.round(((S.fin || Date.now()) - S.inicio) / 1000) : 0; }
+function progreso(){ el('barra').style.width = (Object.keys(resultados).length / RONDAS.length * 100) + '%'; }
+
+function inicio(){
+  S = null; clearInterval(reloj);
+  marcador.textContent = 'Inferí el modo de herencia y ponelo a prueba';
+  progreso();
+  tablero.innerHTML = `
+    <div class="inicio">
+      <p>En cada ronda vas a ver una familia en la que hay una condición genética poco frecuente. Tu tarea es descubrir <b>cómo se hereda</b>.</p>
+      <p>Proponé una hipótesis y fijate si es compatible con el árbol. Si más de una lo es, <b>ponela a prueba</b>: elegí a alguien de la familia, predecí cómo serían sus hijos e hijas según tu hipótesis y mirá qué pasa en la generación siguiente.</p>
+      <ul class="niveles">${NIVELES.map(nv => {
+        const idx = RONDAS.map((r, i) => i).filter(i => RONDAS[i].nivel === nv.n);
+        return `<li><button data-r="${idx[0]}" class="${idx.every(i => resultados[i]) ? 'hecho' : ''}"><span class="n">Nivel ${nv.n}</span><span class="d">${nv.desc}</span></button></li>`;
+      }).join('')}</ul>
+      <div class="acciones"><button class="primario" id="empezar">Empezar por el nivel 1</button></div>
+    </div>`;
+  tablero.querySelectorAll('[data-r]').forEach(b => b.onclick = () => empezar(+b.dataset.r));
+  el('empezar').onclick = () => empezar(0);
 }
 
-function svgGenotipo(g){
-  // Notación ligada al X (ej. "XAXa", "XAY"): la letra de alelo va como superíndice.
-  if(!g.includes('X') && !g.includes('Y')) return g;
-  let out = '';
-  for(let i=0;i<g.length;i++){
-    const ch = g[i];
-    out += (ch === 'X' || ch === 'Y') ? ch : `<tspan baseline-shift="super" font-size="65%">${ch}</tspan>`;
+// Genera familias hasta encontrar una adecuada para el nivel: en el nivel 1 el
+// árbol tiene que alcanzar para decidir; en los otros, tiene que haber más de
+// un modo compatible, para que haga falta poner la hipótesis a prueba.
+function familiaPara(r){
+  const modos = NIVELES[r.nivel - 1].modos;
+  let mejor = null;
+  for(let t = 0; t < 400; t++){
+    generarFamilia(r.modo);
+    const afect = fam.filter(p => p.afectado).length;
+    if(afect < 2 || !fam.some(p => p.gen === 1 && p.afectado)) continue;
+    S = { modos };
+    const comp = modos.filter(m => viable(m));
+    if(r.nivel === 1 ? comp.length !== 1 : comp.length < 2) continue;
+    if(r.nivel > 1 && !hayPruebaDecisiva(comp, r.modo)) continue;
+    mejor = true; break;
   }
-  return out;
+  return mejor;
 }
 
-function relleno(estado){ return estado === "afectado" ? "#0462B7" : "#ffffff"; }
-function punto(estado, cx, cy){
-  return estado === "portador" ? `<circle cx="${cx}" cy="${cy}" r="3.4" fill="#16211F"/>` : '';
+// Que cada hipótesis falsa que sigue en pie se pueda refutar con una sola
+// generación de prueba: tiene que haber alguien para quien esa hipótesis
+// prediga "ninguno" o "todos" en algún sexo, y que con su genotipo REAL el
+// resultado pueda contradecirla. Si no, el árbol obligaría a adivinar pruebas
+// en varios pasos.
+function probAfectado(H, kpad, kmad, sexo){
+  return distHijo(H, kpad, kmad, sexo).reduce((acc, v, k) => acc + (afectado(H, sexo, k) ? v : 0), 0);
+}
+function hayPruebaDecisiva(comp, real){
+  return comp.filter(m => m !== real).every(H => fam.some(p => {
+    if(p.externo || p.fundador || p.pareja != null) return false;
+    const ksH = genotiposPosibles(H, p);
+    return ['sano', 'afectado'].some(t => {
+      const kParR = t === 'afectado' ? kExternoAfectado(real, otro(p.sexo)) : 0;
+      const kParH = t === 'afectado' ? kExternoAfectado(H, otro(p.sexo)) : 0;
+      const par = (k, kp) => p.sexo === 'M' ? [k, kp] : [kp, k];
+      return ['M', 'F'].some(sx => {
+        const pr = probAfectado(real, ...par(p.k, kParR), sx);
+        return ksH.every(k => Math.abs(probAfectado(H, ...par(k, kParH), sx) - pr) >= 0.5);
+      });
+    });
+  }));
 }
 
-function hijosSVG(r){
-  if(r.pregunta === "varones"){
-    // En las rondas ligadas al X el sexo importa, así que se dibuja un varón y una niña.
-    return `
-      <line x1="120" y1="72" x2="180" y2="72" stroke="#16211F" stroke-width="2"/>
-      <line x1="120" y1="72" x2="120" y2="104" stroke="#16211F" stroke-width="2"/>
-      <line x1="180" y1="72" x2="180" y2="104" stroke="#16211F" stroke-width="2"/>
-      <rect x="108" y="104" width="24" height="24" fill="#ffffff" stroke="#16211F" stroke-width="1.5"/>
-      <text x="120" y="121" text-anchor="middle" font-size="12" fill="#5B6E6B">?</text>
-      <text x="120" y="141" text-anchor="middle" font-size="8" fill="#5B6E6B">varón</text>
-      <circle cx="180" cy="116" r="12" fill="#ffffff" stroke="#16211F" stroke-width="1.5"/>
-      <text x="180" y="120" text-anchor="middle" font-size="12" fill="#5B6E6B">?</text>
-      <text x="180" y="141" text-anchor="middle" font-size="8" fill="#5B6E6B">niña</text>`;
-  }
-  // Rombo = sexo sin especificar (convención de genealogías).
-  const rombos = [100,150,200].map(x => `
-      <line x1="${x}" y1="72" x2="${x}" y2="104" stroke="#16211F" stroke-width="2"/>
-      <polygon points="${x},104 ${x+13},117 ${x},130 ${x-13},117" fill="#ffffff" stroke="#16211F" stroke-width="1.5"/>
-      <text x="${x}" y="121" text-anchor="middle" font-size="11" fill="#5B6E6B">?</text>`).join('');
-  return `<line x1="100" y1="72" x2="200" y2="72" stroke="#16211F" stroke-width="2"/>` + rombos;
+// Pista para elegir una prueba: alguien para quien la hipótesis elegida predice
+// algo seguro ("ninguno" o "todos") y otra hipótesis compatible predice distinto.
+function sugerencia(){
+  const H = S.hip;
+  if(!H) return 'Primero elegí una hipótesis en el paso 1.';
+  if(!compatible(H)) return 'Tu hipótesis ya no es compatible con el árbol: elegí otra en el paso 1.';
+  if(!viable(H)) return 'Tu hipótesis ya quedó descartada: elegí otra en el paso 1.';
+  const rivales = S.modos.filter(m => m !== H && viable(m));
+  if(!rivales.length) return 'Ya no hay otra hipótesis compatible: podés confirmar la tuya.';
+  const ops = [];
+  elegibles().forEach(id => ['sano', 'afectado'].forEach(t => {
+    const P = porId(id), e = esperado(H, P, t);
+    ['M', 'F'].forEach(sx => {
+      const r = rivales.find(m => { const er = esperado(m, P, t)[sx]; return er !== e[sx] && (e[sx] !== 'puede' || er !== 'puede'); });
+      if(r) ops.push({ P, t, sx, r, seguro:genotiposPosibles(H, P).length === 1, fuerte:e[sx] !== 'puede' });
+    });
+  }));
+  if(!ops.length) return 'No hay una prueba directa en este momento. Probá con alguien afectado/a: su descendencia puede servir para la prueba siguiente.';
+  const o = ops.find(x => x.fuerte && x.seguro) || ops.find(x => x.fuerte) || ops.find(x => x.seguro) || ops[0];
+  return `Probá con ${lab(o.P)} y alguien de afuera ${o.t === 'sano' ? (o.P.sexo === 'M' ? 'no afectada' : 'no afectado') : (o.P.sexo === 'M' ? 'afectada' : 'afectado')}. Fijate qué predice tu hipótesis para ${o.sx === 'M' ? 'los hijos varones' : 'las hijas'} y qué predeciría la herencia ${MODOS[o.r].nombre}.`;
 }
 
-const leyendaSVG = `
-  <rect x="44" y="156" width="9" height="9" fill="#0462B7" stroke="#16211F" stroke-width="1"/>
-  <text x="58" y="164" font-size="8" fill="#5B6E6B">afectado/a</text>
-  <rect x="112" y="156" width="9" height="9" fill="#ffffff" stroke="#16211F" stroke-width="1"/>
-  <text x="126" y="164" font-size="8" fill="#5B6E6B">no afectado/a</text>
-  <rect x="202" y="156" width="9" height="9" fill="#ffffff" stroke="#16211F" stroke-width="1"/>
-  <circle cx="206.5" cy="160.5" r="1.8" fill="#16211F"/>
-  <text x="216" y="164" font-size="8" fill="#5B6E6B">portador/a</text>
-  <text x="150" y="150" text-anchor="middle" font-size="8" fill="#5B6E6B">? = por determinar</text>`;
-
-function opcionesPara(r){
-  const lista = r.pregunta === "varones"
-    ? ["Ninguno","25% de los varones","50% de los varones","100% de los varones"]
-    : ["0%","25%","50%","75%","100%"].filter(o => o !== r.correcta).slice(0,3).concat(r.correcta);
-  return lista.sort(() => Math.random() - 0.5);
+function empezar(i){
+  const r = RONDAS[i];
+  familiaPara(r);
+  S = { i, r, modos:NIVELES[r.nivel - 1].modos, errores:0, inicio:Date.now(), fin:null,
+        hip:null, descartadas:new Set(), pruebas:0, elegido:null, tipoPareja:null, predM:null, predF:null,
+        msg:{ hip:null, prueba:null, conf:null }, hecho:false };
+  const enNivel = RONDAS.filter(x => x.nivel === r.nivel);
+  marcador.textContent = `Nivel ${r.nivel} de ${NIVELES.length} · Familia ${enNivel.indexOf(r) + 1} de ${enNivel.length}`;
+  progreso();
+  clearInterval(reloj);
+  reloj = setInterval(() => { if(S && !S.fin && OPC.crono && el('st-t')) el('st-t').textContent = mmss(segundos()); }, 1000);
+  dibujar();
+  window.scrollTo({ top:0 });
 }
+
+function elegibles(){
+  return new Set(fam.filter(p => !p.externo && !p.fundador && p.pareja == null && p.gen < 4).map(p => p.id));
+}
+
+const msgHTML = m => m ? `<p class="fb ${m.tipo}">${m.texto}</p>` : '<p class="fb"></p>';
 
 function dibujar(){
-  const r = rondas[ronda];
-  marcar(ronda);
-
-  const opciones = opcionesPara(r);
-  const quien = r.pregunta === "varones" ? "los <b>varones</b>" : "los <b>hijos e hijas</b>";
-
+  const pr = S.pruebas < MAX_PRUEBAS && !S.hecho;
+  const eleg = pr ? elegibles() : new Set();
+  const P = S.elegido != null ? porId(S.elegido) : null;
+  // En pantallas angostas la genealogía se desplaza horizontalmente: se
+  // conserva la posición entre redibujos y la primera vez se centra.
+  const previo = el('arbol') && S.dibujado ? el('arbol').scrollLeft : null;
+  const opt = (grupo, valor, texto, actual) => `<button data-${grupo}="${valor}" aria-pressed="${actual === valor}">${texto}</button>`;
   tablero.innerHTML = `
-    <svg class="arbol" viewBox="0 0 300 172">
-      <text x="87" y="12" text-anchor="middle" font-size="8" fill="#5B6E6B">padre</text>
-      <text x="213" y="12" text-anchor="middle" font-size="8" fill="#5B6E6B">madre</text>
-      <rect x="75" y="20" width="24" height="24" fill="${relleno(r.varon.estado)}" stroke="#16211F" stroke-width="1.5"/>
-      ${punto(r.varon.estado, 87, 32)}
-      <text x="87" y="58" text-anchor="middle" font-size="11">${svgGenotipo(r.varon.g)}</text>
-      <circle cx="213" cy="32" r="12" fill="${relleno(r.mujer.estado)}" stroke="#16211F" stroke-width="1.5"/>
-      ${punto(r.mujer.estado, 213, 32)}
-      <text x="213" y="58" text-anchor="middle" font-size="11">${svgGenotipo(r.mujer.g)}</text>
-      <line x1="99" y1="32" x2="201" y2="32" stroke="#16211F" stroke-width="2"/>
-      <line x1="150" y1="32" x2="150" y2="72" stroke="#16211F" stroke-width="2"/>
-      ${hijosSVG(r)}
-      ${leyendaSVG}
-    </svg>
-    <p class="enunciado">${r.texto}<br>¿Qué fracción de ${quien} esperás que esté <b>afectada</b>?</p>
-    <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
-    <p class="feedback" id="feedback"></p>
-    <button class="siguiente" id="siguiente">Siguiente &rarr;</button>
-  `;
+    <p class="enunciado">En esta familia hay una condición genética poco frecuente. Los símbolos rellenos son personas afectadas. ¿Cómo se hereda?</p>
+    <div class="estado">
+      <span>Hipótesis descartadas: <b>${S.descartadas.size}</b></span>
+      <span>Generaciones de prueba: <b>${S.pruebas} de ${MAX_PRUEBAS}</b></span>
+      <span id="st-crono" ${OPC.crono ? '' : 'hidden'}>Tiempo: <b id="st-t">${mmss(segundos())}</b></span>
+      <span id="st-err" ${OPC.errores ? '' : 'hidden'}>Errores: <b id="st-e">${S.errores}</b></span>
+    </div>
+    <div class="arbol-wrap" id="arbol">${svgFamilia({ elegibles:S.hecho ? null : eleg, sel:S.elegido })}</div>
+    <div class="leyenda">
+      <span><svg width="18" height="18"><rect x="1" y="1" width="16" height="16" fill="#fff" stroke="#16211F" stroke-width="2"/></svg>varón</span>
+      <span><svg width="18" height="18"><circle cx="9" cy="9" r="8" fill="#fff" stroke="#16211F" stroke-width="2"/></svg>mujer</span>
+      <span><svg width="18" height="18"><rect x="1" y="1" width="16" height="16" fill="#0462B7" stroke="#16211F" stroke-width="2"/></svg>afectado/a</span>
+      ${eleg.size && !S.hecho ? `<span><svg width="22" height="22"><rect x="2" y="2" width="18" height="18" rx="5" fill="none" stroke="#0462B7" stroke-width="2" stroke-dasharray="4 3"/></svg>se puede poner a prueba</span>` : ''}
+    </div>
 
-  tablero.querySelectorAll('.opciones button').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const acierto = btn.dataset.o === r.correcta;
-      tablero.querySelectorAll('.opciones button').forEach(b=>{
-        b.disabled = true;
-        if(b.dataset.o === r.correcta) b.classList.add('ok');
-        else if(b === btn) b.classList.add('mal');
-      });
-      document.getElementById('feedback').textContent = acierto
-        ? "¡Correcto! " + explicacion(r)
-        : `La respuesta correcta era ${r.correcta}. ` + explicacion(r);
-      if(acierto) aciertos++;
-      marcar(ronda+1);
-      const sig = document.getElementById('siguiente');
-      sig.style.display = 'block';
-      sig.onclick = () => { ronda++; ronda < rondas.length ? dibujar() : final(); };
-    });
+    <section class="paso">
+      <h2><span class="n">1</span>Tu hipótesis</h2>
+      <div class="fila-btn">${S.modos.map(m => `<button data-h="${m}" aria-pressed="${S.hip === m}" class="${S.descartadas.has(m) ? 'descartada' : ''}">${MODOS[m].corto}</button>`).join('')}</div>
+      <button id="chk" ${S.hip && !S.hecho ? '' : 'disabled'}>¿Es compatible con el árbol?</button>
+      ${msgHTML(S.msg.hip)}
+    </section>
+
+    <section class="paso" ${S.hecho ? 'hidden' : ''}>
+      <h2><span class="n">2</span>Ponela a prueba</h2>
+      ${pr ? `
+      <p>Elegí en el árbol a alguien sin pareja (tiene un borde punteado). ${P ? `Elegiste a <b>${lab(P)}</b>.` : ''}</p>
+      <p>Su pareja va a ser:</p>
+      <div class="fila-btn">${opt('t', 'sano', 'Alguien de afuera, no afectado/a', S.tipoPareja)}${opt('t', 'afectado', 'Alguien de afuera, afectado/a', S.tipoPareja)}</div>
+      <p>Según tu hipótesis${S.hip ? ` (${MODOS[S.hip].nombre})` : ''}, ¿qué esperás en su descendencia?</p>
+      <div class="pred">
+        <span>Hijos varones:</span><div class="fila-btn">${opt('m', 'ninguno', 'Ninguno afectado', S.predM)}${opt('m', 'puede', 'Puede haber afectados', S.predM)}${opt('m', 'todos', 'Todos afectados', S.predM)}</div>
+        <span>Hijas:</span><div class="fila-btn">${opt('f', 'ninguno', 'Ninguna afectada', S.predF)}${opt('f', 'puede', 'Puede haber afectadas', S.predF)}${opt('f', 'todos', 'Todas afectadas', S.predF)}</div>
+      </div>
+      <div class="fila-btn"><button class="primario" id="nueva">Ver la nueva generación</button><button id="sugerir">¿Qué prueba conviene?</button></div>` :
+      `<p>Ya usaste las ${MAX_PRUEBAS} generaciones de prueba.</p><button id="rendirse">Mostrar el modo de herencia</button>`}
+      ${msgHTML(S.msg.prueba)}
+    </section>
+
+    <section class="paso">
+      <h2><span class="n">3</span>Conclusión</h2>
+      ${S.hecho ? '' : `<p>Cuando creas que <b>solo</b> tu hipótesis explica todo el árbol, confirmala.</p>
+      <button class="primario" id="conf" ${S.hip ? '' : 'disabled'}>Confirmar${S.hip ? ': herencia ' + MODOS[S.hip].nombre : ''}</button>`}
+      ${msgHTML(S.msg.conf)}
+      ${S.hecho ? `<div class="acciones"><button class="primario" id="sig">${S.i + 1 < RONDAS.length ? (RONDAS[S.i + 1].nivel !== S.r.nivel ? 'Pasar al nivel ' + RONDAS[S.i + 1].nivel : 'Siguiente familia') : 'Ver el resumen'} &rarr;</button><button id="ini">Elegir otro nivel</button></div>` : ''}
+    </section>`;
+
+  const arb = el('arbol');
+  arb.scrollLeft = previo != null ? previo : (arb.scrollWidth - arb.clientWidth) / 2;
+  S.dibujado = true;
+  tablero.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { if(S.hecho) return; S.hip = b.dataset.h; S.predM = S.predF = null; S.msg.hip = null; S.msg.conf = null; dibujar(); });
+  tablero.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { S.tipoPareja = b.dataset.t; dibujar(); });
+  tablero.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { S.predM = b.dataset.m; dibujar(); });
+  tablero.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { S.predF = b.dataset.f; dibujar(); });
+  tablero.querySelectorAll('#arbol [data-p]').forEach(x => {
+    const go = () => { S.elegido = +x.dataset.p; S.msg.prueba = null; dibujar(); };
+    x.addEventListener('click', go);
+    x.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
   });
+  const on = (id, f) => { const b = el(id); if(b) b.onclick = f; };
+  on('chk', chequear); on('nueva', nuevaGeneracion);
+  on('sugerir', () => { S.msg.prueba = { tipo:'info', texto:sugerencia() }; dibujar(); }); on('conf', confirmar); on('rendirse', rendirse);
+  on('sig', () => S.i + 1 < RONDAS.length ? empezar(S.i + 1) : final());
+  on('ini', inicio);
 }
 
-function explicacion(r){
-  const notas = {
-    "autosómica recesiva": "En herencia autosómica recesiva hacen falta dos copias del alelo a para estar afectado: dos portadores (Aa × Aa) tienen 1 de cada 4 hijos o hijas afectados; un portador con una persona afectada (Aa × aa), 1 de cada 2.",
-    "autosómica dominante": "En herencia autosómica dominante alcanza una sola copia del alelo D para estar afectado. Las proporciones de genotipos son las mismas que en la recesiva, pero cambia qué genotipos quedan afectados: Dd × dd da 1 de cada 2, y Dd × Dd da 3 de cada 4 (los DD y los Dd).",
-    "ligada al X recesiva": "La madre portadora le pasa el X con la variante a la mitad de su descendencia. Los varones que lo reciben están afectados, porque tienen un solo X; las niñas que lo reciben quedan portadoras, como la madre. Por eso: la mitad de los varones — que es una cuarta parte del total de hijos e hijas."
-  };
-  return notas[r.patron] || "";
+function error(){ S.errores++; }
+
+function chequear(){
+  const H = S.hip;
+  const e = estado(H);
+  if(e.tipo === 'posible'){
+    S.descartadas.delete(H);
+    S.msg.hip = { tipo:'ok', texto:`Sí: la herencia ${MODOS[H].nombre} es compatible con todo lo que muestra el árbol. Eso no quiere decir que sea la única.` };
+  } else {
+    S.descartadas.add(H);
+    S.msg.hip = { tipo:'pista', texto: e.tipo === 'imposible' ? `No es compatible. ${motivo(H)}` : textoImprobable(H, e) };
+  }
+  dibujar();
+}
+
+// Qué se puede esperar en la descendencia según una hipótesis, considerando
+// todos los genotipos que la persona elegida podría tener.
+function esperado(H, P, tipo){
+  const kPar = tipo === 'afectado' ? kExternoAfectado(H, otro(P.sexo)) : 0;
+  const cat = { M:new Set(), F:new Set() };
+  genotiposPosibles(H, P).forEach(kP => {
+    const [kpad, kmad] = P.sexo === 'M' ? [kP, kPar] : [kPar, kP];
+    ['M','F'].forEach(s => {
+      const d = distHijo(H, kpad, kmad, s);
+      const pa = d.reduce((acc, v, k) => acc + (afectado(H, s, k) ? v : 0), 0);
+      cat[s].add(pa === 0 ? 'ninguno' : pa === 1 ? 'todos' : 'puede');
+    });
+  });
+  const res = s => cat[s].size === 1 ? [...cat[s]][0] : 'puede';
+  return { M:res('M'), F:res('F'), kPar };
+}
+
+function nuevaGeneracion(){
+  const H = S.hip, P = S.elegido != null ? porId(S.elegido) : null;
+  const falta = !H ? 'Primero elegí una hipótesis.' : !P ? 'Elegí a una persona en el árbol.' : !S.tipoPareja ? 'Elegí quién va a ser su pareja.' : (!S.predM || !S.predF) ? 'Completá tu predicción para hijos varones y para hijas.' : null;
+  if(falta){ S.msg.prueba = { tipo:'info', texto:falta }; dibujar(); return; }
+  if(!viable(H)){ S.msg.prueba = { tipo:'pista', texto:'Tu hipótesis ya quedó descartada con el árbol actual, así que no sirve para predecir. Revisala en el paso 1.' }; dibujar(); return; }
+  const esp = esperado(H, P, S.tipoPareja);
+  if(esp.M !== S.predM || esp.F !== S.predF){
+    error();
+    const ks = genotiposPosibles(H, P).map(k => genoTxt(H, k, P.sexo));
+    const sexoMal = esp.M !== S.predM ? 'los hijos varones' : 'las hijas';
+    S.msg.prueba = { tipo:'pista', texto:`Revisá ${sexoMal}. Con herencia ${MODOS[H].nombre}, ${lab(P)} ${ks.length > 1 ? 'puede ser ' + ks.join(' o ') : 'es ' + ks[0]}, y su pareja de afuera es ${genoTxt(H, esp.kPar, otro(P.sexo))}. Combiná sus gametos: ¿qué ${esp.M !== S.predM ? 'hijos varones' : 'hijas'} pueden nacer?` };
+    dibujar();
+    return;
+  }
+  // ¿Qué tan fuerte era esta prueba? Se evalúa antes de que nazca nadie.
+  const enPie = S.modos.filter(m => viable(m));
+  const distingue = new Set(enPie.map(m => { const e = esperado(m, P, S.tipoPareja); return e.M + e.F; })).size > 1;
+  let nota = '';
+  if(esp.M === 'puede' && esp.F === 'puede')
+    nota = ' Ojo: tu hipótesis permitía cualquier resultado ("puede haber" en los dos casos). Una prueba así solo la descarta si lo observado es muy improbable. Las pruebas más fuertes son las que, según tu hipótesis, dan "ninguno" o "todos".';
+  else if(!distingue)
+    nota = ' Ojo: con cualquiera de las hipótesis que siguen en pie se esperaba lo mismo, así que esta prueba no podía distinguirlas. Buscá una pareja para la que las hipótesis predigan cosas distintas.';
+  // La predicción es coherente con la hipótesis: ahora nace la generación,
+  // según el modo de herencia REAL.
+  const real = S.r.modo;
+  const sexoPar = otro(P.sexo);
+  const pareja = persona({ sexo:sexoPar, gen:P.gen, externo:true, num:siguienteNum(P.gen),
+                           k: S.tipoPareja === 'afectado' ? kExternoAfectado(real, sexoPar) : 0,
+                           afectado: S.tipoPareja === 'afectado' }, real);
+  casar(P, pareja);
+  const [pa, ma] = P.sexo === 'M' ? [P, pareja] : [pareja, P];
+  fam.forEach(p => { p.nuevo = false; });
+  pareja.nuevo = true;
+  const crias = mezclar([...Array(CRIAS_POR_SEXO).fill('M'), ...Array(CRIAS_POR_SEXO).fill('F')]).map(s => {
+    const c = persona({ sexo:s, gen:P.gen + 1, padre:pa.id, madre:ma.id, k:sortear(real, pa.k, ma.k, s), num:siguienteNum(P.gen + 1) }, real);
+    c.nuevo = true; return c;
+  });
+  S.pruebas++;
+  const cuenta = s => crias.filter(c => c.sexo === s && c.afectado).length;
+  const n = CRIAS_POR_SEXO;
+  const obs = `Nacieron ${n} hijos varones y ${n} hijas. Afectados: ${cuenta('M')} de ${n} varones y ${cuenta('F')} de ${n} mujeres.`;
+  const e = estado(H);
+  const sigue = e.tipo === 'posible';
+  S.msg.prueba = { tipo: sigue ? 'info' : 'pista',
+    texto: obs + (sigue ? ` Lo que pasó es compatible con tu hipótesis.` + nota
+      : e.tipo === 'imposible' ? ` <b>Esto no es compatible con tu hipótesis.</b> ${motivo(H)}`
+      : ` <b>Esto deja muy mal parada a tu hipótesis.</b> ${textoImprobable(H, e)}`) };
+  if(!sigue) S.descartadas.add(H);
+  S.elegido = null; S.tipoPareja = null; S.predM = S.predF = null; S.msg.hip = null;
+  dibujar();
+}
+
+function confirmar(){
+  const H = S.hip;
+  if(!viable(H)){
+    error();
+    S.msg.conf = { tipo:'pista', texto:'Tu hipótesis ya quedó descartada con lo que muestra el árbol. Usá el paso 1 para ver por qué.' };
+  } else {
+    const otros = S.modos.filter(m => m !== H && viable(m));
+    if(otros.length){
+      error();
+      S.intentosConf = (S.intentosConf || 0) + 1;
+      S.msg.conf = { tipo:'pista', texto:`Tu hipótesis es compatible, pero todavía hay ${otros.length === 1 ? 'otro modo de herencia que también explica' : 'otros modos que también explican'} el árbol${S.intentosConf > 1 ? ' (por ejemplo, herencia ' + MODOS[otros[0]].nombre + ')' : ''}. Pensá qué pareja daría resultados distintos según cada hipótesis, y ponela a prueba.` };
+    } else {
+      cerrar(true, H);
+      return;
+    }
+  }
+  dibujar();
+}
+function rendirse(){ S.hip = S.r.modo; cerrar(false); }
+
+function cerrar(ganada, H){
+  S.hecho = true; S.fin = Date.now();
+  resultados[S.i] = { errores:S.errores, segundos:segundos(), pruebas:S.pruebas, ganada };
+  progreso();
+  fam.forEach(p => { p.nuevo = false; });
+  const datos = [];
+  if(OPC.crono) datos.push('Tiempo: ' + mmss(segundos()));
+  if(OPC.errores) datos.push('Errores: ' + S.errores);
+  S.msg.conf = { tipo: ganada ? 'ok' : 'info', texto:
+    (!ganada ? `El modo real era herencia <b>${MODOS[S.r.modo].nombre}</b>. `
+      : H === S.r.modo ? `<b>¡Bien!</b> La herencia es ${MODOS[S.r.modo].nombre}, y es la única que explica bien todo el árbol. `
+      : `<b>Con estos datos, tu conclusión era la razonable:</b> la herencia ${MODOS[H].nombre} explica mucho mejor lo observado. Pero en esta familia el modo real era <b>${MODOS[S.r.modo].nombre}</b>: a veces el azar produce datos engañosos. Por eso en genética se estudian muchas familias o se analiza el gen directamente. `) +
+    `${EXPLICA[S.r.modo]} ` + (S.pruebas ? `Usaste ${S.pruebas} ${S.pruebas === 1 ? 'generación' : 'generaciones'} de prueba.` : '') +
+    (datos.length ? ` ${datos.join(' · ')}.` : '') };
+  if(Object.keys(resultados).length === RONDAS.length) contarFin();
+  dibujar();
 }
 
 // Una sola vez por visita, igual que en el resto de los juegos.
-let finContado = false;
-function final(){
-  if(!finContado){
-    finContado = true;
-    window.goatcounter?.count({ path: 'fin/arbol-genealogico',
-      title: 'Completó Árbol genealógico', event: true });
-  }
-  tablero.innerHTML = `
-    <div class="final">
-      <h2 style="font-weight:300;letter-spacing:-0.01em;">Terminaste el juego</h2>
-      <p>Acertaste ${aciertos} de ${rondas.length} cruzas.</p>
-      <button onclick="location.reload()">Jugar de nuevo</button>
-    </div>`;
+function contarFin(){
+  if(finContado) return;
+  finContado = true;
+  window.goatcounter?.count({ path:'fin/arbol-genealogico', title:'Completó Árbol genealógico', event:true });
 }
 
-dibujar();
+function final(){
+  S = null; clearInterval(reloj);
+  marcador.textContent = 'Resumen';
+  const filas = RONDAS.map((r, i) => resultados[i] ? `<tr><td>Nivel ${r.nivel}</td><td>${MODOS[r.modo].corto}${resultados[i].ganada ? '' : ' (mostrada)'}</td><td>${resultados[i].pruebas}</td>${OPC.crono ? `<td>${mmss(resultados[i].segundos)}</td>` : ''}${OPC.errores ? `<td>${resultados[i].errores}</td>` : ''}</tr>` : '').join('');
+  tablero.innerHTML = `
+    <div class="final">
+      <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">Terminaste el juego</h2>
+      <table><tr><th>Nivel</th><th>Modo de herencia</th><th>Pruebas</th>${OPC.crono ? '<th>Tiempo</th>' : ''}${OPC.errores ? '<th>Errores</th>' : ''}</tr>${filas}</table>
+      <div class="acciones"><button class="primario" id="ini">Volver a los niveles</button></div>
+    </div>`;
+  el('ini').onclick = inicio;
+}
+
+inicio();
 </script>
 
-<details style="max-width:34em;margin:2.6rem auto 1.2rem;border-top:1px solid #E6E9E8;padding-top:1rem;font-size:0.9rem;color:var(--muted);line-height:1.55;text-align:left;">
-  <summary style="cursor:pointer;font-weight:700;color:var(--ink);font-size:0.95rem;">Para el/la docente</summary>
-  <p style="margin:0.6rem 0 0;"><b>Nivel sugerido:</b> Secundaria</p>
-  <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Herencia autosómica dominante y recesiva; herencia recesiva ligada al cromosoma X; lectura de genealogías (cuadrado = varón, círculo = mujer, relleno = afectado, punto = portador); cálculo de proporciones de la descendencia.</p>
-  <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> ¿Por qué en la herencia recesiva ligada al X se afectan sobre todo los varones? En la última ronda, "la mitad de los varones" y "una cuarta parte del total de hijos e hijas" son el mismo resultado expresado sobre denominadores distintos: conviene detenerse ahí, porque es donde más se confunde.</p>
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Secundaria.</p>
+  <p><b>Conceptos que trabaja:</b> herencia autosómica dominante y recesiva; herencia recesiva y dominante ligada al cromosoma X; lectura de genealogías (cuadrado = varón, círculo = mujer, relleno = afectado/a; números romanos para las generaciones); razonamiento hipotético-deductivo: una hipótesis compatible no es necesariamente la correcta, y una predicción que falla la descarta.</p>
+  <p><b>Cómo funciona:</b> cada familia se genera al azar a partir de un modo de herencia oculto. El juego verifica si una hipótesis es compatible buscando alguna forma de asignar genotipos a todas las personas que respete los fenotipos y las reglas de Mendel. Al poner a prueba una hipótesis, la predicción se corrige según esa hipótesis (aunque sea falsa), y la nueva generación nace según el modo real: así se ve cómo los datos pueden refutar una hipótesis.</p>
+  <p><b>Compatible no es lo mismo que probable:</b> algunas hipótesis nunca se pueden refutar con lógica. Por ejemplo, la herencia autosómica dominante admite cualquier descendencia de una persona afectada, así que solo los números la distinguen de la dominante ligada al X: si un varón afectado tiene 3 hijas afectadas y 3 hijos no afectados, con herencia autosómica eso pasaría 1 de cada 64 veces. Por eso el juego descarta una hipótesis cuando es imposible o cuando hace que lo observado sea al menos 32 veces menos probable que con la mejor hipótesis (la idea detrás del LOD score). Como en la vida real, alguna vez el azar puede producir datos engañosos; si pasa, el juego lo explica.</p>
+  <p><b>Supuestos del modelo:</b> penetrancia completa; no hay mutaciones nuevas; la condición es poco frecuente, por lo que quien se suma a la familia sin estar afectado/a no porta la variante, y quien está afectado/a por una condición dominante es heterocigota. En la realidad hay penetrancia incompleta, expresividad variable y mutaciones de novo, que pueden hacer que un árbol "parezca" de otro tipo.</p>
+  <p><b>Sobre la numeración:</b> las personas se numeran de izquierda a derecha en cada generación; quienes nacen en las generaciones de prueba reciben el número siguiente, para que nadie cambie de nombre durante la partida.</p>
+  <p><b>Para discutir después de jugar:</b> ¿qué parejas resultaron más informativas para distinguir la herencia autosómica de la ligada al X? ¿Por qué un árbol con solo varones afectados no alcanza para afirmar que la herencia es ligada al X? En la última familia, ¿cuántas generaciones de prueba hicieron falta y por qué a veces una sola no alcanza?</p>
+  <div class="opciones-doc">
+    <b>Opciones para la clase</b>
+    <label><input type="checkbox" id="o-crono"> Mostrar cronómetro</label>
+    <label><input type="checkbox" id="o-errores"> Mostrar contador de errores</label>
+    <p style="margin:0.4rem 0 0;font-size:0.85rem;color:var(--muted);">Enlace con esta configuración para compartir: <code id="o-link"></code></p>
+  </div>
 </details>
+
+<script>
+// Panel de opciones del docente: actualiza la URL para que se pueda compartir.
+(function(){
+  const c = document.getElementById('o-crono'), e = document.getElementById('o-errores');
+  const link = document.getElementById('o-link');
+  c.checked = OPC.crono; e.checked = OPC.errores;
+  function aplicar(){
+    OPC.crono = c.checked; OPC.errores = e.checked;
+    const p = new URLSearchParams();
+    if(OPC.crono) p.set('crono', '1');
+    if(OPC.errores) p.set('errores', '1');
+    const q = p.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
+    link.textContent = location.href;
+    const sc = document.getElementById('st-crono'), se = document.getElementById('st-err');
+    if(sc) sc.hidden = !OPC.crono;
+    if(se) se.hidden = !OPC.errores;
+  }
+  c.onchange = aplicar; e.onchange = aplicar;
+  link.textContent = location.href;
+})();
+</script>
 
 <script data-goatcounter="https://gaa.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
