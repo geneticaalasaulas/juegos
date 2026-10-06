@@ -102,7 +102,7 @@
   <p><b>Conceptos que trabaja:</b> el ADN varía entre especies y es parecido dentro de una misma especie; comparar secuencias permite identificar a qué especie pertenece una muestra aunque ya no se pueda reconocer a simple vista (un filete, una milanesa); una biblioteca de referencia es indispensable, y si la especie no está, el método no la puede nombrar.</p>
   <p><b>Qué es el código de barras de ADN:</b> en animales se usa un tramo de unas 650 letras de un gen mitocondrial (COI). Las diferencias entre individuos de una misma especie suelen ser muy pocas, y entre especies distintas, bastantes más. Una regla de uso común es considerar que una muestra pertenece a una especie si se parece en un 98 % o más a la secuencia de referencia. Las referencias se juntan en bibliotecas públicas como BOLD (Barcode of Life Data System).</p>
   <p><b>Lo que simplifica el juego:</b> las secuencias son ilustrativas (no son las reales de cada especie) y se muestra solo un pedacito de 20 letras. Los porcentajes de parecido "en el código completo" están inventados para que se ubiquen en rangos realistas. La regla del 98 % es orientativa: en algunos grupos, especies muy emparentadas se parecen más que eso.</p>
-  <p><b>Los casos:</b> la sustitución de pescado está documentada en muchos países con este método. La panga (<i>Pangasianodon hypophthalmus</i>), un pez de criadero importado, aparece a menudo en lugar de especies más caras. Con nombres comerciales como "cazón" se venden varias especies de tiburones chicos, y estudios en la región (por ejemplo, en Brasil) encontraron entre ellas especies amenazadas, como el pez ángel (<i>Squatina guggenheim</i>), en peligro de extinción. El último caso muestra un límite: si la especie no está en la biblioteca, el método no la puede nombrar.</p>
+  <p><b>Los casos:</b> la sustitución de pescado está documentada en muchos países con este método. La panga (<i>Pangasianodon hypophthalmus</i>), un pez de criadero importado, aparece a menudo en lugar de especies más caras. Con nombres comerciales como "cazón" se venden varias especies de tiburones chicos, y estudios en la región (por ejemplo, en Brasil) encontraron entre ellas especies amenazadas, como el pez ángel (<i>Squatina guggenheim</i>), en peligro de extinción. En Uruguay y Argentina, "cazón" también es el nombre de una especie en particular (<i>Galeorhinus galeus</i>), que está en peligro crítico. El último caso muestra un límite: si la especie no está en la biblioteca, el método no la puede nombrar.</p>
   <p><b>Para discutir después de jugar:</b> ¿por qué hace falta el ADN para saber qué pescado es un filete? ¿A quién perjudica que se venda un pescado por otro: a quien compra, a los pescadores, a las especies en peligro? ¿Qué habría que hacer si una muestra no se parece a ninguna especie de la biblioteca?</p>
 </details>
 
@@ -127,16 +127,16 @@ const ESPECIES = {
 const CASOS = [
   { titulo:'En la feria', lugar:'En un puesto de la feria venden', etiqueta:'Filet de merluza', manual:true,
     refs:[['merluza',0,99.8], ['brotola',6,85.2], ['corvina',7,83.9]], resp:'merluza',
-    explica:'La muestra se parece en un 99,8 % a la merluza: <b>es merluza de verdad</b>. La etiqueta dice la verdad. Dentro de una misma especie el código casi no cambia; entre especies distintas, bastante más.' },
+    explica:'La muestra se parece en un 99,8 % a la merluza: <b>es merluza de verdad</b>. La etiqueta no mentía. Dentro de una misma especie el código casi no cambia; entre especies distintas, bastante más.' },
   { titulo:'En el restaurante', lugar:'En un restaurante, el menú dice', etiqueta:'Milanesa de merluza',
     refs:[['merluza',6,86.0], ['panga',0,99.5], ['abadejo',5,88.1], ['pescadilla',7,84.7]], resp:'panga',
     explica:'¡No era merluza! La muestra se parece en un 99,5 % a la <b>panga</b>, un pez de criadero que viene de Asia y es más barato. Comerla no hace mal, pero te vendieron otra cosa. Con el ADN se puede comprobar aunque el pescado esté empanado y frito.' },
   { titulo:'En la pescadería', lugar:'En una pescadería venden', etiqueta:'Filet de cazón',
     refs:[['gatuzo',4,90.3], ['angel',0,99.7], ['raya',7,82.6]], resp:'angel',
-    explica:'"Cazón" es un nombre que se usa para varios tiburones chicos. Esta muestra es de <b>pez ángel</b>, una especie <b>en peligro de extinción</b>. Con el código de barras de ADN se puede controlar qué especies se pescan y se venden, para proteger a las que están amenazadas.' },
-  { titulo:'Un pez misterioso', lugar:'Unos pescadores encontraron en la red un pez raro, y le pusieron', etiqueta:'¿?',
+    explica:'Con el nombre "cazón" a veces se venden distintos tiburones chicos. Esta muestra es de <b>pez ángel</b>, una especie <b>en peligro de extinción</b>. Con el código de barras de ADN se puede controlar qué especies se pescan y se venden, para proteger a las que están amenazadas.' },
+  { titulo:'Un pez misterioso', lugar:'Unos pescadores sacaron en la red un pez que nadie conocía. En la caja escribieron', etiqueta:'¿?',
     refs:[['merluza',6,84.4], ['corvina',5,87.0], ['brotola',7,83.1], ['pescadilla',4,91.2]], resp:null,
-    explica:'La muestra no llega al 98 % con ninguna especie de la biblioteca: <b>no es ninguna de ellas</b>. Puede ser una especie que todavía no está en la biblioteca, o incluso una que nadie describió. El código de barras solo puede nombrar especies que alguien ya agregó a la biblioteca.' }
+    explica:'La muestra no llega al 98 % con ninguna especie de la biblioteca: <b>no es ninguna de ellas</b>. Puede ser una especie que todavía no está en la biblioteca, o incluso una que nadie describió todavía. El código de barras solo puede nombrar especies que alguien ya agregó a la biblioteca.' }
 ];
 
 const BASES = ['A','T','C','G'];

@@ -99,10 +99,10 @@
 <details class="docente">
   <summary>Para el/la docente</summary>
   <p><b>Nivel sugerido:</b> Primaria (de 9 a 12 años, aproximadamente).</p>
-  <p><b>Conceptos que trabaja:</b> cada individuo tiene dos copias de cada región del ADN, una heredada de la madre y otra del padre; los hermanos reciben mitades distintas; con esas reglas, comparar ADN permite reconocer parentescos, incluso a través de los abuelos. También: parecerse no alcanza para saber quién es de la familia.</p>
+  <p><b>Conceptos que trabaja:</b> cada individuo tiene dos copias de cada región del ADN, una heredada de la madre y otra del padre; los hermanos no reciben exactamente la misma mitad; con esas reglas, comparar ADN permite reconocer parentescos, incluso a través de los abuelos. También: parecerse no alcanza para saber quién es de la familia.</p>
   <p><b>Qué representa la "tarjeta de ADN":</b> cada fila es un marcador, una región del ADN que varía mucho entre individuos. Los números son las variantes que tiene cada uno (en los marcadores reales, del tipo STR, el número indica cuántas veces se repite un fragmento corto). Es la misma lógica de las pruebas de filiación y de identificación forense.</p>
   <p><b>Lo que simplifica el juego:</b> usa seis marcadores; los laboratorios usan veinte o más, porque con pocos marcadores una persona no emparentada podría coincidir por azar, y el resultado se informa como una probabilidad. Tampoco hay mutaciones: en la vida real, una sola diferencia no alcanza para descartar un parentesco, porque puede deberse a una mutación. Por eso, en el juego, todo candidato que no es de la familia difiere en dos marcadores o más.</p>
-  <p><b>El derecho a la identidad:</b> esta lógica tiene una historia regional. Durante la última dictadura argentina, cientos de niños y niñas fueron apropiados y criados con otra identidad, y también hubo casos de familias uruguayas. Las Abuelas de Plaza de Mayo buscaron a científicos que pudieran demostrar el parentesco aun sin los padres, desaparecidos: así se desarrolló en 1984 el "índice de abuelidad", que compara el ADN de una persona con el de sus posibles abuelos y abuelas (el último nivel del juego). En 1987 Argentina creó el Banco Nacional de Datos Genéticos. Gracias a estos análisis, 140 nietos y nietas recuperaron su identidad (a mediados de 2025), entre ellos hijos e hijas de uruguayos, como Mariana Zaffaroni. El primer caso resuelto con el índice fue el de Paula Logares, en 1984. La versión con animales permite presentar la idea; cada docente decide si y cómo avanzar con el tema.</p>
+  <p><b>El derecho a la identidad:</b> esta lógica tiene una historia regional. Durante la última dictadura argentina, cientos de niños y niñas fueron apropiados y criados con otra identidad, y también hubo casos de familias uruguayas. Las Abuelas de Plaza de Mayo buscaron a científicos que pudieran demostrar el parentesco aun sin los padres, desaparecidos: así se desarrolló en 1984 el "índice de abuelidad", que compara el ADN de una persona con el de sus posibles abuelos y abuelas (el último nivel del juego). En 1987 Argentina creó el Banco Nacional de Datos Genéticos. Gracias a estos análisis, 140 nietos y nietas recuperaron su identidad (dato de julio de 2025), entre ellos hijos e hijas de uruguayos, como Mariana Zaffaroni. El primer caso resuelto con el índice fue el de Paula Logares, en 1984. La versión con animales permite presentar la idea; cada docente decide si avanza con el tema y cómo.</p>
   <p><b>Para discutir después de jugar:</b> ¿por qué dos hermanos no tienen la misma tarjeta de ADN? ¿Por qué parecerse no alcanza para decidir quién es la mamá? Si no está ni la mamá ni el papá, ¿qué otros familiares podrían ayudar? ¿Por qué es importante para una persona conocer su origen?</p>
 </details>
 
@@ -194,10 +194,10 @@ function nuevoPerro(nombre, rol, adn, chico){ return { nombre, rol, adn, pelaje:
 
 const CASOS = [
   { tipo:'armar', titulo:'¿Cómo se hereda?',
-    historia:'Antes de buscar familias, mirá cómo se arma la tarjeta de ADN de un cachorro. Cada perro tiene dos marcas en cada fila: en cada fila, la mamá le pasa al cachorro <b>una</b> de sus dos marcas, y el papá, <b>una</b> de las suyas.',
+    historia:'Antes de buscar familias, mirá cómo se arma la tarjeta de ADN de un cachorro. Cada perro tiene dos marcas en cada fila. En cada fila, la mamá le pasa al cachorro <b>una</b> de sus dos marcas, y el papá, <b>una</b> de las suyas.',
     consigna:'Armá la tarjeta de ADN de un cachorro de Luna y Rayo: en cada fila, tocá una marca de la mamá y una del papá.' },
   { tipo:'madre', titulo:'¿Quién es la mamá?',
-    historia:'Este cachorro llegó solo al refugio. Tres perras dicen que podría ser suyo. Una se le parece mucho, pero... ¿alcanza con parecerse?',
+    historia:'Este cachorro llegó solo al refugio. En el refugio hay tres perras que podrían ser su mamá. Una se le parece mucho, pero... ¿alcanza con parecerse?',
     consigna:'Compará la tarjeta del cachorro con la de cada perra y encontrá a su mamá.',
     regla:'Pista: la mamá tiene que tener, en <b>cada fila</b>, al menos una de las dos marcas del cachorro.' },
   { tipo:'padre', titulo:'¿Quién es el papá?',
@@ -206,7 +206,7 @@ const CASOS = [
     regla:'Pista: la marca que <b>no</b> vino de la mamá tuvo que venir del papá.' },
   { tipo:'abuelos', titulo:'Buscando con los abuelos',
     historia:'Esta cachorra está con su mamá, pero su papá se perdió y nadie sabe dónde está. Dos parejas de perros grandes están buscando a una nieta. Aunque el papá no esté, el ADN de los abuelos puede contar la historia.',
-    consigna:'¿Cuál de las dos parejas son los abuelos de la cachorra (los padres de su papá)?',
+    consigna:'¿Cuál de las dos parejas son los abuelos de la cachorra, es decir, los padres de su papá?',
     regla:'Pista: la marca que vino del papá la tuvo que recibir él de su mamá o de su papá. Tiene que estar en alguno de los dos abuelos.' },
   { tipo:'emparejar', titulo:'Tres cachorros, tres mamás',
     historia:'Llegaron tres cachorros juntos y tres mamás los están buscando.',
@@ -277,7 +277,7 @@ function empezar(i){
 
 const PREG_HERMANOS = {
   pregunta:'Luna y Rayo tuvieron otra cachorra. ¿Por qué su tarjeta de ADN no es igual a la del cachorro que armaste?',
-  correcta:'Porque en cada fila la mamá y el papá pasan una de sus dos marcas al azar, y a cada cachorro le toca una combinación distinta',
+  correcta:'Porque en cada fila la mamá y el papá pasan una de sus dos marcas al azar, y a cada cachorro le puede tocar una combinación distinta',
   distractores:['Porque uno de los dos cachorros no es hijo de Luna y Rayo', 'Porque el ADN de los cachorros cambia a medida que crecen']
 };
 
@@ -417,7 +417,7 @@ function terminarArmado(){
 function responderHermanos(o){
   if(o === PREG_HERMANOS.correcta){
     S.hecho = true;
-    S.msg = { tipo:'ok', texto:'¡Exacto! Los dos tienen la mitad del ADN de cada progenitor, pero no la misma mitad. Por eso los hermanos se parecen pero no son iguales (salvo los gemelos idénticos, que vienen de una misma célula).' };
+    S.msg = { tipo:'ok', texto:'¡Exacto! Los dos tienen la mitad del ADN de cada progenitor, pero no exactamente la misma mitad. Por eso los hermanos se parecen pero no son iguales (salvo los gemelos idénticos, que vienen de una misma célula).' };
   } else {
     S.elegidasOp.add(o); errores++;
     S.msg = { tipo:'pista', texto:'No. Fijate en una fila: ¿la mamá tiene una sola marca para pasar, o dos?' };
@@ -432,7 +432,7 @@ function elegirCand(j){
   if(p === S.buena){
     S.hecho = true;
     S.msg = { tipo:'ok', texto:C.tipo === 'madre'
-      ? `¡Sí! <b>${p.nombre}</b> tiene, en todas las filas, al menos una de las marcas del cachorro. ${S.parecida ? `Y fijate en ${S.parecida.nombre}: se parece mucho, pero en ${fallasProgenitor(c, S.parecida.adn)} filas no tiene ninguna de las marcas del cachorro. <b>Parecerse no alcanza</b>: el pelaje depende de unos pocos genes, y el ADN se compara entero.` : ''}`
+      ? `¡Sí! <b>${p.nombre}</b> tiene, en todas las filas, al menos una de las marcas del cachorro. ${S.parecida ? `Y fijate en ${S.parecida.nombre}: se parece mucho, pero en ${fallasProgenitor(c, S.parecida.adn)} filas no tiene ninguna de las marcas del cachorro. <b>Parecerse no alcanza</b>: el color del pelaje depende de unos pocos genes, y una perra de otra familia puede tenerlo igual por casualidad.` : ''}`
       : `¡Sí! <b>${p.nombre}</b> tiene, en todas las filas, la marca que no vino de la mamá. Es el papá.` };
   } else {
     S.descartados.add(j); S.comparar.add(j); errores++;
@@ -446,7 +446,7 @@ function elegirAbuelos(j){
   const pa = S.parejas[j], c = S.cach.adn, m = S.mama.adn;
   if(pa.buena){
     S.hecho = true;
-    S.msg = { tipo:'ok', texto:`¡Sí! En todas las filas, la marca que la cachorra recibió de su papá está en su abuela o en su abuelo. Aunque el papá no esté, sus padres guardan su ADN. <b>Así se puede reconocer a una nieta a través de sus abuelos.</b>` };
+    S.msg = { tipo:'ok', texto:`¡Sí! En todas las filas, la marca que la cachorra recibió de su papá está en su abuela o en su abuelo. Aunque el papá no esté, sus padres tienen las marcas que él heredó. <b>Así se puede reconocer a una nieta a través de sus abuelos.</b>` };
   } else {
     S.descartados.add(j); S.comparar.add(j); errores++;
     const filas = c.map((_, k) => k).filter(k => !filaAbuelos(c, m, pa.perros[0].adn, pa.perros[1].adn, k)).map(k => k + 1);
@@ -480,7 +480,7 @@ function final(){
   tablero.innerHTML = `<div class="final">
     <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">¡Todos los cachorros encontraron a su familia!</h2>
     <p>${errores === 0 ? 'Resolviste los cinco casos sin ningún error.' : `Resolviste los cinco casos con ${errores} ${errores === 1 ? 'error' : 'errores'}.`}</p>
-    <p style="max-width:34em;margin:0 auto;line-height:1.55;">Lo que hiciste se usa de verdad con personas. Gracias a comparar el ADN con el de sus abuelas y abuelos, muchas personas que habían sido separadas de sus familias cuando eran bebés pudieron saber quiénes eran y recuperar su nombre. Conocer tu origen es un derecho: el <b>derecho a la identidad</b>.</p>
+    <p style="max-width:34em;margin:0 auto;line-height:1.55;">Lo que hiciste se usa de verdad con personas. Gracias a comparar el ADN con el de sus abuelas y abuelos, muchas personas a las que les habían robado su familia cuando eran bebés pudieron conocer su historia y recuperar su nombre. Conocer tu origen es un derecho: el <b>derecho a la identidad</b>.</p>
     <div class="acciones"><button class="primario" id="otra">Jugar de nuevo (con otros cachorros)</button></div></div>`;
   el('otra').onclick = () => { errores = 0; empezar(0); };
 }

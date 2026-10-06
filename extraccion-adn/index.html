@@ -95,7 +95,7 @@
   <p><b>Por qué frutilla:</b> la frutilla cultivada es octoploide (tiene ocho copias de cada cromosoma) y madura es blanda, así que da mucho material con poco esfuerzo. Banana y kiwi también funcionan.</p>
   <p><b>Una precisión importante:</b> lo que se ve no es "una molécula de ADN": son millones de moléculas de miles de células, enredadas, y mezcladas con otras sustancias que también precipitan en alcohol (en la frutilla, sobre todo pectina y ARN). Ninguna molécula de ADN se ve a simple vista. Tampoco se ve la doble hélice: hace falta mucho más aumento.</p>
   <p><b>Para hacerlo en el aula:</b> la receta del final está pensada para hacerla con supervisión. El alcohol etílico de farmacia (96°) funciona mejor que el de 70°; tiene que estar bien frío y lo manipula una persona adulta, porque es inflamable. No se ingiere nada de lo que se use.</p>
-  <p><b>Para discutir después de jugar:</b> ¿por qué hace falta el detergente? ¿Qué creés que pasaría si usáramos una banana? ¿Y un pedacito de carne? (También tiene ADN: todas las células con núcleo lo tienen.)</p>
+  <p><b>Para discutir después de jugar:</b> ¿por qué hace falta el detergente? ¿Qué creés que pasaría si usáramos una banana? ¿Y un pedacito de carne? (También tiene ADN: sus células lo tienen, como las de cualquier ser vivo.)</p>
 </details>
 
 <script>
@@ -135,7 +135,7 @@ const PRED = {
   correcta:'Va a aparecer una nube blanca de hilitos entre el líquido rosado y el alcohol',
   distractores:['El líquido se va a poner azul', 'No va a pasar nada: el ADN es invisible'],
   ok:'¡Buena predicción! Vamos a ver si tenías razón.',
-  mal:'Puede ser lo que esperabas, pero mirá lo que pasa en el vaso.'
+  mal:'Vamos a ver qué pasa en el vaso.'
 };
 
 const PREGUNTAS = [
@@ -148,7 +148,7 @@ const PREGUNTAS = [
     distractores:['Sí: es una molécula de ADN, y con una lupa se vería la doble hélice', 'No: es el núcleo entero de la frutilla'],
     exp:'Un solo hilo de ADN es tan fino que no se ve ni con un microscopio común. Lo que se ve es un montón de hilos juntos, y además otras sustancias de la frutilla que también se juntan con el alcohol.' },
   { p:'¿De qué otra cosa podríamos sacar ADN de la misma forma?',
-    correcta:'De una banana, un kiwi o cualquier ser vivo: todos tienen células con ADN',
+    correcta:'De una banana, un kiwi o casi cualquier ser vivo: todos tienen células con ADN',
     distractores:['Solo de frutillas: es la única fruta que tiene ADN', 'De una piedra, si la aplastamos bien'],
     exp:'Todos los seres vivos tienen ADN en sus células. La frutilla se usa porque es blanda y tiene mucho: cada una de sus células tiene ocho copias de cada cromosoma.' }
 ];
@@ -227,7 +227,7 @@ function porQueNo(item, paso){
   const id = PASOS[paso].id;
   if(item === 'azucar') return 'El azúcar no ayuda a sacar el ADN: no rompe las membranas ni hace que el ADN se junte. Probá con otra cosa.';
   if(item === 'leche') return 'La leche no sirve acá: tiene sus propias grasas y proteínas, y ensuciaría la mezcla. Probá con otra cosa.';
-  if(id === 'romper') return 'Primero hay que tener algo de dónde sacar el ADN. ¿Qué tiene células con ADN?';
+  if(id === 'romper') return 'Primero hay que tener algo de donde sacar el ADN. ¿Qué tiene células con ADN?';
   if(id === 'solucion'){
     if(item === 'filtro') return 'Si filtramos ahora, el ADN se queda encerrado adentro de las células, que todavía tienen sus membranas enteras. Falta agregar algo.';
     if(item === 'alcohol') return 'Todavía no: el ADN sigue adentro de las células y mezclado con los pedazos de fruta. El alcohol va casi al final.';

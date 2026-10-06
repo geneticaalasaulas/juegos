@@ -86,7 +86,7 @@
   <summary>Para el/la docente</summary>
   <p><b>Nivel sugerido:</b> Primaria (de 7 a 10 años, aproximadamente).</p>
   <p><b>Conceptos que trabaja:</b> el ADN tiene dos mitades (dos cadenas) unidas por pares de bases; las bases se aparean siempre igual, A con T y C con G (complementariedad); por eso, conociendo una mitad se puede reconstruir la otra; cuando la célula se divide, cada mitad sirve de molde para fabricar una mitad nueva, y quedan dos copias iguales, cada una con una mitad vieja y una nueva.</p>
-  <p><b>Lo que simplifica el juego:</b> las formas de encastre (triángulo para A y T, redondeado para C y G) son un recurso visual. En la molécula real, las bases se unen por puentes de hidrógeno (dos entre A y T, tres entre C y G), y siempre se aparea una base grande (A o G) con una chica (T o C), por eso el ancho de la escalera es parejo. Los "rieles" son el esqueleto de azúcar y fosfato. Las dos cadenas corren en sentidos opuestos y la escalera está retorcida (la doble hélice); el juego la muestra derecha para que se lea mejor.</p>
+  <p><b>Lo que simplifica el juego:</b> las formas de encastre (triángulo para A y T, redondeado para C y G) son un recurso visual. En la molécula real, las bases se unen por puentes de hidrógeno (dos entre A y T, tres entre C y G), y siempre se aparea una base grande (A o G) con una chica (T o C), por eso el ancho de la escalera es parejo. Los "rieles" son el esqueleto de azúcar y fosfato. Las dos cadenas corren en sentidos opuestos y la escalera está retorcida (la doble hélice); el juego la muestra derecha para que se lea mejor. Al copiarse, la escalera no se abre entera de una vez: se va abriendo de a poco, y cada tramo se copia a medida que se abre.</p>
   <p><b>Sobre los errores de copia:</b> en el tercer nivel aparecen peldaños que no encajan. En la célula, la enzima que copia el ADN se equivoca muy pocas veces, y casi todos esos errores se corrigen enseguida. Los pocos que quedan son una de las fuentes de mutaciones.</p>
   <p><b>Para discutir después de jugar:</b> si alguien te da solo una mitad de la escalera, ¿podés saber cómo es la otra? ¿Por qué es importante que las dos copias salgan iguales cuando una célula se divide? Si se rompe una mitad, ¿qué información queda en la otra?</p>
 </details>
@@ -169,16 +169,16 @@ const parIcono = (a, b) => `<span><svg width="120" height="${Math.round(120 * (G
 // ---------------------------------------------------------------------------
 const NIVELES = [
   { tipo:'completar', n:6, pista:true, titulo:'Completá la escalera',
-    consigna:'Esta es una mitad de una escalera de ADN. Elegí, una por una, las letras que faltan del otro lado. Fijate en la forma: cada letra encaja solo con una.',
-    sabias:'Las letras del ADN son cuatro: A, T, C y G. Con esas cuatro letras está escrita toda la información de un ser vivo, igual que con 27 letras se escriben todos los libros en castellano.' },
+    consigna:'Acá tenés la mitad de una escalera de ADN. Elegí, una por una, las letras que faltan del otro lado. Fijate en la forma: cada letra encaja solo con una.',
+    sabias:'Las letras del ADN son cuatro: A, T, C y G. Con esas cuatro letras están escritas las instrucciones de cada ser vivo, así como con 27 letras se escriben todos los libros en castellano.' },
   { tipo:'completar', n:10, pista:false, titulo:'Una escalera más larga',
     consigna:'Ahora sin la ayuda a la vista. Completá la otra mitad: ¿con qué letra encaja cada una?',
     sabias:'Si conocés una mitad de la escalera, sabés exactamente cómo es la otra. Por eso decimos que las dos mitades son <b>complementarias</b>.' },
   { tipo:'errores', n:10, malos:2, titulo:'Peldaños mal armados',
     consigna:'En esta escalera hay <b>2 peldaños</b> que no encajan bien. Encontralos y tocalos para arreglarlos.',
-    sabias:'Cuando una célula copia su ADN, muy pocas veces se equivoca, y casi siempre lo corrige enseguida. Los pocos errores que quedan se llaman <b>mutaciones</b>.' },
+    sabias:'Cuando una célula copia su ADN, se equivoca muy pocas veces, y casi siempre corrige el error enseguida. Si un error queda sin corregir, es una <b>mutación</b>. (También hay mutaciones por otras causas, como la luz del sol.)' },
   { tipo:'copiar', n:6, titulo:'La célula se divide: copiá el ADN',
-    consigna:'Antes de dividirse, la célula tiene que copiar su ADN para que cada célula hija se lleve una escalera completa. Primero, abrí la escalera por el medio.',
+    consigna:'Antes de dividirse, la célula tiene que copiar su ADN para que cada célula hija se lleve una copia completa. Primero, abrí la escalera por el medio.',
     pregunta:'¿Cómo son las dos escaleras que quedaron?',
     correcta:'Iguales entre sí e iguales a la original',
     distractores:['Distintas: cada una tiene la mitad de la información', 'Una es igual a la original y la otra es al revés'],

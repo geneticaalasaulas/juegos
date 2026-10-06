@@ -88,7 +88,9 @@
   <p><b>Conceptos que trabaja:</b> niveles de organización (organismo, tejido, célula, núcleo, cromosoma, ADN, gen); escala; dónde está el ADN en la célula; qué es un cromosoma y qué es un gen. Ordena el vocabulario que los demás juegos dan por sabido.</p>
   <p><b>Datos que usa:</b> el cuerpo humano tiene unos 30 millones de millones de células (las estimaciones van de 30 a 37 billones); una célula de la piel mide unas 30 milésimas de milímetro y su núcleo, unas 6; el ADN de una célula humana, estirado, mide unos 2 metros, y su hilo tiene unos 2 nanómetros de ancho; los seres humanos tenemos unos 20.000 genes que codifican proteínas.</p>
   <p><b>Errores frecuentes que el juego evita:</b> los cromosomas no tienen forma de X todo el tiempo. Mientras la célula no se divide, el ADN está desenrollado y se ve como hilos enredados (la cromatina); la forma de X (o de bastoncito doble) aparece cuando el cromosoma ya se copió y se compacta para la división. Por eso el juego muestra primero los hilos y después la X. Otro: no todas las células tienen núcleo (los glóbulos rojos maduros lo pierden), y las mitocondrias tienen un poco de ADN propio; por eso la pregunta dice "casi todo".</p>
-  <p><b>Sobre "un gen = instrucciones para fabricar algo":</b> la mayoría de los genes conocidos tienen la información para fabricar una proteína; otros dan ARN que cumplen funciones sin traducirse. Para primaria alcanza con "instrucciones para fabricar algo que el cuerpo necesita". Conviene evitar "el gen del color de ojos" o "el gen de la inteligencia": la mayoría de los rasgos dependen de muchos genes y del ambiente.</p>
+  <p><b>Sobre "un gen = instrucciones para fabricar algo":</b> la mayoría de los genes conocidos tienen la información para fabricar una proteína; otros dan ARN que cumple su función sin convertirse en proteína. Para primaria alcanza con "instrucciones para fabricar algo que el cuerpo necesita". Conviene evitar "el gen del color de ojos" o "el gen de la inteligencia": la mayoría de los rasgos dependen de muchos genes y del ambiente.</p>
+  <p><b>Sobre los 46 cromosomas:</b> es el número de la gran mayoría de las personas, pero hay quienes tienen 45 o 47 (por ejemplo, las personas con síndrome de Down tienen 47). Además, en el par 23, X e Y no llevan los mismos genes; por eso el juego dice "en casi todos los pares".</p>
+  <p><b>Sobre la piel:</b> las células de la capa más externa están muertas y ya no tienen núcleo. El dibujo muestra células vivas de una capa más profunda.</p>
   <p><b>Sobre la familia:</b> la pregunta de los cromosomas habla de la madre y el padre biológicos. Si en el grupo hay niños o niñas adoptados o con otras configuraciones familiares, conviene aclarar que se trata del óvulo y el espermatozoide que les dieron origen.</p>
   <p><b>Para discutir después de jugar:</b> si todas tus células tienen el mismo ADN, ¿por qué una célula de la piel no es igual a una neurona? (Pista: no todos los genes están encendidos en todas las células.) ¿Qué ventaja tiene que el ADN esté tan enrollado?</p>
 </details>
@@ -275,7 +277,7 @@ const PARADAS = [
     pregunta:'¿Por qué no ves tus células cuando te mirás la mano?',
     correcta:'Porque son tan chicas que hace falta un microscopio',
     distractores:['Porque están escondidas debajo de la piel', 'Porque solo las tienen los animales chiquitos'],
-    explica:'Una célula de la piel mide unos 0,03 milímetros: en un milímetro entrarían unas 30, en fila. La piel también está hecha de células: las que ves acá.',
+    explica:'Una célula de la piel mide unos 0,03 milímetros: en un milímetro entrarían unas 30, en fila. Lo que ves acá son células de tu piel.',
     tarea:'Tocá la célula marcada para entrar en ella.', blanco:'celula', dibujo:() => dibujoPiel() },
   { id:'celula', nombre:'Una célula', tam:'Mide unos 0,03 milímetros.',
     texto:'Una célula tiene varias partes: la <b>membrana</b> la rodea, el <b>citoplasma</b> la llena, las <b>mitocondrias</b> le dan energía y el <b>núcleo</b>…',
@@ -291,7 +293,7 @@ const PARADAS = [
     pregunta:'¿Cuántos cromosomas hay en casi todas tus células?',
     correcta:'46, en 23 pares: de cada par, uno vino de la madre y otro del padre',
     distractores:['2: uno de la madre y uno del padre', 'Miles: uno para cada cosa del cuerpo'],
-    explica:'Cada persona tiene <b>46 cromosomas</b>, en 23 pares. Los dos de cada par llevan los mismos genes, aunque no necesariamente las mismas versiones.',
+    explica:'Casi todas las personas tienen <b>46 cromosomas</b>, en 23 pares. En casi todos los pares, los dos cromosomas llevan los mismos genes, aunque no siempre las mismas versiones.',
     extra:'Cuando la célula se va a dividir, cada hilo se copia y se enrolla mucho: recién ahí los cromosomas se ven como bastoncitos o equis.',
     boton:'La célula se va a dividir', tarea:'Tocá un cromosoma para hacer zoom.', blanco:'cromosoma',
     dibujo:c => dibujoNucleo(c) },
@@ -308,7 +310,7 @@ const PARADAS = [
     pregunta:'¿Qué es un gen?',
     correcta:'Un tramo de ADN con las instrucciones para fabricar algo que tu cuerpo necesita',
     distractores:['Un tipo especial de célula', 'Un cromosoma entero'],
-    explica:'Tenés unos <b>20.000 genes</b>. Por ejemplo, uno tiene las instrucciones para fabricar la hemoglobina, la proteína que lleva el oxígeno en tu sangre.',
+    explica:'Tenés unos <b>20.000 genes</b>. Por ejemplo, hay genes con las instrucciones para fabricar la hemoglobina, la proteína que lleva el oxígeno en tu sangre.',
     dibujo:() => dibujoGen() }
 ];
 
