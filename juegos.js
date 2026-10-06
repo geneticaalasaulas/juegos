@@ -24,8 +24,8 @@ const juegos = [
   {
     id: "escalera-adn",
     url: "escalera-adn/",
-    capa: "capas/escalera-adn.svg",
-    // color del logo asignado a este juego (ver capas/escalera-adn.svg)
+    capa: "capas/escalera-adn.jpg",
+    // color del logo asignado a este juego (ver capas/escalera-adn.jpg)
     acento: "#0462B7",
     acentoTexto: "#0462B7",
     publicado: "2026-10",
@@ -44,8 +44,8 @@ const juegos = [
   {
     id: "viaje-al-interior",
     url: "viaje-al-interior/",
-    capa: "capas/viaje-al-interior.svg",
-    // color del logo asignado a este juego (ver capas/viaje-al-interior.svg)
+    capa: "capas/viaje-al-interior.jpg",
+    // color del logo asignado a este juego (ver capas/viaje-al-interior.jpg)
     acento: "#0B9053",
     acentoTexto: "#0A874E",
     publicado: "2026-10",
@@ -64,8 +64,8 @@ const juegos = [
   {
     id: "extraccion-adn",
     url: "extraccion-adn/",
-    capa: "capas/extraccion-adn.svg",
-    // color del logo asignado a este juego (ver capas/extraccion-adn.svg)
+    capa: "capas/extraccion-adn.jpg",
+    // color del logo asignado a este juego (ver capas/extraccion-adn.jpg)
     acento: "#C88705",
     acentoTexto: "#A06C04",
     publicado: "2026-10",
@@ -84,8 +84,8 @@ const juegos = [
   {
     id: "detectives-de-familia",
     url: "detectives-de-familia/",
-    capa: "capas/detectives-de-familia.svg",
-    // color del logo asignado a este juego (ver capas/detectives-de-familia.svg)
+    capa: "capas/detectives-de-familia.jpg",
+    // color del logo asignado a este juego (ver capas/detectives-de-familia.jpg)
     acento: "#5E0478",
     acentoTexto: "#5E0478",
     publicado: "2026-10",
@@ -104,8 +104,8 @@ const juegos = [
   {
     id: "es-merluza",
     url: "es-merluza/",
-    capa: "capas/es-merluza.svg",
-    // color del logo asignado a este juego (ver capas/es-merluza.svg)
+    capa: "capas/es-merluza.jpg",
+    // color del logo asignado a este juego (ver capas/es-merluza.jpg)
     acento: "#02A690",
     acentoTexto: "#018574",
     publicado: "2026-10",
@@ -124,8 +124,8 @@ const juegos = [
   {
     id: "arbol-genealogico",
     url: "arbol-genealogico/",
-    capa: "capas/arbol-genealogico.svg",
-    // color del logo asignado a este juego (ver capas/arbol-genealogico.svg)
+    capa: "capas/arbol-genealogico.jpg",
+    // color del logo asignado a este juego (ver capas/arbol-genealogico.jpg)
     acento: "#0462B7",
     acentoTexto: "#0462B7",
     publicado: "2026-09",
@@ -143,8 +143,8 @@ const juegos = [
   {
     id: "punnett-rapido",
     url: "punnett-rapido/",
-    capa: "capas/punnett-rapido.svg",
-    // color del logo asignado a este juego (ver capas/punnett-rapido.svg)
+    capa: "capas/punnett-rapido.jpg",
+    // color del logo asignado a este juego (ver capas/punnett-rapido.jpg)
     acento: "#C88705",
     acentoTexto: "#A06C04",
     publicado: "2026-09",
@@ -162,8 +162,8 @@ const juegos = [
   {
     id: "cariotipo-express",
     url: "cariotipo-express/",
-    capa: "capas/cariotipo-express.svg",
-    // color del logo asignado a este juego (ver capas/cariotipo-express.svg)
+    capa: "capas/cariotipo-express.jpg",
+    // color del logo asignado a este juego (ver capas/cariotipo-express.jpg)
     acento: "#BC0440",
     acentoTexto: "#BC0440",
     publicado: "2026-10",
@@ -182,8 +182,8 @@ const juegos = [
   {
     id: "seleccion-natural",
     url: "seleccion-natural/",
-    capa: "capas/seleccion-natural.svg",
-    // color del logo asignado a este juego (ver capas/seleccion-natural.svg)
+    capa: "capas/seleccion-natural.jpg",
+    // color del logo asignado a este juego (ver capas/seleccion-natural.jpg)
     acento: "#0B9053",
     acentoTexto: "#0A874E",
     publicado: "2026-10",
@@ -202,8 +202,8 @@ const juegos = [
   {
     id: "filogenia",
     url: "filogenia/",
-    capa: "capas/filogenia.svg",
-    // color del logo asignado a este juego (ver capas/filogenia.svg)
+    capa: "capas/filogenia.jpg",
+    // color del logo asignado a este juego (ver capas/filogenia.jpg)
     acento: "#02A690",
     acentoTexto: "#018574",
     publicado: "2026-10",
@@ -221,8 +221,8 @@ const juegos = [
   {
     id: "cuello-de-botella",
     url: "cuello-de-botella/",
-    capa: "capas/cuello-de-botella.svg",
-    // color del logo asignado a este juego (ver capas/cuello-de-botella.svg)
+    capa: "capas/cuello-de-botella.jpg",
+    // color del logo asignado a este juego (ver capas/cuello-de-botella.jpg)
     acento: "#5E0478",
     acentoTexto: "#5E0478",
     publicado: "2026-10",
@@ -240,8 +240,8 @@ const juegos = [
   {
     id: "resistencia-antibioticos",
     url: "resistencia-antibioticos/",
-    capa: "capas/resistencia-antibioticos.svg",
-    // color del logo asignado a este juego (ver capas/resistencia-antibioticos.svg)
+    capa: "capas/resistencia-antibioticos.jpg",
+    // color del logo asignado a este juego (ver capas/resistencia-antibioticos.jpg)
     acento: "#ED101B",
     acentoTexto: "#EB101B",
     publicado: "2026-10",
@@ -259,8 +259,8 @@ const juegos = [
   {
     id: "nutrigenetica",
     url: "nutrigenetica/",
-    capa: "capas/nutrigenetica.svg",
-    // color del logo asignado a este juego (ver capas/nutrigenetica.svg)
+    capa: "capas/nutrigenetica.jpg",
+    // color del logo asignado a este juego (ver capas/nutrigenetica.jpg)
     acento: "#3BA2A5",
     acentoTexto: "#2F8183",
     publicado: "2026-10",
@@ -278,8 +278,8 @@ const juegos = [
   {
     id: "crispr",
     url: "crispr/",
-    capa: "capas/crispr.svg",
-    // color del logo asignado a este juego (ver capas/crispr.svg)
+    capa: "capas/crispr.jpg",
+    // color del logo asignado a este juego (ver capas/crispr.jpg)
     acento: "#0462B7",
     acentoTexto: "#0462B7",
     publicado: "2026-10",
@@ -297,8 +297,8 @@ const juegos = [
   {
     id: "farmacogenomica",
     url: "farmacogenomica/",
-    capa: "capas/farmacogenomica.svg",
-    // color del logo asignado a este juego (ver capas/farmacogenomica.svg)
+    capa: "capas/farmacogenomica.jpg",
+    // color del logo asignado a este juego (ver capas/farmacogenomica.jpg)
     acento: "#C88705",
     acentoTexto: "#A06C04",
     publicado: "2026-10",
@@ -316,8 +316,8 @@ const juegos = [
   {
     id: "detective-clinico",
     url: "detective-clinico/",
-    capa: "capas/detective-clinico.svg",
-    // color del logo asignado a este juego (ver capas/detective-clinico.svg)
+    capa: "capas/detective-clinico.jpg",
+    // color del logo asignado a este juego (ver capas/detective-clinico.jpg)
     acento: "#BC0440",
     acentoTexto: "#BC0440",
     publicado: "2026-10",
@@ -335,8 +335,8 @@ const juegos = [
   {
     id: "epigenetica",
     url: "epigenetica/",
-    capa: "capas/epigenetica.svg",
-    // color del logo asignado a este juego (ver capas/epigenetica.svg)
+    capa: "capas/epigenetica.jpg",
+    // color del logo asignado a este juego (ver capas/epigenetica.jpg)
     acento: "#0B9053",
     acentoTexto: "#0A874E",
     publicado: "2026-10",

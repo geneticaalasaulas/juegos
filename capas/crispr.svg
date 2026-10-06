@@ -1,9 +1,0 @@
-<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
-  <rect width="300" height="200" fill="#0462B7"/>
-  <g font-family="Courier New,monospace" font-size="22" fill="#FFFFFF">
-    <text x="30" y="90">A T G</text>
-    <text x="30" y="120" fill="#8EB8DF">C C A</text>
-  </g>
-  <path d="M175 70 L 260 70 L 260 130 L 175 130" fill="none" stroke="#8EB8DF" stroke-width="2"/>
-  <path d="M210 100 l 15 -8 l 0 16 z" fill="#8EB8DF"/>
-</svg>

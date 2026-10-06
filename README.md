@@ -19,8 +19,8 @@ genéticas y Epigenética con interruptores.
 ├── 404.html
 ├── .nojekyll                 evita que GitHub procese el sitio con Jekyll
 ├── capas/
-│   ├── arbol-genealogico.svg
-│   └── punnett-rapido.svg
+│   ├── arbol-genealogico.jpg
+│   └── punnett-rapido.jpg
 ├── arbol-genealogico/index.html
 └── punnett-rapido/index.html
 ```
@@ -61,14 +61,14 @@ genéticas y Epigenética con interruptores.
 
 1. Creá la carpeta: `nombre-del-juego/index.html` (archivo único y
    autosuficiente, sin dependencias externas).
-2. Agregá la portada en `capas/nombre-del-juego.svg` (o `.webp`), proporción 3:2.
+2. Agregá la portada en `capas/nombre-del-juego.jpg`, proporción 3:2 (900×600).
 3. Sumá una entrada al array `juegos` en `juegos.js`:
 
    ```js
    {
      id: "nombre-del-juego",
      url: "nombre-del-juego/",
-     capa: "capas/nombre-del-juego.svg",
+     capa: "capas/nombre-del-juego.jpg",
      publicado: "2026-10",
      nivel: "primaria", // primaria | secundaria | docentes
      duracion: 10,
