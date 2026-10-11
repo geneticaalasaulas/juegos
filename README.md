@@ -18,11 +18,13 @@ genéticas y Epigenética con interruptores.
 ├── juegos.js                 catálogo de datos — lo único que cambia al publicar un juego
 ├── 404.html
 ├── .nojekyll                 evita que GitHub procese el sitio con Jekyll
-├── capas/
+├── assets/
+├── capas/                    una portada JPG 3:2 por juego (nombre = id del juego)
 │   ├── arbol-genealogico.jpg
-│   └── punnett-rapido.jpg
+│   └── …                     (17 en total)
 ├── arbol-genealogico/index.html
-└── punnett-rapido/index.html
+├── …                         una carpeta por juego, con un único index.html
+└── viaje-al-interior/index.html
 ```
 
 ## Cómo publicar en GitHub Pages
@@ -86,6 +88,48 @@ genéticas y Epigenética con interruptores.
    La coma es importante: la última entrada del array no lleva coma después.
    Un error de sintaxis acá deja el catálogo en blanco — si pasa, abrí la
    consola del navegador (F12), señala la línea exacta.
+
+4. Sumá el monitoreo de visitas (ver más abajo). Antes de `</body>`:
+
+   ```html
+   <script data-goatcounter="https://gaa.goatcounter.com/count"
+           async src="//gc.zgo.at/count.js"></script>
+   ```
+
+   Y en el punto donde el juego se da por terminado, contalo una sola vez:
+
+   ```js
+   let finContado = false;
+   function contarFin(){
+     if(finContado) return;
+     finContado = true;
+     window.goatcounter?.count({ path:'fin/nombre-del-juego',
+       title:'Completó Nombre del juego', event:true });
+   }
+   ```
+
+   El clic en la tarjeta de la portada se cuenta solo, a partir del `id`.
+
+## Monitoreo de visitas
+
+Se usa [GoatCounter](https://www.goatcounter.com/): sin cookies y sin datos
+personales. Panel: **https://gaa.goatcounter.com**
+
+| Qué se cuenta | Dónde | Aparece como |
+|---|---|---|
+| Visitas a la portada | `index.html` | `/` |
+| Clic en la tarjeta de un juego | `index.html` | evento `click/<id>` |
+| Visitas a cada juego (también con link directo) | cada `*/index.html` | `/<id>/` |
+| Juego completado (una vez por visita) | cada `*/index.html` | evento `fin/<id>` |
+| Páginas inexistentes | `404.html` | `404/<ruta>` |
+
+GoatCounter además registra referer, país, navegador, sistema y tamaño de
+pantalla. **No** se registra: identidad de las personas, tiempo de juego,
+puntajes, respuestas ni en qué paso se abandona. Las visitas con bloqueadores
+de anuncios pueden no contarse.
+
+En el panel, filtrá los paths por `click/` o `fin/` para ver clics o juegos
+completados; *Settings → Export* descarga los datos en CSV.
 
 ## Correr localmente
 
