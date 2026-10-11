@@ -92,7 +92,7 @@ genéticas y Epigenética con interruptores.
 4. Sumá el monitoreo de visitas (ver más abajo). Antes de `</body>`:
 
    ```html
-   <script data-goatcounter="https://gaa.goatcounter.com/count"
+   <script data-goatcounter="https://gaa-juegos-k7m3.goatcounter.com/count"
            async src="//gc.zgo.at/count.js"></script>
    ```
 
@@ -113,7 +113,7 @@ genéticas y Epigenética con interruptores.
 ## Monitoreo de visitas
 
 Se usa [GoatCounter](https://www.goatcounter.com/): sin cookies y sin datos
-personales. Panel: **https://gaa.goatcounter.com**
+personales. Panel: **https://gaa-juegos-k7m3.goatcounter.com**
 
 | Qué se cuenta | Dónde | Aparece como |
 |---|---|---|
