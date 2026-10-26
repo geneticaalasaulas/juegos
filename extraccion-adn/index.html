@@ -77,6 +77,11 @@
   details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
   details.docente p{ margin:0.6rem 0 0; }
   @media (prefers-reduced-motion:reduce){ .progreso > i, .medidor > i{ transition:none; } }
+  footer.creditos{ align-self:stretch; margin-top:auto; border-top:1px solid #E6E9E8; padding:1.2rem 1rem;
+    display:flex; align-items:center; justify-content:center; gap:0.8rem; font-size:0.85rem; color:var(--muted); line-height:1.45; }
+  footer.creditos img{ width:52px; height:52px; border-radius:50%; flex:none; display:block; }
+  footer.creditos p{ margin:0; max-width:40em; }
+  footer.creditos a{ color:var(--ink); font-weight:600; text-decoration:none; }
 </style>
 </head>
 <body>
@@ -108,7 +113,7 @@ const ITEMS = {
   detergente: { ico:'🧴', nom:'Detergente' },
   sal:        { ico:'🧂', nom:'Sal' },
   azucar:     { ico:'🍬', nom:'Azúcar' },
-  filtro:     { ico:'☕', nom:'Filtro de café' },
+  filtro:     { ico:'☕', nom:'Filtro de café o colador' },
   alcohol:    { ico:'🧊', nom:'Alcohol bien frío' },
   palito:     { ico:'🥢', nom:'Palito de brochette' },
   leche:      { ico:'🥛', nom:'Leche' }
@@ -123,7 +128,7 @@ const PASOS = [
     notas:{ agua:'Agregamos agua.', detergente:'Agregamos detergente.', sal:'Agregamos sal.' },
     por:{ agua:'El agua ayuda a que todo se mezcle.', detergente:'El detergente rompe las membranas que rodean a cada célula y a su núcleo. Están hechas de grasas: por eso el detergente las deshace, como saca la grasa de los platos.', sal:'La sal ayuda a que los hilos de ADN se junten entre sí.' } },
   { id:'filtrar', titulo:'Filtrar', consigna:'La bolsa tiene un líquido rosado con pedazos de frutilla y semillas. ¿Cómo separamos el líquido?', usa:['filtro'],
-    nota:'Pasamos todo por un filtro de café a un vaso.', por:'El filtro deja pasar el líquido, donde está el ADN, y retiene los pedazos de fruta y las semillas.' },
+    nota:'Pasamos todo por un filtro de café o un colador a un vaso.', por:'El filtro deja pasar el líquido, donde está el ADN, y retiene los pedazos de fruta y las semillas.' },
   { id:'alcohol', titulo:'El alcohol', consigna:'Tenemos un vaso con el líquido filtrado. ¿Qué agregamos ahora, despacito, por el costado del vaso?', usa:['alcohol'], prediccion:true,
     nota:'Agregamos alcohol bien frío, despacio, por el costado.', por:'El ADN no se disuelve en alcohol: cuando se encuentra con él, se junta y aparece.' },
   { id:'enrollar', titulo:'Sacar el ADN', consigna:'¡Mirá esa nube blanca! ¿Con qué la sacamos del vaso?', usa:['palito'],
@@ -390,7 +395,7 @@ function final(){
         <li>1 frutilla madura, sin el cabito verde</li>
         <li>1 bolsa con cierre</li>
         <li>2 cucharadas de agua, 1 cucharadita de detergente y 1 pizca de sal</li>
-        <li>1 filtro de café (o una gasa) y 1 vaso transparente</li>
+        <li>1 filtro de café o colador (o una gasa) y 1 vaso transparente</li>
         <li>Alcohol etílico de farmacia (96°), guardado en el freezer desde antes</li>
         <li>1 palito de brochette</li>
       </ul>
@@ -410,6 +415,11 @@ function final(){
 
 empezar();
 </script>
+<footer class="creditos">
+  <img src="../assets/logo-gaa.png" srcset="../assets/logo-gaa@2x.png 2x" alt="" width="52" height="52">
+  <p><a href="../">Genética a las Aulas</a> · Unidad Académica de Genética, Facultad de Medicina, Universidad de la República (UdelaR)</p>
+</footer>
+
 <script data-goatcounter="https://gaa-juegos-k7m3.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 </body>

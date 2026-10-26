@@ -73,6 +73,11 @@
   details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
   details.docente p{ margin:0.6rem 0 0; }
   @media (prefers-reduced-motion:reduce){ .lienzo svg{ transition:none; } .blanco.activo .aro, .sacude{ animation:none; } }
+  footer.creditos{ align-self:stretch; margin-top:auto; border-top:1px solid #E6E9E8; padding:1.2rem 1rem;
+    display:flex; align-items:center; justify-content:center; gap:0.8rem; font-size:0.85rem; color:var(--muted); line-height:1.45; }
+  footer.creditos img{ width:52px; height:52px; border-radius:50%; flex:none; display:block; }
+  footer.creditos p{ margin:0; max-width:40em; }
+  footer.creditos a{ color:var(--ink); font-weight:600; text-decoration:none; }
 </style>
 </head>
 <body>
@@ -298,7 +303,7 @@ const PARADAS = [
     boton:'La célula se va a dividir', tarea:'Tocá un cromosoma para hacer zoom.', blanco:'cromosoma',
     dibujo:c => dibujoNucleo(c) },
   { id:'cromosoma', nombre:'Un cromosoma', tam:'Mide unas pocas milésimas de milímetro.',
-    texto:'Este cromosoma está muy enrollado. Mové la barra para desenrollarlo y ver de qué está hecho.',
+    texto:'En este cromosoma el ADN está muy enrollado. Mové la barra para desenrollarlo y ver de qué está hecho.',
     deslizar:true,
     pregunta:'Si estiraras todo el ADN de una sola de tus células y lo pusieras en fila, ¿cuánto mediría?',
     correcta:'Unos 2 metros',
@@ -306,7 +311,7 @@ const PARADAS = [
     explica:'¡Unos <b>2 metros</b>! Entra en un núcleo diminuto porque está muy enrollado alrededor de unas proteínas, como hilo en carreteles.',
     tarea:'Tocá el hilo de ADN para ver sus letras.', blanco:'adn', dibujo:p => dibujoCromosoma(p) },
   { id:'gen', nombre:'El ADN y los genes', tam:'El hilo de ADN es tan fino que harían falta unos 500.000, uno al lado del otro, para cubrir un milímetro.',
-    texto:'Llegamos al ADN: una escalera de cuatro letras, A, T, C y G. Algunos tramos de la escalera son <b>genes</b>.',
+    texto:'Llegamos al ADN: una escalera de 4 bases nitrogenadas, que representaremos como letras: A, T, C y G. Algunos tramos de la escalera son <b>genes</b>.',
     pregunta:'¿Qué es un gen?',
     correcta:'Un tramo de ADN con las instrucciones para fabricar algo que tu cuerpo necesita',
     distractores:['Un tipo especial de célula', 'Un cromosoma entero'],
@@ -488,6 +493,11 @@ function final(){
 
 ir(0);
 </script>
+<footer class="creditos">
+  <img src="../assets/logo-gaa.png" srcset="../assets/logo-gaa@2x.png 2x" alt="" width="52" height="52">
+  <p><a href="../">Genética a las Aulas</a> · Unidad Académica de Genética, Facultad de Medicina, Universidad de la República (UdelaR)</p>
+</footer>
+
 <script data-goatcounter="https://gaa-juegos-k7m3.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 </body>

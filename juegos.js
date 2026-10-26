@@ -37,8 +37,8 @@ const juegos = [
     es: {
       nombre: "La escalera del ADN",
       subtitulo: "Armá, revisá y copiá el ADN",
-      resumen: "Completá la otra mitad de una escalera de ADN eligiendo las letras que encajan, encontrá peldaños mal armados y copiá el ADN como lo hace una célula antes de dividirse.",
-      aprende: ["Las cuatro letras del ADN", "A con T y C con G", "Cómo se copia el ADN", "La doble hélice"]
+      resumen: "Completá la otra mitad de una escalera de ADN eligiendo las bases nitrogenadas (las letras) que encajan, encontrá peldaños mal armados y copiá el ADN como lo hace una célula antes de dividirse.",
+      aprende: ["Las cuatro bases nitrogenadas del ADN", "A con T y C con G", "Cómo se copia el ADN", "La doble hélice"]
     }
   },
   {

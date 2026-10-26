@@ -72,12 +72,17 @@
   details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
   details.docente p{ margin:0.6rem 0 0; }
   @media (prefers-reduced-motion:reduce){ .progreso > i{ transition:none; } .sacude{ animation:none; } }
+  footer.creditos{ align-self:stretch; margin-top:auto; border-top:1px solid #E6E9E8; padding:1.2rem 1rem;
+    display:flex; align-items:center; justify-content:center; gap:0.8rem; font-size:0.85rem; color:var(--muted); line-height:1.45; }
+  footer.creditos img{ width:52px; height:52px; border-radius:50%; flex:none; display:block; }
+  footer.creditos p{ margin:0; max-width:40em; }
+  footer.creditos a{ color:var(--ink); font-weight:600; text-decoration:none; }
 </style>
 </head>
 <body>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
 <h1>La escalera del ADN</h1>
-<p class="bajada">El ADN es como una escalera muy larga: cada peldaño está hecho de dos letras que encajan entre sí. Completá escaleras, encontrá peldaños mal armados y mirá cómo se copia el ADN cuando una célula se divide.</p>
+<p class="bajada">El ADN es como una escalera muy larga: cada peldaño está hecho de dos bases nitrogenadas que encajan entre sí. Las vamos a representar con letras: A, T, C y G. Completá escaleras, encontrá peldaños mal armados y mirá cómo se copia el ADN cuando una célula se divide.</p>
 <p class="marcador" id="marcador"></p>
 <div class="progreso" aria-hidden="true"><i id="barra"></i></div>
 <div class="tablero" id="tablero"></div>
@@ -170,7 +175,7 @@ const parIcono = (a, b) => `<span><svg width="120" height="${Math.round(120 * (G
 const NIVELES = [
   { tipo:'completar', n:6, pista:true, titulo:'Completá la escalera',
     consigna:'Acá tenés la mitad de una escalera de ADN. Elegí, una por una, las letras que faltan del otro lado. Fijate en la forma: cada letra encaja solo con una.',
-    sabias:'Las letras del ADN son cuatro: A, T, C y G. Con esas cuatro letras están escritas las instrucciones de cada ser vivo, así como con 27 letras se escriben todos los libros en castellano.' },
+    sabias:'Las letras del ADN son cuatro: A, T, C y G. Cada una representa una base nitrogenada: adenina, timina, citosina y guanina. Con esas cuatro letras están escritas las instrucciones de cada ser vivo, así como con 27 letras se escriben todos los libros en castellano.' },
   { tipo:'completar', n:10, pista:false, titulo:'Una escalera más larga',
     consigna:'Ahora sin la ayuda a la vista. Completá la otra mitad: ¿con qué letra encaja cada una?',
     sabias:'Si conocés una mitad de la escalera, sabés exactamente cómo es la otra. Por eso decimos que las dos mitades son <b>complementarias</b>.' },
@@ -402,6 +407,11 @@ function final(){
 
 empezar(0);
 </script>
+<footer class="creditos">
+  <img src="../assets/logo-gaa.png" srcset="../assets/logo-gaa@2x.png 2x" alt="" width="52" height="52">
+  <p><a href="../">Genética a las Aulas</a> · Unidad Académica de Genética, Facultad de Medicina, Universidad de la República (UdelaR)</p>
+</footer>
+
 <script data-goatcounter="https://gaa-juegos-k7m3.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 </body>

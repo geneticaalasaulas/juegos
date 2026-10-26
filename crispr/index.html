@@ -72,6 +72,11 @@
   }
   /* en los juegos contrarreloj la barra se vacia, y va en ambar (urgencia) */
   .progreso.tiempo > i{ background:var(--enfasis); width:100%; }
+  footer.creditos{ align-self:stretch; margin-top:auto; border-top:1px solid #E6E9E8; padding:1.2rem 1rem;
+    display:flex; align-items:center; justify-content:center; gap:0.8rem; font-size:0.85rem; color:var(--muted); line-height:1.45; }
+  footer.creditos img{ width:52px; height:52px; border-radius:50%; flex:none; display:block; }
+  footer.creditos p{ margin:0; max-width:40em; }
+  footer.creditos a{ color:var(--ink); font-weight:600; text-decoration:none; }
 </style>
 </head>
 <body>
@@ -199,7 +204,7 @@ function final(){
         <br>3. CRISPR/Cas9 encuentra y corta. Corregir la base es un paso aparte:
         hay que darle a la célula un molde con la secuencia correcta, o usar una
         variante de la herramienta como los editores de bases, que cambian una
-        letra sin cortar las dos cadenas del ADN.
+        base sin cortar las dos cadenas del ADN.
       </div>
       <button onclick="location.reload()">Jugar de nuevo</button>
     </div>`;
@@ -214,6 +219,11 @@ dibujar();
   <p style="margin:0.6rem 0 0;"><b>Conceptos que trabaja:</b> Reconocimiento del ADN por complementariedad; ARN guía; la secuencia PAM como requisito de Cas9; corte de doble cadena; reparación con molde y edición de bases.</p>
   <p style="margin:0.6rem 0 0;"><b>Para discutir después de jugar:</b> CRISPR/Cas9 encuentra y corta: corregir la base es un paso aparte. ¿Qué implicancias distintas tiene editar células somáticas de una persona frente a editar la línea germinal, que se transmite a la descendencia?</p>
 </details>
+
+<footer class="creditos">
+  <img src="../assets/logo-gaa.png" srcset="../assets/logo-gaa@2x.png 2x" alt="" width="52" height="52">
+  <p><a href="../">Genética a las Aulas</a> · Unidad Académica de Genética, Facultad de Medicina, Universidad de la República (UdelaR)</p>
+</footer>
 
 <script data-goatcounter="https://gaa-juegos-k7m3.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
