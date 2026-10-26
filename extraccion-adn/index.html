@@ -131,11 +131,11 @@ const PASOS = [
 ];
 
 const PRED = {
-  pregunta:'Antes de agregar el alcohol: ¿qué creés que va a pasar?',
+  pregunta:'Antes de esperar: ¿qué creés que va a pasar?',
   correcta:'Va a aparecer una nube blanca de hilitos entre el líquido rosado y el alcohol',
   distractores:['El líquido se va a poner azul', 'No va a pasar nada: el ADN es invisible'],
-  ok:'¡Buena predicción! Vamos a ver si tenías razón.',
-  mal:'Vamos a ver qué pasa en el vaso.'
+  ok:'¡Buena predicción! Esperá unos minutos y fijate si tenías razón.',
+  mal:'Esperá unos minutos y fijate qué pasa en el vaso.'
 };
 
 const PREGUNTAS = [
@@ -259,20 +259,21 @@ function dibujar(){
     accion = `<div class="accion"><button class="primario" id="aplastar">Aplastar</button><div class="medidor" aria-hidden="true"><i style="width:${S.aplastado / 8 * 100}%"></i></div><span>${S.aplastado} de 8</span></div>`;
   if(P.id === 'solucion' && completo && !S.mezclado)
     accion = `<div class="accion"><button class="primario" id="mezclar">Mezclar suavemente</button></div>`;
-  if(P.id === 'alcohol' && completo && !S.esperado)
+  if(P.id === 'alcohol' && completo && S.pred && !S.esperado)
     accion = `<div class="accion"><button class="primario" id="esperar">Esperar unos minutos</button></div>`;
   let pred = '';
-  if(P.prediccion && !S.pred){
+  // La predicción va después de agregar el alcohol, así no adelanta qué hay que elegir.
+  if(P.prediccion && completo && !S.pred){
     pred = `<div class="pregunta"><p>${PRED.pregunta}</p><div class="opciones">${S.predOps.map(o => `<button data-pred="${o}">${o}</button>`).join('')}</div></div>`;
   }
-  const bloqueado = (P.prediccion && !S.pred) || accion !== '' || pasoListo();
+  const bloqueado = pred !== '' || accion !== '' || pasoListo();
   let h = `<div class="lab"><div class="mesa">${mesaSVG()}</div><div>
     <p class="consigna">${P.consigna}</p>
-    ${pred}
     <p class="estante-eti">Estante</p>
     <div class="estante">${ORDEN_ESTANTE.map(id => `<button data-i="${id}" class="${S.usados.has(id) ? 'usado' : ''}" ${bloqueado || S.usados.has(id) ? 'disabled' : ''}><span class="ico" aria-hidden="true">${ITEMS[id].ico}</span>${ITEMS[id].nom}</button>`).join('')}</div>
     ${accion}
     <p class="fb ${S.msg ? S.msg.tipo : ''}" aria-live="polite">${S.msg ? S.msg.texto : ''}</p>
+    ${pred}
     ${pasoListo() ? `<div class="acciones"><button class="primario" id="sig">${S.paso + 1 < PASOS.length ? 'Siguiente paso' : 'Ver qué sacamos'} &rarr;</button></div>` : ''}
   </div></div>
   ${S.cuaderno.length ? `<div class="cuaderno"><h2>Cuaderno de laboratorio</h2><ol>${S.cuaderno.map(c => `<li>${c.nota} <span>${c.por}</span></li>`).join('')}</ol></div>` : ''}`;
@@ -306,7 +307,7 @@ function elegir(id){
       S.msg = { tipo:'ok', texto:'Pusimos la frutilla en la bolsa. Cerrala bien y aplastala con las manos.' };
     } else if(P.id === 'alcohol'){
       S.cuaderno.push({ nota:P.nota, por:P.por });
-      S.msg = { tipo:'ok', texto:'El alcohol queda arriba, como una capa transparente, porque es más liviano. Ahora hay que esperar.' };
+      S.msg = { tipo:'ok', texto:'El alcohol queda arriba, como una capa transparente, porque es más liviano.' };
     } else {
       S.cuaderno.push({ nota:P.nota, por:P.por });
       S.msg = { tipo:'ok', texto:P.por };
