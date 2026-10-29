@@ -46,6 +46,10 @@
 
   /* CUERPO */
   .cabecera{ max-width:760px; margin:0 auto; padding:4rem 1.5rem 1.5rem; }
+  .cabecera .arriba{ display:flex; align-items:center; justify-content:space-between; gap:1.5rem; }
+  .cabecera .arriba > div{ min-width:0; }
+  .cabecera .logo{ width:120px; height:120px; border-radius:50%; display:block; flex:none; }
+  @media (max-width:560px){ .cabecera .logo{ width:80px; height:80px; } }
   .eyebrow{
     text-transform:uppercase; letter-spacing:0.14em; font-size:0.78rem;
     color:var(--accent); font-weight:600; margin:0 0 0.8rem;
@@ -112,9 +116,14 @@
 </header>
 
 <div class="cabecera">
-  <p class="eyebrow">Acerca de</p>
-  <h1>Genética a las Aulas</h1>
-  <p>Quiénes somos, y cómo podés usar estos juegos en tu clase.</p>
+  <div class="arriba">
+    <div>
+      <p class="eyebrow">Acerca de</p>
+      <h1>Genética a las Aulas</h1>
+      <p>Quiénes somos, y cómo podés usar estos juegos en tu clase.</p>
+    </div>
+    <img class="logo" src="../assets/logo-gaa@2x.png" alt="Logo de Genética a las Aulas" width="120" height="120">
+  </div>
   <nav class="indice" aria-label="Secciones">
     <a href="#proyecto">El proyecto</a>
     <a href="#como-se-hicieron">Cómo se hicieron</a>
