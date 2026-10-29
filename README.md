@@ -18,6 +18,8 @@ genéticas y Epigenética con interruptores.
 ├── juegos.js                 catálogo de datos — lo único que cambia al publicar un juego
 ├── 404.html
 ├── .nojekyll                 evita que GitHub procese el sitio con Jekyll
+├── LICENSE                   CC BY-NC 4.0
+├── acerca/index.html         objetivos del proyecto, cómo se hicieron, autoría, uso y cita
 ├── assets/
 ├── capas/                    una portada JPG 3:2 por juego (nombre = id del juego)
 │   ├── arbol-genealogico.jpg

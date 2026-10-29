@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acerca de · Genética a las Aulas</title>
+<meta name="description" content="Qué es Genética a las Aulas, cómo se hicieron estos juegos, quién los hizo y cómo usarlos y citarlos.">
+<style>
+  :root{
+    --ink:#161616;
+    --muted:#6B6B6B;
+    --line:#E6E6E6;
+    --accent:#0462B7;   /* azul del logo */
+    --accent-soft:#E6EFF8;
+    --bg:#FFFFFF;
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--fuente);
+    line-height:1.6;
+    font-weight:400;
+  }
+
+  /* HEADER (igual al catálogo) */
+  header{
+    position:sticky; top:0; background:#fff; z-index:10;
+    border-bottom:1px solid var(--line);
+  }
+  .header-inner{
+    max-width:1080px; margin:0 auto; padding:0.9rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .marca{ display:flex; align-items:center; gap:0.7rem; text-decoration:none; color:var(--ink); }
+  .marca img{ height:42px; width:42px; border-radius:50%; display:block; }
+  .marca span{ font-size:1rem; font-weight:600; letter-spacing:0.01em; }
+  nav.principal{ display:flex; gap:1.6rem; align-items:center; }
+  nav.principal a{ color:var(--ink); text-decoration:none; font-size:0.92rem; letter-spacing:0.01em; }
+  nav.principal a:hover{ color:var(--accent); }
+  nav.principal a.ig{ color:var(--muted); }
+  nav.principal a:focus-visible, .indice a:focus-visible{ outline:3px solid var(--ink); outline-offset:2px; }
+
+  /* CUERPO */
+  .cabecera{ max-width:760px; margin:0 auto; padding:4rem 1.5rem 1.5rem; }
+  .eyebrow{
+    text-transform:uppercase; letter-spacing:0.14em; font-size:0.78rem;
+    color:var(--accent); font-weight:600; margin:0 0 0.8rem;
+  }
+  .cabecera h1{ font-size:clamp(2rem,4.5vw,2.8rem); font-weight:300; margin:0 0 1rem; line-height:1.15; }
+  .cabecera p{ color:var(--muted); font-size:1.05rem; margin:0; }
+  .indice{ display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1.8rem; }
+  .indice a{
+    border:1px solid var(--line); border-radius:999px; padding:0.35rem 0.95rem;
+    font-size:0.85rem; color:var(--ink); text-decoration:none;
+  }
+  .indice a:hover{ border-color:var(--ink); }
+
+  section.bloque{ max-width:760px; margin:0 auto; padding:2.5rem 1.5rem; border-top:1px solid var(--line); scroll-margin-top:80px; }
+  section.bloque h2{ font-size:1.6rem; font-weight:300; margin:0 0 1rem; }
+  section.bloque h3{ font-size:1.02rem; font-weight:600; margin:1.6rem 0 0.4rem; }
+  section.bloque p, section.bloque li{ font-size:0.98rem; }
+  section.bloque ul, section.bloque ol{ padding-left:1.2rem; }
+  section.bloque li{ margin-bottom:0.35rem; }
+  section.bloque a{ color:var(--accent); }
+  .nota{ color:var(--muted); font-size:0.9rem; }
+
+  .cita{
+    background:var(--accent-soft); border-left:3px solid var(--accent);
+    padding:1rem 1.2rem; font-size:0.95rem; margin:0.8rem 0 0.6rem; overflow-wrap:anywhere;
+  }
+  .copiar{
+    background:transparent; border:1px solid var(--ink); color:var(--ink);
+    padding:0.4rem 1rem; font-size:0.85rem; cursor:pointer; font-family:inherit;
+  }
+  .copiar:hover{ background:var(--ink); color:#fff; }
+  .copiar:focus-visible{ outline:3px solid var(--ink); outline-offset:2px; }
+
+  .licencia{ display:flex; gap:1rem; align-items:flex-start; }
+  .licencia .sello{
+    flex:none; font-weight:700; font-size:0.8rem; letter-spacing:0.04em;
+    border:2px solid var(--ink); padding:0.3rem 0.55rem; margin-top:0.2rem;
+  }
+
+  footer{ border-top:1px solid var(--line); }
+  .footer-inner{
+    max-width:1080px; margin:0 auto; padding:2rem 1.5rem;
+    color:var(--muted); font-size:0.85rem;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.6rem;
+  }
+  footer a{ color:var(--muted); }
+  @media (max-width:560px){ nav.principal{ gap:1rem; } .marca span{ display:none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a class="marca" href="../">
+      <img src="../assets/logo-gaa.png" srcset="../assets/logo-gaa@2x.png 2x" alt="Genética a las Aulas">
+      <span>Genética a las Aulas</span>
+    </a>
+    <nav class="principal">
+      <a href="../#catalogo">Juegos</a>
+      <a href="./" aria-current="page">Acerca de</a>
+      <a class="ig" href="https://instagram.com/geneticaalasaulas" target="_blank" rel="noopener">Instagram</a>
+    </nav>
+  </div>
+</header>
+
+<div class="cabecera">
+  <p class="eyebrow">Acerca de</p>
+  <h1>Genética a las Aulas</h1>
+  <p>Quiénes somos, y cómo podés usar estos juegos en tu clase.</p>
+  <nav class="indice" aria-label="Secciones">
+    <a href="#proyecto">El proyecto</a>
+    <a href="#como-se-hicieron">Cómo se hicieron</a>
+    <a href="#autoria">Autoría</a>
+    <a href="#usar">Cómo usarlos</a>
+    <a href="#citar">Cómo citar</a>
+  </nav>
+</div>
+
+<section class="bloque" id="proyecto">
+  <h2>El proyecto</h2>
+  <p>Genética a las Aulas es un proyecto de extensión de la Unidad Académica de Genética de la Facultad de Medicina (Universidad de la República). Desde 2018 hacemos talleres de genética en escuelas y liceos de Montevideo y del interior del país, y actividades para el público en general: la Semana de la Ciencia y la Tecnología, el Día del Patrimonio y las jornadas del Día de las Mujeres en la Ciencia, entre otras.</p>
+  <p>También hacemos talleres para docentes y estudiantes de formación docente, pensados como talleres multiplicadores: quienes participan se llevan actividades prácticas de genética para hacer después con sus propios grupos.</p>
+  <p>El programa está avalado por la Facultad de Medicina, cuenta con el apoyo de ANEP y trabaja en colaboración con Ceibal STEM. Lo coordinan las Dras. Silvana Pereyra y Mónica Cappetta.</p>
+
+  <h3>Objetivo</h3>
+  <p>Acercar a docentes y estudiantes a la investigación científica y a los laboratorios de genética, para despertar el interés por la ciencia, estimular la curiosidad y democratizar el acceso.</p>
+
+  <h3>Qué buscamos</h3>
+  <ul>
+    <li>Desarrollar competencias científicas básicas a través de actividades prácticas.</li>
+    <li>Fomentar el pensamiento crítico, conectando los contenidos teóricos con problemas reales.</li>
+    <li>Formar a docentes como agentes multiplicadores, para que lleven actividades de genética a sus aulas.</li>
+    <li>Ampliar el acceso al conocimiento científico con herramientas sencillas y al alcance de cualquier aula.</li>
+    <li>Promover la participación de las mujeres en la ciencia.</li>
+  </ul>
+
+  <h3>Por qué estos juegos</h3>
+  <p>Los talleres presenciales tienen un alcance limitado. Los juegos llevan los mismos conceptos a cualquier aula con una computadora o un celular, sin materiales ni instalación, para preparar un taller, repasar después o como actividad en sí misma, con o sin taller.</p>
+</section>
+
+<section class="bloque" id="como-se-hicieron">
+  <h2>Cómo se hicieron estos juegos</h2>
+  <p>Los juegos parten de los temas que trabajamos en los talleres de extensión y de contenidos de la currícula de primaria y secundaria. Para cada tema pensamos qué concepto se podía convertir en juego, diseñamos los ejercicios y escribimos los textos, los ejemplos y la información para docentes. Después los programamos en HTML y JavaScript con asistencia de una herramienta de inteligencia artificial (Claude, de Anthropic), que también usamos para pulir la redacción. Todo el contenido fue revisado y probado por el equipo, que es responsable de él, y lo fuimos ajustando a partir de las pruebas y de los comentarios de colegas.</p>
+  <p>Los ejercicios son de elaboración propia y no se basan en materiales publicados por otros.</p>
+  <p class="nota">¿Encontraste un error o tenés una sugerencia? Escribinos a <a href="mailto:geneticaalasaulas@gmail.com">geneticaalasaulas@gmail.com</a>.</p>
+</section>
+
+<section class="bloque" id="autoria">
+  <h2>Autoría</h2>
+  <p><b>Diseño, contenidos y desarrollo:</b> Silvana Pereyra.</p>
+  <p><b>En el marco de:</b> proyecto de extensión Genética a las Aulas (coordinado por Silvana Pereyra y Mónica Cappetta), Unidad Académica de Genética, Facultad de Medicina, UdelaR.</p></section>
+
+<section class="bloque" id="usar">
+  <h2>Cómo usarlos</h2>
+  <h3>En clase</h3>
+  <ul>
+    <li>Son gratuitos y no requieren cuenta ni instalación. Funcionan en el navegador de la computadora o del celular.</li>
+    <li>Duran entre 5 y 20 minutos. Los más largos tienen niveles que se pueden jugar por separado.</li>
+    <li>Cada juego trae abajo una sección desplegable <i>Para docentes</i> con los conceptos que trabaja, las respuestas y sugerencias para la clase.</li>
+    <li>Sirven antes de un taller (para introducir), después (para repasar) o solos, como actividad de aula.</li>
+  </ul>
+
+  <h3>Licencia</h3>
+  <div class="licencia">
+    <span class="sello" aria-hidden="true">CC BY-NC 4.0</span>
+    <p style="margin:0">Estos juegos se distribuyen bajo licencia <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.es" target="_blank" rel="noopener">Creative Commons Atribución-NoComercial 4.0 Internacional</a>. Podés usarlos, compartirlos y adaptarlos en tus clases y materiales, siempre que menciones la fuente (ver abajo cómo citar) y no sea con fines comerciales.</p>
+  </div>
+
+  <h3>Privacidad</h3>
+  <p>Para saber qué juegos se usan más, contamos las visitas con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>. No usa cookies ni guarda datos personales de quien juega, y los juegos no piden nombre ni ningún otro dato.</p>
+</section>
+
+<section class="bloque" id="citar">
+  <h2>Cómo citar</h2>
+  <p>Si usás los juegos en una clase, una presentación o un trabajo, citalos así:</p>
+  <p class="cita" id="texto-cita">Pereyra S. <i>Juegos de Genética a las Aulas</i>. Proyecto de extensión Genética a las Aulas, Unidad Académica de Genética, Facultad de Medicina, Universidad de la República; 2026. https://geneticaalasaulas.github.io/juegos/</p>
+  <button class="copiar" type="button" id="copiar">Copiar cita</button>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <span>Genética a las Aulas es un proyecto de extensión de la Unidad Académica de Genética, Facultad de Medicina, Universidad de la República (UdelaR).</span>
+    <a href="mailto:geneticaalasaulas@gmail.com">geneticaalasaulas@gmail.com</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const boton = document.getElementById('copiar');
+  boton.addEventListener('click', async () => {
+    const texto = document.getElementById('texto-cita').innerText;
+    try {
+      await navigator.clipboard.writeText(texto);
+      boton.textContent = '¡Copiada!';
+    } catch (e) {
+      boton.textContent = 'Seleccioná el texto y copialo';
+    }
+    setTimeout(() => { boton.textContent = 'Copiar cita'; }, 2000);
+  });
+})();
+</script>
+<script data-goatcounter="https://gaa-juegos-k7m3.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
