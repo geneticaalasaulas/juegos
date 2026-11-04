@@ -119,15 +119,15 @@
   <p class="pie centro" id="g-desc">Cada punto es una generación. Las franjas <span style="background:#FBF1DD;padding:0 4px;">beige</span> marcan las generaciones con antibiótico; las <span style="background:#EAF3F2;padding:0 4px;">verdes</span>, las generaciones sin antibiótico.</p>
 
   <p class="aclaracion">
-    <b>Qué mide el eje vertical:</b> qué <b>porcentaje de la población</b> es resistente — o sea, de cada 100 bacterias, cuántas lo son.
-    No es la <b>cantidad</b> de bacterias. Eso es importante: con antibiótico el total de bacterias <b>baja</b> (mueren las sensibles),
+    <b>Qué mide el eje vertical:</b> qué <b>porcentaje de la población</b> es resistente, o sea, de cada 100 bacterias, cuántas lo son.
+    No es la <b>cantidad</b> de bacterias: con antibiótico el total de bacterias <b>baja</b> (mueren las sensibles),
     y al mismo tiempo el porcentaje de resistentes <b>sube</b>, porque las que quedan son cada vez más las resistentes.
   </p>
 
   <div class="poblacion" id="poblacion" aria-hidden="true"></div>
   <p class="pie centro">
     <span style="display:inline-block;width:10px;height:10px;background:var(--sen);border:1px solid rgba(22,33,31,.22);border-radius:2px;vertical-align:-1px;"></span> sensibles (cuadrado) &nbsp;·&nbsp;
-    <span style="display:inline-block;width:10px;height:10px;background:var(--res);border:1px solid rgba(22,33,31,.22);border-radius:50%;vertical-align:-1px;"></span> resistentes (círculo) &nbsp;— muestra de 100 bacterias
+    <span style="display:inline-block;width:10px;height:10px;background:var(--res);border:1px solid rgba(22,33,31,.22);border-radius:50%;vertical-align:-1px;"></span> resistentes (círculo). Muestra de 100 bacterias
   </p>
 
   <div class="controles">
@@ -159,27 +159,27 @@
   mutación existe antes del antibiótico; presión de selección por fármacos;
   crecimiento de la frecuencia del alelo ventajoso; costo de la resistencia;
   uso responsable de antibióticos.</p>
-  <p><b>Lo primero que conviene aclarar:</b> el eje vertical es una
+  <p><b>El eje vertical:</b> es una
   <b>proporción</b>, no una cantidad. Es la confusión más común del tema: con
   antibiótico la población total de bacterias baja mucho, y sin embargo el
   porcentaje de resistentes sube. Las dos cosas pasan a la vez y no se
   contradicen.</p>
-  <p><b>Qué permite ver que una pregunta de opción múltiple no permitía:</b> la
+  <p>La simulación permite ver la
   <b>forma</b> de la curva. La proporción de resistentes no crece a ritmo
   constante: arranca lento, se acelera y se frena sola cuando ya casi no quedan
   bacterias sensibles a las que desplazar. Esa curva en S es el resultado del
   modelo de selección en un locus.</p>
-  <p><b>La decisión que hay que tomar:</b> el botón "sin antibiótico" está para
-  que se vea que la resistencia suele tener un <b>costo</b> — sin la droga, las
-  resistentes quedan en desventaja y su proporción baja. Ahí está la discusión
-  interesante: ¿alcanza con suspender el antibiótico para que la resistencia
+  <p><b>El costo de la resistencia:</b> el botón "sin antibiótico" está para
+  que se vea que la resistencia suele tener un <b>costo</b>: sin la droga, las
+  resistentes quedan en desventaja y su proporción baja. Para discutir:
+  ¿alcanza con suspender el antibiótico para que la resistencia
   desaparezca? Probá con el costo en 0%: la proporción se queda donde estaba. Lo
   que subió por selección no baja solo si nada empuja en el otro sentido.</p>
   <p><b>Desafíos:</b> arriba del tablero hay cuatro desafíos en los que primero se predice el porcentaje de resistentes (la barra dibuja un rombo en el gráfico) y después se corre la simulación para comparar: la velocidad de la selección, la bajada lenta al suspender el antibiótico, el papel del costo y que el antibiótico no crea la resistencia.</p>
   <p><b>Para discutir después de jugar:</b> el antibiótico no crea la
-  resistencia — la mutación ya estaba en unas pocas bacterias antes de la primera
-  dosis (movés el control "resistentes al inicio" y siempre hay algunas). Lo que
-  hace el antibiótico es eliminar a las demás. ¿Qué consecuencia tiene eso para
+  resistencia: la mutación ya estaba en unas pocas bacterias antes de la primera
+  dosis (movés el control "resistentes al inicio" y siempre hay algunas). El
+  antibiótico elimina a las demás. ¿Qué consecuencia tiene eso para
   cómo usamos antibióticos?</p>
   <p><b>Dos matices que el modelo deja afuera:</b> la resistencia no solo aparece
   por mutación: muchas veces llega ya armada desde otras bacterias, en plásmidos
@@ -294,7 +294,7 @@ function nota(){
   const n = historia.length - 1, ult = historia[n], p = ult.p;
   const dosis = historia.filter(h => h.antibiotico === true).length;
   if(n === 0)
-    return `Arrancás con ${pct(p)} de bacterias resistentes. Ojo: <b>ya están ahí antes de la primera dosis</b> — el antibiótico no las va a crear, las va a seleccionar.`;
+    return `Arrancás con ${pct(p)} de bacterias resistentes. Ojo: <b>ya están ahí antes de la primera dosis</b>. El antibiótico no las va a crear, las va a seleccionar.`;
   if(ult.antibiotico === false && p < historia[n-1].p - 1e-9){
     const caida = (historia[n-1].p - p) * 100;
     let extra = '';

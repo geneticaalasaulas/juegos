@@ -124,7 +124,7 @@
 
 <a class="volver" href="../">&larr; Volver al catálogo</a>
 <h1>Nutrigenética: leche, genes y cultura</h1>
-<p class="bajada">Casi todos los mamíferos dejan de producir lactasa, la enzima que digiere el azúcar de la leche, después del destete. En algunos pueblos se volvió frecuente una variante que la mantiene toda la vida: acá vas a hacer correr miles de años para ver cómo la cultura decidió dónde.</p>
+<p class="bajada">Casi todos los mamíferos dejan de producir lactasa, la enzima que digiere el azúcar de la leche, después del destete. En algunos pueblos se volvió frecuente una variante que la mantiene toda la vida: acá vas a hacer correr miles de años para ver qué papel tuvo la cultura.</p>
 
 <div class="tablero">
   <p class="estado" id="estado"></p>
@@ -156,7 +156,7 @@
   de nuestra especie y la más común hoy: alrededor de 2 de cada 3 adultos del mundo no
   la producen. La persistencia de lactasa es la novedad, y apareció hace solo unos miles de años.</p>
   <p><b>La leche no cambia los genes de quien la toma.</b> Las variantes aparecen por
-  mutación, al azar, en cualquier población. Lo que hizo la cultura fue cambiar cuál de
+  mutación, al azar, en cualquier población. La cultura cambió cuál de
   ellas dejaba más descendencia: donde se tomaba leche fresca, la que mantenía la lactasa
   encendida tuvo ventaja. Los genes cambiaron por la cultura, y la cultura (seguir criando
   ganado lechero) se apoyó en esos genes. Eso se llama <b>coevolución gen-cultura</b>.</p>
@@ -515,7 +515,7 @@ function resultadoM1(){
   if(S.pred === 'sube') t += `<p class="res cerca"><b>Bien predicho.</b> `;
   else if(S.pred === 'cambian') t += `<p class="res lejos"><b>No fue eso.</b> En la simulación nadie cambió: quien nació sin la variante siguió sin producir lactasa de adulto, tomara la leche que tomara. `;
   else t += `<p class="res lejos"><b>Casi.</b> Es cierto que tomar leche no cambia los genes de nadie. Pero la dieta sí cambia <i>cuáles</i> variantes dejan más descendencia. `;
-  t += `En el pueblo ganadero la variante pasó de 1 de cada 100 adultos al <b>${pct(A.p)}</b>. Quien mantiene la lactasa de adulto aprovecha mejor un alimento más (calorías, proteínas, agua) y en promedio deja un poco más de descendencia: en el modelo, un 2,5&nbsp;% más por generación. Parece poco, pero en 400 generaciones se acumula.</p>
+  t += `En el pueblo ganadero la variante pasó de 1 de cada 100 adultos al <b>${pct(A.p)}</b>. Quien mantiene la lactasa de adulto aprovecha mejor un alimento más (calorías, proteínas, agua) y en promedio deja un poco más de descendencia: en el modelo, un 2,5&nbsp;% más por generación. Es una diferencia chica, pero en 400 generaciones se acumula.</p>
     <p>En el pueblo sin ganado lechero quedó en <b>${pct(B.p)}</b>: ahí la variante no da ninguna ventaja. Y nadie tiene un problema: sin leche en la dieta, no producir lactasa no le cambia nada a nadie.</p>
     <div class="botones"><button class="primario" id="d-sig">Siguiente misión &rarr;</button></div>`;
   return t;
@@ -547,7 +547,7 @@ function evaluarM2(){
   const usoFresca = P.hist.some((h, i) => i > 0 && h.dieta === 'fresca');
   S.etapa = 'resultado';
   if(v <= 0.20){
-    S.resultado = `<p class="res cerca"><b>Con eso se reproduce el dato.</b> La población llegó a hoy con ${pct(P.p)}. En el yogur, el queso y el airag (leche de yegua fermentada, muy consumida en Mongolia) las bacterias se comen buena parte de la lactosa antes que nosotros. Si casi todo lo que se consume está fermentado, no producir lactasa casi no molesta y la variante tiene poca ventaja. Es una solución <b>cultural</b> al mismo problema: en vez de cambiar las personas, se cambia la leche. Los investigadores suman otra explicación que el modelo no incluye: con una dieta rica en lácteos cambian las bacterias del intestino grueso, que ayudan a aprovechar la lactosa y reducen las molestias. El caso se sigue estudiando.</p>
+    S.resultado = `<p class="res cerca"><b>Con eso se reproduce el dato.</b> La población llegó a hoy con ${pct(P.p)}. En el yogur, el queso y el airag (leche de yegua fermentada, muy consumida en Mongolia) las bacterias se comen buena parte de la lactosa antes que nosotros. Si casi todo lo que se consume está fermentado, no producir lactasa casi no molesta y la variante tiene poca ventaja. Es una solución <b>cultural</b> al mismo problema: la fermentación le saca lactosa a la leche. Los investigadores suman otra explicación que el modelo no incluye: con una dieta rica en lácteos cambian las bacterias del intestino grueso, que ayudan a aprovechar la lactosa y reducen las molestias. El caso se sigue estudiando.</p>
       <div class="botones"><button class="primario" id="d-sig">Siguiente misión &rarr;</button></div>`;
   } else {
     errores++;
@@ -564,7 +564,7 @@ function evaluarM3(){
   const okAntes = antes <= 0.20, okHoy = hoy >= 0.80;
   S.etapa = 'resultado'; S.nota = null;
   if(okAntes && okHoy){
-    S.resultado = `<p class="res cerca"><b>Lo lograste:</b> casi nada de cambio durante cinco milenios (${pct(valorEn(P, -3200))} hace 3200 años) y después una subida enorme, hasta el ${pct(P.p)} de hoy. Para eso, en los últimos milenios tomar leche sin lactasa tuvo que ser muy perjudicial. Una hipótesis actual es justamente esa: en una persona desnutrida o con una infección, la diarrea que provoca la lactosa puede ser mortal. Hay otras explicaciones en discusión, pero algo es seguro: la persistencia de lactasa es uno de los casos de <b>selección natural más fuertes</b> que se conocen en humanos, y muy reciente.</p>
+    S.resultado = `<p class="res cerca"><b>Lo lograste:</b> casi nada de cambio durante cinco milenios (${pct(valorEn(P, -3200))} hace 3200 años) y después una subida enorme, hasta el ${pct(P.p)} de hoy. Para eso, en los últimos milenios tomar leche sin lactasa tuvo que ser muy perjudicial. Una hipótesis actual es justamente esa: en una persona desnutrida o con una infección, la diarrea que provoca la lactosa puede ser mortal. Hay otras explicaciones en discusión, pero la persistencia de lactasa es uno de los casos de <b>selección natural más fuertes</b> que se conocen en humanos, y muy reciente.</p>
       <div class="botones"><button class="primario" id="d-sig">Siguiente misión &rarr;</button></div>`;
     return;
   }
@@ -628,7 +628,7 @@ function m4HTML(){
   }).join('')}</div>`;
   if(S.m4 && S.m4.ultimo && !S.m4.ok) h += `<p class="res lejos">${RESP_M4.find(r => r.id === S.m4.ultimo).mal} Probá de nuevo.</p>`;
   if(S.m4 && S.m4.ok){
-    h += `<p class="res cerca"><b>Exacto: es evolución convergente.</b> El mismo resultado, la lactasa encendida en la adultez, alcanzado varias veces por caminos distintos. Y no por casualidad todos los cambios caen en la misma zona: es la que regula cuánto se expresa el gen. Ninguno cambia la enzima; cambian <i>cuándo</i> se produce. Donde la cultura puso leche fresca en la dieta, la selección hizo frecuente la variante que hubiera a mano.</p>
+    h += `<p class="res cerca"><b>Exacto: es evolución convergente.</b> El mismo resultado, la lactasa encendida en la adultez, alcanzado varias veces por caminos distintos. Todos los cambios caen en la zona que regula cuánto se expresa el gen. Ninguno cambia la enzima; cambian <i>cuándo</i> se produce. Donde la cultura puso leche fresca en la dieta, la selección hizo frecuente la variante que hubiera a mano.</p>
       <p class="res info"><b>Terminaste las cuatro misiones</b>${OPC.errores ? ` con ${errores} ${errores === 1 ? 'error' : 'errores'}` : ''}${OPC.crono ? ` en ${mmss(Math.round((tFin - t0) / 1000))}` : ''}. Viste que la cultura cambia los genes de una población (sin cambiar los de nadie en particular), que también puede esquivar la selección (fermentando la leche) y que la misma solución evolutiva apareció más de una vez.</p>
       <div class="botones"><button class="primario" id="d-libre">Seguir en el modo libre</button><button onclick="location.reload()">Jugar de nuevo</button></div>`;
   }

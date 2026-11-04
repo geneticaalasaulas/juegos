@@ -93,7 +93,7 @@
 <body>
 <a class="volver" href="../">&larr; Volver al catálogo</a>
 <h1>Epigenética con interruptores</h1>
-<p class="bajada"><b>Epigenética:</b> cambios en la expresión de los genes — qué genes se prenden y qué genes se apagan — que no se deben a cambios en la secuencia del ADN y que se mantienen cuando la célula se divide.</p>
+<p class="bajada"><b>Epigenética:</b> cambios en la expresión de los genes (qué genes se prenden y qué genes se apagan) que no se deben a cambios en la secuencia del ADN y que se mantienen cuando la célula se divide.</p>
 <p class="marcador" id="marcador">Ronda 1 de 5</p>
 <div class="progreso" aria-hidden="true"><i id="barra"></i></div>
 <div class="tablero" id="tablero"></div>
@@ -302,7 +302,7 @@ function final(){
   tablero.innerHTML = `<div class="final">
     <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">Terminaste el juego</h2>
     <p>Respondiste bien a la primera ${aciertos} de ${RONDAS.length} preguntas.</p>
-    <p style="max-width:34em;margin:0 auto;line-height:1.55;">En los cinco casos el ADN fue el mismo. Lo que cambió fue qué genes se expresan.</p>
+    <p style="max-width:34em;margin:0 auto;line-height:1.55;">En los cinco casos el ADN fue el mismo; cambió qué genes se expresan.</p>
     <div class="acciones" style="justify-content:center;"><button class="primario" id="otra">Jugar de nuevo</button></div></div>`;
   el('otra').onclick = () => { aciertos = 0; empezar(0); };
 }

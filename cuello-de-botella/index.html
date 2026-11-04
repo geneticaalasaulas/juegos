@@ -133,7 +133,7 @@
 
 <div class="tablero">
   <div class="desafio" id="desafio" aria-live="polite"></div>
-  <h2 class="etapa">Antes de la tormenta — 100 tortugas</h2>
+  <h2 class="etapa">Antes de la tormenta: 100 tortugas</h2>
   <div class="tortugas" id="antes" aria-hidden="true"></div>
   <div class="barras" id="barras-antes"></div>
 
@@ -141,12 +141,12 @@
   <div class="tortugas pocas" id="sobrevivientes" aria-hidden="true"></div>
   <div class="barras" id="barras-sobrev"></div>
 
-  <h2 class="etapa">Después — la población se recupera desde las sobrevivientes</h2>
+  <h2 class="etapa">Después: la población se recupera desde las sobrevivientes</h2>
   <div class="tortugas" id="despues" aria-hidden="true"></div>
   <div class="barras" id="barras-despues"></div>
 
   <div class="controles">
-    <button class="primario" id="btn-correr">¡Tormenta! &mdash; correr de nuevo</button>
+    <button class="primario" id="btn-correr">¡Tormenta! Correr de nuevo</button>
     <button id="btn-borrar">Borrar el registro</button>
   </div>
 
@@ -167,12 +167,12 @@
   <p><b>Conceptos que trabaja:</b> deriva genética; cuello de botella
   poblacional; pérdida de variación genética por azar; diferencia entre deriva y
   selección natural.</p>
-  <p><b>Por qué este juego dejó de ser de opción múltiple:</b> porque la deriva
+  <p><b>Por qué se juega con simulaciones:</b> la deriva
   genética es <b>azar</b>, y eso no se puede enseñar con una pregunta de
-  respuesta única. Lo importante acá no es una corrida: es correrlo diez veces
-  con el mismo número de sobrevivientes y ver que el resultado cambia cada vez.
+  respuesta única. Conviene correrlo diez veces
+  con el mismo número de sobrevivientes y ver que el resultado cambia.
   El registro de abajo acumula las corridas justamente para eso.</p>
-  <p><b>La pregunta que hay que hacer:</b> con 6 sobrevivientes, ¿qué color se
+  <p><b>Para preguntar:</b> con 6 sobrevivientes, ¿qué color se
   pierde más seguido? El celeste, que arranca en 20%. No porque sea peor
   —ninguno es peor, no hay selección acá— sino porque al ser el menos frecuente
   tiene más probabilidad de quedar afuera de una muestra chica. Esa es la
@@ -184,10 +184,9 @@
   variación; la idea de fondo (en poblaciones chicas el azar pesa más) es la
   misma.</p>
   <p><b>Sobre los colores:</b> no son colores de tortuga real. Están elegidos
-  para que se distingan bien entre sí, incluso para quien no distingue rojo de
-  verde: el par más parecido, en el peor de los tres tipos de daltonismo más
-  frecuentes, todavía separa 78 unidades de color. Si un/a estudiante pregunta,
-  vale decirlo: acá el color es una etiqueta para seguir un alelo, no un retrato.</p>
+  para que se distingan bien entre sí, también para personas con los tipos más
+  frecuentes de daltonismo. Si un/a estudiante pregunta,
+  vale decirlo: acá el color es una etiqueta para seguir un alelo.</p>
   <p><b>Desafíos:</b> arriba del tablero hay tres desafíos: predecir qué color se pierde más seguido, en cuántas de 20 tormentas se pierde algún color, y buscar cuántas sobrevivientes hacen falta para que eso pase en menos de 1 de cada 20. Como la deriva es azar, cada predicción se compara con la probabilidad exacta (distribución hipergeométrica) y también con lo que salió en la tanda.</p>
   <p><b>Para discutir después de jugar:</b> moviendo el control, ¿a partir de
   cuántas sobrevivientes deja de perderse algún color casi siempre? Y una vez
@@ -301,7 +300,7 @@ function registroHTML(){
     </table>
     <p class="pie">Corriste <b>${corridas}</b> ${corridas === 1 ? 'vez' : 'veces'}.
       En <b>${corridasConPerdida}</b> (${pctPerdida}%) se perdió al menos un color.<br>
-      Veces que se perdió cada uno &mdash; ${detalle}</p>`;
+      Veces que se perdió cada uno: ${detalle}</p>`;
 }
 
 function nota(){
@@ -313,10 +312,10 @@ function nota(){
     t = `Esta vez sobrevivieron los tres colores, pero mirá las proporciones: ya no son 50 / 30 / 20. `;
   } else {
     const nom = perdidos.map(a => `<b>${a.plural}</b>`).join(' y las ');
-    t = `Esta vez se perdieron las ${nom}. Nadie las eliminó: simplemente ninguna `
+    t = `Esta vez se perdieron las ${nom}. Ninguna `
       + `de las ${k} sobrevivientes era de ${perdidos.length === 1 ? 'ese color' : 'esos colores'}. `;
   }
-  t += `Con ${k} sobrevivientes de 100, las frecuencias de la población nueva quedan a merced del azar. `;
+  t += `Con ${k} sobrevivientes de 100, las frecuencias de la población nueva dependen mucho del azar. `;
   if(corridas >= 3)
     t += `Ya corriste ${corridas} veces y el resultado no fue el mismo: <b>eso es la deriva genética</b>.`;
   else
@@ -338,7 +337,7 @@ function contarFin(){
 function dibujar(){
   el('barras-antes').innerHTML = barrasHTML(poblacionInicial(), N);
   el('antes').innerHTML = tortugasHTML(poblacionInicial());
-  el('titulo-sobrev').textContent = `Sobrevivientes — ${k} tortugas al azar`;
+  el('titulo-sobrev').textContent = `Sobrevivientes: ${k} tortugas al azar`;
   if(estado){
     el('sobrevivientes').innerHTML = tortugasHTML(estado.sobrev);
     el('barras-sobrev').innerHTML  = barrasHTML(estado.sobrev, k);

@@ -151,7 +151,7 @@ function dibujar(){
     <p class="enunciado">Este es un tramo de un gen. La base resaltada en color <b>debería ser ${r.deberia}</b>, pero dice <b>${r.proto[r.mutIdx]}</b>: esa es la mutación que queremos corregir.</p>
     <p class="secuencia" style="word-break:break-all;line-height:1.7;">${secuenciaHTML(r)}</p>
     <p class="enunciado">Cas9 solo corta el ADN si al lado hay una secuencia <b>PAM</b>: tres bases del tipo N-G-G. El PAM que vamos a usar es el <b>${r.pam}</b> sombreado en verde.</p>
-    <p class="enunciado">El <b>ARN guía</b> tiene la misma secuencia que las 12 bases que están <b>justo antes del PAM</b>, pero escrita como ARN — o sea, con <b>U</b> en lugar de T. ¿Cuál de estos ARN guía lleva a Cas9 al sitio de la mutación?</p>
+    <p class="enunciado">El <b>ARN guía</b> tiene la misma secuencia que las 12 bases que están <b>justo antes del PAM</b>, pero escrita como ARN, o sea, con <b>U</b> en lugar de T. ¿Cuál de estos ARN guía lleva a Cas9 al sitio de la mutación?</p>
     <div class="opciones">${opciones.map(o=>`<button data-o="${o}">${o}</button>`).join('')}</div>
     <p class="feedback" id="feedback"></p>
     <button class="siguiente" id="siguiente">Siguiente &rarr;</button>
@@ -198,8 +198,8 @@ function final(){
         la otra, la complementaria; Cas9 corta las dos hebras unas 3 bases antes
         del PAM.
         <br>2. En un gen de verdad hay muchas secuencias N-G-G posibles. Elegir
-        entre ellas — buscando la que corte más cerca de la mutación y la que se
-        parezca menos a otros sitios del genoma — es buena parte del trabajo de
+        entre ellas, buscando la que corte más cerca de la mutación y la que se
+        parezca menos a otros sitios del genoma, es buena parte del trabajo de
         diseño de un experimento CRISPR.
         <br>3. CRISPR/Cas9 encuentra y corta. Corregir la base es un paso aparte:
         hay que darle a la célula un molde con la secuencia correcta, o usar una

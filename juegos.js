@@ -309,7 +309,7 @@ const juegos = [
     es: {
       nombre: "Farmacogenómica: ajustá la dosis",
       subtitulo: "Del genotipo a la dosis",
-      resumen: "Calculá el puntaje de actividad de una enzima a partir del genotipo, deducí el fenotipo de metabolización y ajustá la dosis mirando el nivel del fármaco en sangre. Con un profármaco, todo se da vuelta.",
+      resumen: "Calculá el puntaje de actividad de una enzima a partir del genotipo, deducí el fenotipo de metabolización y ajustá la dosis mirando el nivel del fármaco en sangre. Con un profármaco, la relación se invierte.",
       aprende: ["Del genotipo al fenotipo de metabolización", "Ventana terapéutica", "Fármaco activo frente a profármaco", "Medicina de precisión"]
     }
   },
