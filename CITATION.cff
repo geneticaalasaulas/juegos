@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "Si usás estos juegos, citalos así."
+type: software
+title: "Juegos de Genética a las Aulas"
+abstract: >-
+  Diecisiete juegos cortos y gratuitos para enseñar y aprender genética
+  humana, evolución y salud en primaria, secundaria y formación docente.
+  Proyecto de extensión Genética a las Aulas, Unidad Académica de Genética,
+  Facultad de Medicina, Universidad de la República (UdelaR).
+authors:
+  - family-names: "Pereyra Lepre"
+    given-names: "Silvana"
+    orcid: "https://orcid.org/0000-0002-8969-4138"
+    affiliation: "Unidad Académica de Genética, Facultad de Medicina, Universidad de la República"
+license: CC-BY-NC-4.0
+url: "https://geneticaalasaulas.github.io/juegos/"
+repository-code: "https://github.com/geneticaalasaulas/juegos"
+version: "1.0.0"
+date-released: "2026-11-12"
+keywords:
+  - genética
+  - educación en ciencias
+  - juegos educativos
+  - evolución
+  - herencia
+  - recursos educativos abiertos

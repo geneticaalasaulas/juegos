@@ -4,7 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Genética a las Aulas · Juegos</title>
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" href="assets/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <meta name="description" content="Juegos gratuitos para enseñar y aprender genética humana, evolución y salud.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Genética a las Aulas">
+<meta property="og:locale" content="es_UY">
+<meta property="og:title" content="Genética a las Aulas · Juegos">
+<meta property="og:description" content="Juegos gratuitos para enseñar y aprender genética humana, evolución y salud.">
+<meta property="og:url" content="https://geneticaalasaulas.github.io/juegos/">
+<meta property="og:image" content="https://geneticaalasaulas.github.io/juegos/assets/og-portada.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="600">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root{
     --ink:#161616;
@@ -106,6 +119,9 @@
   .carta h3{ font-size:1.15rem; font-weight:600; margin:0.3rem 0 0.4rem; }
   .carta .subt{ font-size:0.9rem; color:var(--muted); margin:0; }
   .vacio{ color:var(--muted); padding:2rem 0; }
+  .sin-js{ padding-left:1.2rem; line-height:1.5; }
+  .sin-js li{ margin:.6rem 0; color:var(--muted); }
+  .sin-js a{ color:var(--accent); font-weight:600; }
 
   /* PENSADO PARA EL AULA */
   .docentes{ max-width:1080px; margin:0 auto; padding:1rem 1.5rem 5rem; }
@@ -157,6 +173,29 @@
   <h2>Elegí un juego</h2>
   <div class="filtros" id="filtros"></div>
   <div class="grid" id="grilla"></div>
+  <noscript>
+    <!-- Lista para buscadores y navegadores sin JavaScript.
+         Mantenerla igual al array `juegos` de juegos.js. -->
+    <ul class="sin-js">
+      <li><a href="escalera-adn/">La escalera del ADN</a>: Completá la otra mitad de una escalera de ADN eligiendo las bases nitrogenadas (las letras) que encajan, encontrá peldaños mal armados y copiá el ADN como lo hace una célula antes de dividirse.</li>
+      <li><a href="viaje-al-interior/">Viaje al interior</a>: Hacé zoom desde tu cuerpo hasta un gen: la piel, una célula, el núcleo, un cromosoma y el ADN. En cada parada, una pregunta para seguir bajando.</li>
+      <li><a href="extraccion-adn/">Extracción de ADN</a>: Elegí del estante, paso a paso, lo que hace falta para sacar el ADN de una frutilla y entendé para qué sirve cada cosa. Al final, la receta para hacerlo de verdad.</li>
+      <li><a href="detectives-de-familia/">Detectives de familia</a>: Cachorros perdidos buscan a su familia. Armá la tarjeta de ADN de un cachorro, encontrá a su mamá y a su papá comparando marcas, y reconocé a una nieta a través de sus abuelos.</li>
+      <li><a href="es-merluza/">¿Es merluza de verdad?</a>: Compará el código de barras de ADN de una muestra de pescado con una biblioteca de especies y descubrí si la etiqueta dice la verdad, si se vende una especie en peligro o si el pez no está en la biblioteca.</li>
+      <li><a href="arbol-genealogico/">Árbol genealógico: poné a prueba tu hipótesis</a>: Cada familia se genera con un modo de herencia oculto. Proponé una hipótesis, mirá si es compatible con el árbol y ponela a prueba: elegí qué familia seguir, predecí su descendencia y mirá quiénes nacen.</li>
+      <li><a href="punnett-rapido/">Punnett: de los gametos a la descendencia</a>: Separá los alelos en gametos, llená el cuadro de Punnett y marcá qué descendientes muestran el rasgo. Después simulá la descendencia para comparar lo esperado con lo observado. Incluye un modo contrarreloj para repasar.</li>
+      <li><a href="cariotipo-express/">Cariotipo: armá y diagnosticá</a>: Arrastrá los cromosomas de una metafase a su lugar en el cariograma, emparejándolos por tamaño, centrómero y bandas. Después, como detective, escribí el resultado en notación ISCN a partir de lo que armaste.</li>
+      <li><a href="seleccion-natural/">Selección natural simulada</a>: Polillas claras y oscuras sobre el tronco de un abedul. Predecí cómo van a cambiar las proporciones, hacé pasar las generaciones y compará. Cambiá el tronco a mitad de camino y la curva se da vuelta.</li>
+      <li><a href="filogenia/">Árbol filogenético: armalo vos</a>: Armá el árbol paso a paso, uniendo las especies más parecidas según una tabla de similitud genética. Después leé tu árbol: ancestros comunes, grupo externo y por qué girar las ramas no cambia nada.</li>
+      <li><a href="cuello-de-botella/">Cuello de botella</a>: Una tormenta deja unas pocas tortugas sobrevivientes, elegidas al azar. Predecí qué color se pierde y cuántas sobrevivientes hacen falta para no perder variación, y ponelo a prueba corriendo tormentas.</li>
+      <li><a href="resistencia-antibioticos/">Resistencia a antibióticos</a>: Predecí qué va a pasar con las bacterias resistentes, aplicá o no el antibiótico en cada generación y compará en el gráfico. Ajustá la ventaja de las resistentes y el costo de serlo.</li>
+      <li><a href="nutrigenetica/">Nutrigenética: leche, genes y cultura</a>: Hacé correr miles de años en pueblos con y sin leche en la dieta y descubrí por qué la persistencia de lactasa es frecuente en unos lugares y rara en otros. Cuatro misiones: predecir, explicar el caso de Mongolia, ajustar la historia al ADN antiguo y comparar variantes de distintos continentes.</li>
+      <li><a href="crispr/">CRISPR simplificado</a>: Elegí el ARN guía que lleva a Cas9 al sitio exacto de una mutación, respetando la secuencia PAM que la enzima necesita para cortar.</li>
+      <li><a href="farmacogenomica/">Farmacogenómica: ajustá la dosis</a>: Calculá el puntaje de actividad de una enzima a partir del genotipo, deducí el fenotipo de metabolización y ajustá la dosis mirando el nivel del fármaco en sangre. Con un profármaco, la relación se invierte.</li>
+      <li><a href="detective-clinico/">Detective de enfermedades genéticas</a>: Cada caso empieza solo con la edad y el sexo. Pedí antecedentes familiares, síntomas o estudios, descartá los diagnósticos que no encajan y llegá al más probable con la menor información posible.</li>
+      <li><a href="epigenetica/">Epigenética con interruptores</a>: Metilá las citosinas del promotor de un gen y abrí o cerrá la cromatina para reproducir casos reales: ratones agutí, gemelos, abejas reina, piel y neurona, hambruna. La secuencia del ADN nunca cambia.</li>
+    </ul>
+  </noscript>
   <p class="vacio" id="vacio" hidden>No hay juegos con ese filtro todavía.</p>
 </section>
 

@@ -1,0 +1,32 @@
+{
+  "title": "Juegos de Genética a las Aulas",
+  "upload_type": "software",
+  "description": "<p>Diecisiete juegos cortos y gratuitos para enseñar y aprender genética humana, evolución y salud en primaria, secundaria y formación docente. Funcionan en el navegador, en la computadora o el celular, sin instalación. Cada juego trae una sección para docentes con los conceptos que trabaja, las respuestas y sugerencias para la clase.</p><p>Proyecto de extensión Genética a las Aulas, Unidad Académica de Genética, Facultad de Medicina, Universidad de la República (UdelaR).</p><p>Jugar: <a href=\"https://geneticaalasaulas.github.io/juegos/\">https://geneticaalasaulas.github.io/juegos/</a></p>",
+  "creators": [
+    {
+      "name": "Pereyra Lepre, Silvana",
+      "affiliation": "Unidad Académica de Genética, Facultad de Medicina, Universidad de la República",
+      "orcid": "0000-0002-8969-4138"
+    }
+  ],
+  "license": "cc-by-nc-4.0",
+  "access_right": "open",
+  "language": "spa",
+  "keywords": [
+    "genética",
+    "educación en ciencias",
+    "juegos educativos",
+    "evolución",
+    "herencia",
+    "genética humana",
+    "extensión universitaria",
+    "recursos educativos abiertos"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://geneticaalasaulas.github.io/juegos/",
+      "relation": "isDocumentedBy",
+      "resource_type": "other"
+    }
+  ]
+}
