@@ -1,5 +1,7 @@
 # Juegos de Genética a las Aulas
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24171178.svg)](https://doi.org/10.5281/zenodo.24171178)
+
 Juegos cortos y gratuitos para enseñar y aprender genética en primaria y
 secundaria. Funcionan en el navegador, en la computadora o el celular, sin
 instalación.
@@ -35,6 +37,7 @@ no comerciales, citando la fuente.
 > Pereyra S. *Juegos de Genética a las Aulas*. Proyecto de extensión Genética
 > a las Aulas, Unidad Académica de Genética, Facultad de Medicina, Universidad
 > de la República; 2026. https://geneticaalasaulas.github.io/juegos/
+> doi:10.5281/zenodo.24171178
 
 ## Contacto
 

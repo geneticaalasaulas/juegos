@@ -16,6 +16,7 @@ license: CC-BY-NC-4.0
 url: "https://geneticaalasaulas.github.io/juegos/"
 repository-code: "https://github.com/geneticaalasaulas/juegos"
 version: "1.0.0"
+doi: "10.5281/zenodo.24171178"
 date-released: "2026-11-12"
 keywords:
   - genética
