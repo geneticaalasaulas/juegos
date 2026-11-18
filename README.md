@@ -11,9 +11,10 @@ instalación.
 ## Los juegos
 
 **Primaria:** La escalera del ADN · Viaje al interior · Extracción de ADN ·
-Detectives de familia · ¿Es merluza de verdad?
+Detectives de familia · ¿Es merluza de verdad? · Armá tu proteína
 
-**Secundaria y docentes:** Árbol genealógico · Punnett · Cariotipo · Selección
+**Secundaria y docentes:** Árbol genealógico · Punnett · Grupos sanguíneos ABO y Rh ·
+Detective de ADN · Cariotipo · Selección
 natural simulada · Árbol filogenético · Cuello de botella · Resistencia a
 antibióticos · Nutrigenética · CRISPR simplificado · Farmacogenómica ·
 Detective de enfermedades genéticas · Epigenética con interruptores

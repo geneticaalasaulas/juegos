@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Armá tu proteína · Genética a las Aulas</title>
+<link rel="icon" href="../assets/favicon.ico" sizes="any">
+<link rel="icon" href="../assets/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<meta name="description" content="Copiá un gen en ARN, leelo de a tres letras con la tabla del código genético y armá la proteína. Y... ¿qué pasaría si cambiás una sola letra del ADN? Probalo y mirá qué le pasa a la proteína: a veces nada, a veces cambia un aminoácido y a veces se interrumpe la proteína.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Genética a las Aulas">
+<meta property="og:locale" content="es_UY">
+<meta property="og:title" content="Armá tu proteína · Genética a las Aulas">
+<meta property="og:description" content="Copiá un gen en ARN, leelo de a tres letras con la tabla del código genético y armá la proteína. Después cambiá una sola letra del ADN y mirá qué le pasa a la proteína: a veces nada, a veces cambia un aminoácido y a veces se corta.">
+<meta property="og:url" content="https://geneticaalasaulas.github.io/juegos/arma-tu-proteina/">
+<meta property="og:image" content="https://geneticaalasaulas.github.io/juegos/capas/arma-tu-proteina.jpg">
+<meta property="og:image:width" content="900">
+<meta property="og:image:height" content="600">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
+    --juego:#0B9053;          /* verde del logo — ver capas/arma-tu-proteina.jpg */
+    --juego-texto:#0A874E;
+    --juego-tinte:#E1F2E9;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--juego-texto); }
+  h1{ font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem); letter-spacing:-0.01em; line-height:1.2; margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem; }
+  .bajada{ max-width:34em; margin:0 auto 1rem; font-size:0.95rem; line-height:1.55; color:var(--muted); text-align:center; padding:0 1rem; }
+  .marcador{ color:var(--muted); font-size:0.95rem; margin:0 0 1rem; text-align:center; }
+  .progreso{ width:min(860px,94vw); height:5px; margin:0 0 1.1rem; background:var(--pista); border-radius:999px; overflow:hidden; }
+  .progreso > i{ display:block; height:100%; width:0; border-radius:999px; background:var(--juego-texto); transition:width .3s ease; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.5rem; width:min(860px,94vw); margin-bottom:1.2rem; }
+  @media (max-width:520px){ .tablero{ padding:1rem 0.8rem; } }
+
+  button{ min-height:44px; padding:0.55rem 0.9rem; border-radius:6px; font-size:0.97rem; cursor:pointer; font-family:inherit;
+    border:1.5px solid var(--juego); background:#fff; color:var(--ink); transition:background-color .15s ease; }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+
+  .historia{ background:var(--juego-tinte); border-left:4px solid var(--juego); padding:0.8rem 1rem; border-radius:0 6px 6px 0; line-height:1.55; margin:0 0 0.9rem; }
+  .consigna{ font-size:1.05rem; line-height:1.5; margin:0 0 1rem; font-weight:600; }
+  .regla{ font-size:0.93rem; line-height:1.5; color:var(--muted); margin:-0.4rem 0 1rem; }
+
+  /* Secuencias: bloques de a tres (codones), cada columna con varias filas alineadas */
+  .secuencia{ display:flex; flex-wrap:wrap; gap:10px 12px; justify-content:center; margin:0.4rem 0 0.2rem; }
+  .bloque{ display:flex; gap:3px; padding:4px; border-radius:8px; }
+  .bloque.etiquetas{ flex-direction:column; justify-content:space-around; padding-right:0; }
+  .bloque.etiquetas span{ height:32px; display:flex; align-items:center; font-size:0.72rem; color:var(--muted); line-height:1.1; max-width:5.6em; }
+  .bloque.leyendo{ background:var(--juego-tinte); box-shadow:0 0 0 2px var(--juego); }
+  .bloque.mutado{ background:#FFF4DC; box-shadow:0 0 0 2px var(--accent); }
+  .col{ display:flex; flex-direction:column; gap:3px; }
+  .base{ width:30px; height:32px; border-radius:5px; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:var(--mono);
+    font-size:1.02rem; color:#fff; border:2px solid transparent; padding:0; min-height:0; }
+  .base.tenue{ opacity:0.38; }
+  .base.vacia{ background:#F4F7F6 !important; border:2px dashed #9AA8A5; color:#9AA8A5; }
+  .base.actual{ border:2px solid var(--ink); box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--juego); }
+  .base.cambiada{ box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--accent); }
+  button.col{ border:none; background:none; padding:0; min-height:0; border-radius:6px; cursor:pointer; }
+  button.col:hover{ background:none; filter:brightness(1.08); }
+  button.col.elegida .base{ box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--juego); }
+  .num-codon{ text-align:center; font-size:0.68rem; color:var(--muted); width:100%; }
+
+  /* Nivel 1: el ADN y el ARN como dos moléculas separadas */
+  .tx{ width:fit-content; max-width:100%; margin:0.4rem auto 0.2rem; overflow-x:auto; padding:2px; }
+  .molecula{ border-radius:10px; padding:0.55rem 0.7rem 0.7rem; }
+  .molecula.adn{ background:#F1F4F3; border:2px solid #9AA8A5; }
+  .molecula.arn{ background:#F3E9F6; border:2px solid #5E0478; }
+  .mol-titulo{ font-weight:700; font-size:0.95rem; margin:0 0 0.35rem; }
+  .molecula.adn .mol-titulo{ color:#3F4B49; }
+  .molecula.arn .mol-titulo{ color:#5E0478; }
+  .mol-titulo small{ font-weight:400; color:var(--muted); font-size:0.85rem; }
+  .hebra-etq{ font-size:0.85rem; color:var(--muted); margin:0.15rem 0 0.2rem; }
+  .hebra-etq.molde{ color:var(--ink); font-weight:600; }
+  .tx .fila{ display:flex; gap:3px; justify-content:center; }
+  .base.contorno{ background:#fff !important; color:var(--ink) !important; border-width:2px; }
+  .puentes{ display:flex; gap:3px; justify-content:center; height:16px; }
+  .puentes i{ width:30px; display:flex; justify-content:center; }
+  .puentes i::before{ content:""; width:3px; height:100%; background:#9AA8A5; border-radius:2px; }
+  .puentes.abierto{ height:26px; }
+  .puentes.abierto i::before{ display:none; }
+  .puentes.arn{ height:14px; }
+  .puentes.arn i::before{ width:0; background:none; border-left:3px dotted #5E0478; }
+  .puentes.arn i.no::before{ display:none; }
+  .regla-tabla{ border-collapse:collapse; margin:-0.3rem 0 1rem; font-size:0.93rem; }
+  .regla-tabla th{ text-align:left; font-weight:400; color:var(--muted); padding:0.15rem 0.7rem 0.15rem 0; }
+  .regla-tabla td{ font-family:var(--mono); font-weight:700; text-align:center; width:2em; padding:0.15rem 0; }
+  .regla-tabla tr + tr td, .regla-tabla tr + tr th{ border-top:1px solid #E1E7E5; }
+  .tx.animar .hebra-arriba{ animation:subir .6s ease both; }
+  .tx.animar .molecula.arn, .tx.animar .puentes.arn{ animation:aparecer .5s ease .4s both; }
+  @keyframes subir{ from{ transform:translateY(22px); } to{ transform:none; } }
+  @keyframes aparecer{ from{ opacity:0; transform:translateY(-6px); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion:reduce){ .tx.animar *{ animation:none !important; } }
+  @media (max-width:520px){
+    .tx .fila, .puentes{ gap:2px; }
+    .tx .base, .puentes i{ width:24px; }
+    .molecula{ padding:0.5rem 0.45rem 0.6rem; }
+  }
+
+  /* Niveles 2 y 3: moléculas en recuadros, agrupadas por codón */
+  .mol-sec{ display:flex; flex-wrap:wrap; gap:8px 10px; justify-content:center; }
+  .mol-sec .bloque{ padding:3px; }
+  .peldano{ width:3px; height:8px; background:#9AA8A5; border-radius:2px; margin:0 auto; }
+  .mol-nota{ font-size:0.85rem; color:var(--muted); margin:0 0 0.45rem; }
+  .flecha{ text-align:center; font-size:0.88rem; color:var(--muted); margin:0.35rem 0; }
+  .flecha b{ font-size:1.1rem; color:var(--ink); }
+  .moleculas{ max-width:100%; margin:0.4rem auto 0.2rem; }
+  .moleculas .molecula{ width:fit-content; max-width:100%; margin:0 auto; }
+  @media (max-width:520px){
+    .mol-sec .base, .mol-sec .col{ width:24px; }
+    .mol-sec .bloque > div > div{ gap:2px !important; }
+    .mol-sec{ gap:6px 6px; }
+  }
+
+  /* Nivel 4: una tarjeta por persona */
+  .persona{ border-radius:10px; padding:0.6rem 0.8rem 0.8rem; margin:0 auto 0.9rem; max-width:100%; width:fit-content; background:#fff; }
+  .persona.p1{ border:2px solid #0462B7; border-left-width:8px; }
+  .persona.p2{ border:2px solid #BC0440; border-left-width:8px; }
+  .persona-tit{ display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; margin:0 0 0.15rem; font-weight:700; font-size:1rem; }
+  .persona-tit .chapa{ color:#fff; border-radius:999px; padding:0.1rem 0.65rem; font-size:0.85rem; }
+  .persona.p1 .chapa{ background:#0462B7; }
+  .persona.p2 .chapa{ background:#BC0440; }
+  .persona .mol-nota{ margin:0 0 0.35rem; }
+  .persona .sub{ font-size:0.85rem; color:var(--muted); margin:0.7rem 0 0.1rem; text-align:center; }
+
+  .teclado{ display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-top:1rem; }
+  .teclado button{ width:54px; height:50px; font-size:1.2rem; font-weight:700; font-family:var(--mono); color:#fff; border:none; }
+  .teclado button:hover{ filter:brightness(1.1); }
+
+  /* Proteína: cuentas de colores */
+  .proteina{ display:flex; flex-wrap:wrap; gap:4px; justify-content:center; align-items:center; min-height:46px; margin:0.4rem 0; }
+  .aa{ min-width:46px; height:40px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; font-weight:700;
+    font-size:0.86rem; padding:0 0.4rem; color:#fff; position:relative; }
+  .aa.distinto{ box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--accent); }
+  .aa.falta{ background:#F4F7F6 !important; color:#9AA8A5; border:2px dashed #C9D2D0; }
+  .aa + .aa::before{ content:""; position:absolute; left:-5px; top:50%; width:5px; height:2px; background:#9AA8A5; }
+  .etiq-prot{ font-size:0.8rem; color:var(--muted); text-align:center; margin:0.8rem 0 0; }
+  .leyenda-aa{ display:flex; flex-wrap:wrap; gap:0.4rem 0.9rem; justify-content:center; font-size:0.78rem; color:var(--muted); margin-top:0.3rem; }
+  .leyenda-aa i{ display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:0.3em; vertical-align:-1px; }
+
+  /* Tabla del código genético */
+  .tabla-wrap{ margin:1.1rem auto 0; max-width:640px; }
+  .tabla-tit{ font-size:0.85rem; color:var(--muted); text-align:center; margin:0 0 0.4rem; line-height:1.45; }
+  table.codigo{ border-collapse:separate; border-spacing:3px; width:100%; table-layout:fixed; }
+  table.codigo th{ font-family:var(--mono); font-size:0.95rem; color:#fff; border-radius:5px; padding:0.2rem 0; }
+  table.codigo th.esq{ background:none; color:var(--muted); font-family:var(--fuente); font-size:0.66rem; font-weight:400; line-height:1.15; }
+  table.codigo td{ background:#F4F7F6; border-radius:6px; padding:3px; vertical-align:top; }
+  table.codigo td.luz, table.codigo th.luz{ box-shadow:0 0 0 3px var(--accent); }
+  table.codigo button{ display:flex; width:100%; justify-content:space-between; align-items:center; gap:2px; min-height:30px; padding:0.15rem 0.3rem;
+    margin:0 0 2px; border-radius:4px; border:1px solid #D5DCDA; background:#fff; font-size:0.78rem; }
+  table.codigo button:last-child{ margin-bottom:0; }
+  table.codigo button b{ font-family:var(--mono); font-weight:700; letter-spacing:0.02em; }
+  table.codigo button span{ font-weight:600; border-radius:3px; padding:0 0.2em; }
+  table.codigo button:hover{ background:var(--juego-tinte); }
+  table.codigo button.mal{ border-color:var(--mal); }
+  table.codigo button.bien{ border-color:var(--ok); background:#E2F3EA; }
+  @media (max-width:560px){
+    table.codigo button{ flex-direction:column; gap:0; padding:0.1rem 0.1rem; font-size:0.72rem; }
+    table.codigo th.esq{ font-size:0.58rem; }
+  }
+
+  .selector{ display:flex; gap:0.5rem 0.8rem; justify-content:center; align-items:center; flex-wrap:wrap; margin:0.9rem auto; font-size:0.95rem; background:#FFF4DC; border:1.5px solid var(--accent); border-radius:10px; padding:0.6rem 0.9rem; width:fit-content; max-width:100%; }
+  .selector .teclado{ margin:0; }
+  .pasos{ margin:0 0 1rem; padding-left:1.4rem; line-height:1.55; font-size:0.97rem; }
+  .pasos li{ margin:0.15rem 0; }
+  table.codigo button.orig{ border:2px dashed #5B6E6B; background:#EEF1F0; }
+  table.codigo button.nuevo{ border:2px solid var(--accent); background:#FFF4DC; font-weight:700; }
+  .marca-orig, .marca-nuevo{ display:inline-block; width:1.6em; height:0.9em; vertical-align:-0.1em; border-radius:3px; margin-right:0.2em; }
+  .marca-orig{ border:2px dashed #5B6E6B; background:#EEF1F0; }
+  .marca-nuevo{ border:2px solid var(--accent); background:#FFF4DC; }
+  .desafios{ list-style:none; padding:0; margin:0 0 1rem; display:grid; gap:0.35rem; }
+  .desafios li{ padding:0.45rem 0.7rem; border-radius:6px; background:#F4F7F6; font-size:0.95rem; line-height:1.4; }
+  .desafios li.actual{ background:var(--juego-tinte); font-weight:600; }
+  .desafios li.hecho{ color:var(--ok); }
+  .desafios li.hecho::before{ content:"\2713\00a0"; font-weight:700; }
+  .comparacion{ display:grid; gap:0.2rem; margin-top:0.6rem; }
+  .resultado-mut{ text-align:center; font-weight:700; margin:0.6rem 0 0; }
+
+  .leyenda{ font-size:0.85rem; color:var(--muted); text-align:center; margin:0.8rem 0 0; line-height:1.5; }
+  .fb{ font-size:1rem; line-height:1.5; margin:1rem 0 0; padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; }
+  .fb:empty{ display:none; }
+  .fb.pista{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .fb.ok{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .fb.info{ background:#F4F7F6; border-left:3px solid #9AA8A5; }
+  .acciones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1rem; justify-content:center; }
+  .opciones{ display:grid; gap:0.5rem; margin-top:0.5rem; }
+  .opciones button{ text-align:left; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.ok:disabled{ opacity:1; }
+  .opciones button.ok::before{ content:"\2713\00a0"; font-weight:700; }
+  .opciones button.mal{ border-color:var(--mal); color:var(--mal); }
+  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
+  .separador{ border:none; border-top:1px dashed #D5DCDA; margin:1rem 0; }
+  .final{ text-align:center; }
+
+  details.docente{ max-width:38em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  @media (prefers-reduced-motion:reduce){ .progreso > i{ transition:none; } }
+  footer.creditos{ align-self:stretch; margin-top:auto; border-top:1px solid #E6E9E8; padding:1.2rem 1rem;
+    display:flex; align-items:center; justify-content:center; gap:0.8rem; font-size:0.85rem; color:var(--muted); line-height:1.45; }
+  footer.creditos img{ width:52px; height:52px; border-radius:50%; flex:none; display:block; }
+  footer.creditos p{ margin:0; max-width:40em; }
+  footer.creditos a{ color:var(--ink); font-weight:600; text-decoration:none; }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>Armá tu proteína</h1>
+<p class="bajada">Un gen es una receta escrita en el ADN con cuatro letras. Para usarla, la célula la copia en ARN y después la lee de a tres letras para armar una proteína. Hacé vos las dos cosas, y después cambiá una sola letra a ver qué pasa.</p>
+<p class="marcador" id="marcador"></p>
+<div class="progreso" aria-hidden="true"><i id="barra"></i></div>
+<div class="tablero" id="tablero"></div>
+
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> 6.º grado de primaria y ciclo básico (de 11 a 14 años, aproximadamente). Los niveles 3 y 4 también sirven como repaso en 1.º de bachillerato.</p>
+  <p><b>Programa de ANEP:</b> Biología, 1.º de Educación Media Superior (programa DGES, revisión 2026), bloque «Identidad biológica de los sistemas vivos»: ADN y ARN, duplicación y síntesis de proteínas, procesos de expresión genética, código genético, genes y mutación. Los programas de primaria y de 7.º a 9.º no llegan a la síntesis de proteínas: para esos grupos, el juego es un adelanto.</p>
+  <p><b>Conceptos que trabaja:</b> transcripción (el ARN se arma por complementariedad con una de las hebras del ADN, la hebra molde, y lleva U en lugar de T); traducción (el ribosoma lee el ARN de a tres letras, cada codón corresponde a un aminoácido y hay codones de inicio y de terminación); el código genético es redundante, porque varios codones dan el mismo aminoácido; mutaciones puntuales y sus tres efectos posibles: silenciosa (no cambia el aminoácido), de sentido erróneo o de cambio de sentido (cambia un aminoácido) y sin sentido (aparece un codón de terminación y la proteína se corta).</p>
+  <p><b>Cómo avanza:</b> nivel 1, transcribir dos genes cortos; nivel 2, traducir dos ARN con la tabla del código genético; nivel 3, tres desafíos en los que hay que lograr, cambiando una sola letra, cada tipo de mutación; nivel 4, un caso real: el comienzo del gen de la β-globina (<i>HBB</i>) en una persona sin y con anemia falciforme. Los genes de los niveles 1 a 3 se sortean en cada partida.</p>
+  <p><b>Algunas simplificaciones que hacemos en este juego:</b> los genes son cortísimos (los reales tienen cientos o miles de letras) y no tienen intrones. El ARN se muestra apareado con la hebra molde letra por letra, pero en la célula se separa de ella apenas se forma. No aparecen los ARN de transferencia, que son los que llevan cada aminoácido al ribosoma y "leen" el codón con su anticodón. Las abreviaturas de los aminoácidos son las internacionales (Met, Val, Glu…), que son las que se encuentran en libros y bases de datos. Los colores de los aminoácidos agrupan sus propiedades químicas, y sirven para ver en el nivel 4 que el cambio de la anemia falciforme reemplaza un aminoácido con carga por uno hidrofóbico.</p>
+  <p><b>Sobre el caso real:</b> la anemia falciforme se debe a un cambio de A por T en el codón del ácido glutámico de la posición 6 de la β-globina (GAG → GTG en el ADN, GAG → GUG en el ARN), que pasa a codificar valina. En el juego aparece como codón 7 porque se cuenta la metionina inicial, que se quita de la proteína madura; la nomenclatura actual (HGVS) también cuenta desde la metionina y lo escribe p.Glu7Val. Con valina en esa posición, la hemoglobina tiende a pegarse entre sí cuando hay poco oxígeno y deforma los glóbulos rojos. Otro ejemplo en el mismo gen, este sin sentido, es una de las causas frecuentes de β-talasemia en el Mediterráneo: el codón 39 CAG (glutamina) cambia a TAG, un codón de terminación, y la β-globina no se forma.</p>
+  <p><b>Para discutir después de jugar:</b> ¿por qué un cambio en el ADN puede no cambiar nada en la proteína? ¿Qué mutación esperarían que sea más grave, la que cambia un aminoácido o la que corta la proteína, y siempre es así? ¿Por qué hacen falta tres letras por codón y no alcanza con dos? (Con dos habría solo 4 × 4 = 16 combinaciones, menos que los 20 aminoácidos.) Si todas las células del cuerpo tienen el mismo ADN, ¿por qué no todas fabrican hemoglobina?</p>
+</details>
+
+<script>
+// ---------------------------------------------------------------------------
+// Código genético estándar. Orden de las bases: U, C, A, G (primera, segunda
+// y tercera letra del codón); '*' es un codón de terminación.
+// ---------------------------------------------------------------------------
+const ORDEN = ['U','C','A','G'];
+const TABLA = 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG';
+const traducir = cod => TABLA[16 * ORDEN.indexOf(cod[0]) + 4 * ORDEN.indexOf(cod[1]) + ORDEN.indexOf(cod[2])];
+// Abreviatura internacional, nombre y tipo: h hidrofóbico, p polar, a ácido (carga −), b básico (carga +).
+const AA = {
+  F:['Phe','fenilalanina','h'], L:['Leu','leucina','h'], I:['Ile','isoleucina','h'], M:['Met','metionina','h'],
+  V:['Val','valina','h'], S:['Ser','serina','p'], P:['Pro','prolina','h'], T:['Thr','treonina','p'], A:['Ala','alanina','h'],
+  Y:['Tyr','tirosina','p'], H:['His','histidina','b'], Q:['Gln','glutamina','p'], N:['Asn','asparagina','p'], K:['Lys','lisina','b'],
+  D:['Asp','ácido aspártico','a'], E:['Glu','ácido glutámico','a'], C:['Cys','cisteína','p'], W:['Trp','triptófano','h'],
+  R:['Arg','arginina','b'], G:['Gly','glicina','h'], '*':['Fin','codón de terminación','x']
+};
+const TIPO = { h:['#C88705','#2C1D02','hidrofóbico'], p:['#02A690','#06302A','polar'], a:['#BC0440','#fff','con carga negativa'],
+               b:['#0462B7','#fff','con carga positiva'], x:['#3F4B49','#fff','fin'] };
+// Colores de las bases, los mismos de "La escalera del ADN"; U es nueva.
+const BASE = { A:['#0B9053','#fff'], T:['#D10E18','#fff'], C:['#0462B7','#fff'], G:['#F2A406','#2C1D02'], U:['#5E0478','#fff'] };
+const COMP_ADN = { A:'T', T:'A', C:'G', G:'C' };
+const A_ARN = { A:'U', T:'A', C:'G', G:'C' };     // base de la hebra molde → base del ARN
+
+const azar = a => a[Math.floor(Math.random() * a.length)];
+function mezclar(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const DNA = s => s.replace(/U/g, 'T'), RNA = s => s.replace(/T/g, 'U');
+const codones = s => s.match(/.{1,3}/g) || [];
+// Codones con sentido (sin AUG, para que el inicio sea uno solo) y de terminación.
+const TODOS = []; ORDEN.forEach(a => ORDEN.forEach(b => ORDEN.forEach(c => TODOS.push(a + b + c))));
+const SENTIDO = TODOS.filter(c => traducir(c) !== '*' && c !== 'AUG');
+const STOPS = TODOS.filter(c => traducir(c) === '*');
+
+// Un gen: AUG + n codones + un codón de terminación. Se guarda la hebra que
+// NO es molde (la "codificante"), en letras del ADN.
+const genAzar = n => DNA('AUG' + Array.from({length:n}, () => azar(SENTIDO)).join('') + azar(STOPS));
+const molde = gen => gen.split('').map(b => COMP_ADN[b]).join('');
+// Proteína que sale del ARN: desde el primer codón hasta el de terminación (sin incluirlo).
+function proteinaDe(arn){
+  const cs = codones(arn), p = [];
+  if(cs[0] !== 'AUG') return null;                       // sin inicio
+  for(const c of cs){ if(c.length < 3) break; const a = traducir(c); if(a === '*') return { aas:p, termina:true }; p.push(a); }
+  return { aas:p, termina:false };                       // no apareció el de terminación
+}
+// Mutaciones de una letra posibles en un gen, sin tocar inicio ni terminación.
+function efectoDe(gen, pos, nueva){
+  const k = Math.floor(pos / 3), cs = codones(RNA(gen));
+  const viejo = cs[k], nuevoC = viejo.slice(0, pos % 3) + RNA(nueva) + viejo.slice(pos % 3 + 1);
+  const a = traducir(viejo), b = traducir(nuevoC);
+  if(k === 0 && nuevoC !== 'AUG') return 'inicio';
+  if(a === b) return 'silenciosa';
+  if(b === '*') return 'sin-sentido';
+  if(a === '*') return 'sigue';
+  return 'cambio';
+}
+function tieneTodas(gen){
+  const vistos = new Set();
+  for(let pos = 3; pos < gen.length - 3; pos++) for(const b of 'ACGT') if(b !== gen[pos]) vistos.add(efectoDe(gen, pos, b));
+  return vistos.has('silenciosa') && vistos.has('cambio') && vistos.has('sin-sentido');
+}
+
+// Caso real: comienzo del gen HBB (β-globina), hebra codificante.
+const HBB = 'ATGGTGCATCTGACTCCTGAGGAGAAG';
+const HBB_S = 'ATGGTGCATCTGACTCCTGTGGAGAAG';
+
+// ---------------------------------------------------------------------------
+// Dibujo
+// ---------------------------------------------------------------------------
+function baseHTML(b, clases = '', extra = ''){
+  if(b == null) return `<span class="base vacia ${clases}" ${extra}>?</span>`;
+  const [bg, fg] = BASE[b];
+  return `<span class="base ${clases}" style="background:${bg};color:${fg}" ${extra}>${b}</span>`;
+}
+function aaHTML(a, clases = ''){
+  if(a == null) return `<span class="aa falta ${clases}">?</span>`;
+  const [ab, nom, t] = AA[a], [bg, fg] = TIPO[t];
+  return `<span class="aa ${clases}" style="background:${bg};color:${fg}" title="${nom}" aria-label="${nom}">${ab}</span>`;
+}
+const leyendaAA = () => `<div class="leyenda-aa">${['h','p','a','b'].map(t => `<span><i style="background:${TIPO[t][0]}"></i>${TIPO[t][2]}</span>`).join('')}</div>`;
+
+// filas: [{etiqueta, letras (string o array con null), clases(pos)}]; o.click: data-attr para columnas clicables
+function secuenciaHTML(filas, o = {}){
+  const n = filas[0].letras.length;
+  let h = `<div class="secuencia">`;
+  h += `<div class="bloque etiquetas" aria-hidden="true">${filas.map(f => `<span>${f.etiqueta}</span>`).join('')}${o.numeros ? '<span style="height:14px"></span>' : ''}</div>`;
+  for(let k = 0; k * 3 < n; k++){
+    const cls = o.bloque ? o.bloque(k) : '';
+    h += `<div class="bloque ${cls}"><div style="display:flex;flex-direction:column;gap:3px"><div style="display:flex;gap:3px">`;
+    for(let p = k * 3; p < Math.min(n, k * 3 + 3); p++){
+      const col = filas.map(f => baseHTML(f.letras[p], f.clases ? f.clases(p) : '')).join('');
+      h += o.click ? `<button class="col ${o.colClase ? o.colClase(p) : ''}" ${o.click}="${p}" aria-label="Letra ${p + 1}: ${filas[0].letras[p]}">${col}</button>`
+                   : `<div class="col">${col}</div>`;
+    }
+    h += `</div>${o.numeros ? `<span class="num-codon">codón ${k + 1}</span>` : ''}</div></div>`;
+  }
+  return h + `</div>`;
+}
+
+// Una base de la hebra que no es molde: blanca con borde de color.
+const contornoHTML = (b, clases = '') => `<span class="base contorno ${clases}" style="border-color:${BASE[b][0]}">${b}</span>`;
+// El ADN (dos hebras) y/o el ARN, cada uno en su recuadro, con las letras agrupadas por codón.
+// o: { adn:{ arriba, clases(p) } (la hebra molde se calcula), arn:{ letras, clases(p) }, click, colClase(p), bloque(k), entre }
+function moleculasHTML(o){
+  const n = (o.adn ? o.adn.arriba : o.arn.letras).length, bl = k => o.bloque ? o.bloque(k) : '';
+  const grupos = celda => { let h = '<div class="mol-sec">';
+    for(let k = 0; k * 3 < n; k++){
+      h += `<div class="bloque ${bl(k)}"><div style="display:flex;flex-direction:column;gap:2px"><div style="display:flex;gap:3px">`;
+      for(let p = k * 3; p < Math.min(n, k * 3 + 3); p++) h += celda(p);
+      h += `</div>${o.numeros ? `<span class="num-codon">codón ${k + 1}</span>` : ''}</div></div>`;
+    }
+    return h + '</div>'; };
+  let h = '<div class="moleculas">';
+  if(o.adn){
+    const arr = o.adn.arriba, mol = molde(arr), cl = p => o.adn.clases ? o.adn.clases(p) : '';
+    h += `<div class="molecula adn"><p class="mol-titulo">ADN <small>· el gen, con sus dos hebras</small></p>
+      <p class="mol-nota">Arriba, la otra hebra; abajo, la hebra molde.</p>${grupos(p => {
+        const col = contornoHTML(arr[p], cl(p)) + '<i class="peldano"></i>' + baseHTML(mol[p], cl(p));
+        return o.click ? `<button class="col ${o.colClase ? o.colClase(p) : ''}" ${o.click}="${p}" aria-label="Letra ${p + 1}: ${arr[p]}">${col}</button>` : `<div class="col">${col}</div>`;
+      })}</div>`;
+    if(o.arn) h += `<p class="flecha"><b>↓</b> la hebra molde se copia en ARN (transcripción)</p>`;
+  }
+  if(o.arn){
+    const cl = p => o.arn.clases ? o.arn.clases(p) : '';
+    h += `<div class="molecula arn"><p class="mol-titulo">ARN mensajero <small>· la copia que lee el ribosoma</small></p>${grupos(p => `<div class="col">${baseHTML(o.arn.letras[p], cl(p))}</div>`)}</div>`;
+  }
+  return h + '</div>';
+}
+
+function tablaHTML(o = {}){
+  const luz1 = o.luz ? o.luz[0] : null, luz2 = o.luz ? o.luz[1] : null;
+  let h = `<div class="tabla-wrap"><p class="tabla-tit">Tabla del código genético: la <b>primera</b> letra del codón te dice la fila, la <b>segunda</b> la columna, y la <b>tercera</b> el renglón dentro del casillero.</p>
+    <table class="codigo"><thead><tr><th class="esq">1.ª \\ 2.ª</th>${ORDEN.map(b => `<th class="${b === luz2 ? 'luz' : ''}" style="background:${BASE[b][0]}">${b}</th>`).join('')}</tr></thead><tbody>`;
+  ORDEN.forEach(b1 => {
+    h += `<tr><th class="${b1 === luz1 ? 'luz' : ''}" style="background:${BASE[b1][0]}">${b1}</th>`;
+    ORDEN.forEach(b2 => {
+      h += `<td class="${b1 === luz1 && b2 === luz2 ? 'luz' : ''}">`;
+      ORDEN.forEach(b3 => {
+        const c = b1 + b2 + b3, a = traducir(c), [ab, nom, t] = AA[a];
+        const cls = o.marcas && o.marcas[c] ? o.marcas[c] : '';
+        h += `<button data-cod="${c}" class="${cls}" ${o.click ? '' : 'tabindex="-1"'} aria-label="${c}: ${nom}"><b>${c}</b><span style="background:${TIPO[t][0]};color:${TIPO[t][1]}">${ab}</span></button>`;
+      });
+      h += `</td>`;
+    });
+    h += `</tr>`;
+  });
+  return h + `</tbody></table></div>`;
+}
+
+// ---------------------------------------------------------------------------
+// Niveles
+// ---------------------------------------------------------------------------
+const NIVELES = [
+  { tipo:'transcribir', titulo:'Copiá el gen en ARN', rondas:[1, 2],
+    historia:'El ADN tiene dos hebras. Para copiar un gen, la célula separa las hebras y usa una de ellas, la <b>hebra molde</b>, para armar una molécula nueva: el <b>ARN mensajero</b>. Las letras se aparean como en el ADN, con una diferencia: el ARN no tiene T, en su lugar usa <b>U</b> (uracilo).',
+    consigna:() => !S.abierto
+      ? 'Primero, separá las dos hebras del ADN para que la hebra molde quede libre.'
+      : 'Mirá la letra marcada en la hebra molde. ¿Qué letra va en el ARN, justo debajo de ella?',
+    regla:() => !S.abierto ? '' : `<table class="regla-tabla"><tr><th>En la hebra molde:</th>${'ATCG'.split('').map(b => `<td>${b}</td>`).join('')}</tr>
+      <tr><th>En el ARN va:</th>${'ATCG'.split('').map(b => `<td>${A_ARN[b]}</td>`).join('')}</tr></table>` },
+  { tipo:'traducir', titulo:'Leé el ARN y armá la proteína', rondas:[2, 4],
+    historia:'El <b>ribosoma</b> lee el ARN de a tres letras. Cada grupo de tres es un <b>codón</b>, y cada codón indica un <b>aminoácido</b>, las piezas de la proteína. La lectura empieza en el codón de <b>inicio</b>, AUG. Termina en un codón de <b>Fin</b> (también llamado de terminación o <i>stop</i>): UAA, UAG o UGA. Esos tres codones no indican ningún aminoácido: le avisan al ribosoma que la proteína está completa, y el ribosoma la suelta.',
+    consigna:'Buscá en la tabla el codón que está leyendo el ribosoma (el recuadrado) y tocalo.' },
+  { tipo:'mutar', titulo:'Cambiá una sola letra',
+    historia:'Una <b>mutación</b> es un cambio en el ADN. Acá tenés un gen y su proteína. Cada letra del ADN es una <b>base nitrogenada</b> (A, T, C o G). Vas a cambiar una sola base y ver qué les pasa al ARN y a la proteína.',
+    consigna:'Lográ cada uno de estos tres cambios, modificando una sola base por vez:',
+    pasos:'<ol class="pasos"><li>Hacé clic en la <b>base nitrogenada</b> que quieras modificar, en el recuadro del ADN.</li><li>Elegí por cuál otra base la querés cambiar.</li><li>Mirá cómo cambia ese codón en el ARN y fijate qué aminoácido indica ahora. Si querés buscarlo, abrí la <b>tabla del código genético</b> con el botón de más abajo.</li></ol>' },
+  { tipo:'real', titulo:'Un caso real: la hemoglobina',
+    historia:'La <b>hemoglobina</b> es la proteína que lleva el oxígeno en los glóbulos rojos. Acá tenés el comienzo de uno de sus genes, el de la β-globina, en dos personas. La <b>persona 2</b> tiene <b>anemia falciforme</b>: sus glóbulos rojos se deforman y se rompen con facilidad.',
+    consigna:'Compará el ADN de la persona 1 con el de la persona 2, codón por codón, y hacé clic en la base que es distinta en la persona 2.' }
+];
+const DESAFIOS = [
+  { tipo:'silenciosa', texto:'Que la proteína quede <b>igual</b>.', nombre:'mutación silenciosa' },
+  { tipo:'cambio', texto:'Que cambie <b>un solo aminoácido</b>.', nombre:'mutación de sentido erróneo' },
+  { tipo:'sin-sentido', texto:'Que la proteína <b>se corte</b> antes de tiempo.', nombre:'mutación sin sentido' }
+];
+
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+const el = id => document.getElementById(id);
+let nivel = 0, S = null, errores = 0, finContado = false;
+
+function empezar(i, ronda = 0){
+  nivel = i;
+  const N = NIVELES[i];
+  S = { ronda, msg:null, hecho:false };
+  if(N.tipo === 'transcribir'){
+    S.gen = genAzar(N.rondas[ronda]); S.molde = molde(S.gen); S.arn = Array(S.gen.length).fill(null); S.pos = 0;
+    S.pregunta = null; S.abierto = false; S.animar = false;
+  } else if(N.tipo === 'traducir'){
+    S.gen = genAzar(N.rondas[ronda]); S.arn = RNA(S.gen); S.cod = 0; S.prot = []; S.marcas = {}; S.luz = null;
+  } else if(N.tipo === 'mutar'){
+    do { S.gen = genAzar(5); } while(!tieneTodas(S.gen));
+    S.mut = null; S.sel = null; S.desafio = 0; S.logrados = new Set(); S.esperando = false;
+  } else {
+    S.fase = 'buscar'; S.toques = new Set();
+    S.opciones = mezclar(['silenciosa', 'cambio', 'sin-sentido']); S.elegidas = new Set();
+  }
+  const extra = N.rondas ? ` · ${ronda + 1} de ${N.rondas.length}` : '';
+  marcador.textContent = `Nivel ${i + 1} de ${NIVELES.length} · ${N.titulo}${extra}`;
+  el('barra').style.width = ((i + (N.rondas ? ronda / N.rondas.length : 0)) / NIVELES.length * 100) + '%';
+  dibujar();
+  window.scrollTo({ top:0 });
+}
+
+function dibujar(){
+  const N = NIVELES[nivel];
+  const val = x => typeof x === 'function' ? x() : x;
+  const consigna = val(N.consigna), regla = val(N.regla);
+  let h = `<p class="historia">${N.historia}</p><p class="consigna">${consigna}</p>${regla ? (regla.startsWith('<') ? regla : `<p class="regla">${regla}</p>`) : ''}`;
+  if(N.tipo === 'transcribir') h += transcribirHTML();
+  else if(N.tipo === 'traducir') h += traducirHTML();
+  else if(N.tipo === 'mutar') h += mutarHTML();
+  else h += realHTML();
+  h += `<p class="fb ${S.msg ? S.msg.tipo : ''}" aria-live="polite">${S.msg ? S.msg.texto : ''}</p>`;
+  if(S.hecho){
+    const ultRonda = !N.rondas || S.ronda + 1 >= N.rondas.length;
+    const txt = !ultRonda ? 'Otro gen' : nivel + 1 < NIVELES.length ? 'Siguiente nivel' : 'Ver el resultado';
+    h += `<div class="acciones"><button class="primario" id="sig">${txt} &rarr;</button></div>`;
+  }
+  if(N.tipo === 'mutar') h += S.tabla;   // la tabla va después del mensaje, para que el mensaje quede cerca del gen
+  tablero.innerHTML = h;
+  conectar();
+}
+
+// --- Nivel 1: transcripción -------------------------------------------------
+function transcribirHTML(){
+  const n = S.gen.length, actual = p => p === S.pos && !S.completo ? 'actual' : '';
+  const fila = (letras, clases) => `<div class="fila">${letras.map((b, p) => {
+    const c = clases(p), borde = b && c.includes('contorno') ? `style="border-color:${BASE[b][0]}"` : '';
+    return borde ? `<span class="base ${c}" ${borde}>${b}</span>` : baseHTML(b, c);
+  }).join('')}</div>`;
+  const puentes = (clase, mostrar = () => true) => `<div class="puentes ${clase}" aria-hidden="true">${S.gen.split('').map((_, p) => `<i class="${mostrar(p) ? '' : 'no'}"></i>`).join('')}</div>`;
+  let h = `<div class="tx ${S.animar ? 'animar' : ''}">
+    <div class="molecula adn"><p class="mol-titulo">ADN <small>· dos hebras apareadas</small></p>
+      <div class="hebra-arriba"><p class="hebra-etq">Otra hebra del ADN (no se copia)</p>
+      ${fila(S.gen.split(''), () => 'contorno')}</div>
+      ${puentes(S.abierto ? 'abierto' : '')}
+      <p class="hebra-etq molde">Hebra molde${S.abierto ? ' ▼ (esta se copia)' : ''}</p>
+      ${fila(S.molde.split(''), p => S.abierto ? actual(p) : '')}
+    </div>`;
+  if(S.abierto){
+    h += puentes('arn', p => p < S.pos || (p === S.pos && !S.completo));
+    h += `<div class="molecula arn"><p class="mol-titulo">ARN mensajero <small>· ${S.completo ? 'listo' : 'lo armás vos'}</small></p>
+      ${fila(S.arn, actual)}</div>`;
+  }
+  h += `</div>`;
+  S.animar = false;
+  if(!S.abierto){
+    return h + `<div class="acciones"><button class="primario" id="separar">Separar las hebras</button></div>`;
+  }
+  if(!S.completo){
+    h += `<div class="teclado" role="group" aria-label="Letras del ARN">${['A','U','C','G','T'].map(b =>
+      `<button data-letra="${b}" style="background:${BASE[b][0]};color:${BASE[b][1]}" aria-label="${b}">${b}</button>`).join('')}</div>
+      <p class="leyenda">También podés escribir las letras con el teclado.</p>`;
+  }
+  if(S.pregunta){
+    h += `<hr class="separador"><p><b>${S.pregunta.texto}</b></p><div class="opciones">${S.pregunta.ops.map((o, j) =>
+      `<button data-op="${j}" class="${S.hecho && o.ok ? 'ok' : S.pregunta.mal.has(j) ? 'mal' : ''}" ${S.hecho || S.pregunta.mal.has(j) ? 'disabled' : ''}>${o.t}</button>`).join('')}</div>`;
+  }
+  return h;
+}
+function ponerLetra(b){
+  if(S.completo || !S.abierto) return;
+  const esperada = A_ARN[S.molde[S.pos]];
+  if(b === esperada){
+    S.arn[S.pos] = b; S.pos++; S.msg = null;
+    if(S.pos >= S.gen.length){
+      S.completo = true;
+      if(S.ronda === 0){
+        S.hecho = true;
+        S.msg = { tipo:'ok', texto:'¡Listo! Copiaste el gen en ARN. Ahora compará el ARN con las dos hebras del ADN: ¿se parece a alguna?' };
+      } else {
+        S.pregunta = { texto:'¿A qué se parece el ARN que armaste?', mal:new Set(), ops:mezclar([
+          { t:'A la otra hebra del ADN, pero con U donde ella tiene T', ok:true },
+          { t:'A la hebra molde, letra por letra' },
+          { t:'A ninguna de las dos: es una secuencia nueva' }]) };
+        S.msg = { tipo:'ok', texto:'¡Listo! Antes de seguir, una pregunta.' };
+      }
+    }
+  } else {
+    errores++;
+    const m = S.molde[S.pos];
+    S.msg = { tipo:'pista', texto: b === 'T'
+      ? 'Casi: frente a una A, en el ADN iría T. Pero en el <b>ARN no hay T</b>: en su lugar va <b>U</b>.'
+      : `En la hebra molde hay una <b>${m}</b>. ${m === 'A' ? 'Frente a A, en el ARN va U.' : m === 'T' ? 'Frente a T va A.' : m === 'C' ? 'Frente a C va G.' : 'Frente a G va C.'}` };
+  }
+  dibujar();
+}
+function responderTranscripcion(j){
+  const o = S.pregunta.ops[j];
+  if(o.ok){
+    S.hecho = true;
+    S.msg = { tipo:'ok', texto:'¡Exacto! Como el ARN se aparea con la hebra molde, termina siendo una copia de <b>la otra hebra</b>, con U en lugar de T. Por eso se dice que el ARN lleva la misma información que el gen.' };
+  } else {
+    S.pregunta.mal.add(j); errores++;
+    S.msg = { tipo:'pista', texto:'Compará letra por letra la fila del ARN con la fila de arriba, la "otra hebra del ADN".' };
+  }
+  dibujar();
+}
+
+// --- Nivel 2: traducción ----------------------------------------------------
+function traducirHTML(){
+  const cs = codones(S.arn), termino = S.cod >= cs.length;
+  let h = moleculasHTML({ arn:{ letras:S.arn.split('') }, numeros:true, bloque:k => k === S.cod && !termino ? 'leyendo' : '' });
+  h += `<p class="flecha"><b>↓</b> el ribosoma lee cada codón y agrega un aminoácido (traducción)</p>`;
+  const faltan = termino ? [] : Array(Math.max(0, cs.length - 1 - S.cod)).fill(null);
+  h += `<p class="etiq-prot">Proteína${termino ? ' terminada' : ' en construcción'}</p>
+    <div class="proteina">${S.prot.map(a => aaHTML(a)).join('')}${faltan.map(() => aaHTML(null)).join('')}</div>${leyendaAA()}`;
+  if(!termino) h += tablaHTML({ click:true, marcas:S.marcas, luz:S.luz });
+  if(S.pregunta){
+    h += `<hr class="separador"><p><b>${S.pregunta.texto}</b></p><div class="opciones">${S.pregunta.ops.map((o, j) =>
+      `<button data-op2="${j}" class="${S.hecho && o.ok ? 'ok' : S.pregunta.mal.has(j) ? 'mal' : ''}" ${S.hecho || S.pregunta.mal.has(j) ? 'disabled' : ''}>${o.t}</button>`).join('')}</div>`;
+  }
+  return h;
+}
+function elegirCodon(c){
+  const cs = codones(S.arn), actual = cs[S.cod];
+  if(!actual) return;
+  if(c === actual){
+    const a = traducir(c);
+    S.marcas = { [c]:'bien' }; S.luz = null;
+    S.cod++;
+    if(a === '*'){
+      if(S.ronda === 0){
+        S.hecho = true;
+        S.msg = { tipo:'ok', texto:`<b>${c}</b> es un codón de <b>Fin</b>: el ribosoma se suelta y la proteína queda lista, con ${S.prot.length} aminoácidos. Fijate que el codón de Fin no agrega ningún aminoácido.` };
+      } else {
+        S.pregunta = { texto:'Cada codón tiene tres letras. ¿Por qué no alcanzaría con dos?', mal:new Set(), ops:mezclar([
+          { t:'Porque con dos letras hay solo 16 combinaciones (4 × 4), y las proteínas usan 20 aminoácidos distintos', ok:true },
+          { t:'Porque el ribosoma es muy grande y no puede leer de a dos' },
+          { t:'Alcanzaría igual: es una casualidad que sean tres' }]) };
+        S.msg = { tipo:'ok', texto:`<b>${c}</b> es un codón de <b>Fin</b>: no agrega ningún aminoácido, y el ribosoma suelta la proteína, que queda con ${S.prot.length} aminoácidos. Una pregunta antes de seguir.` };
+      }
+    } else {
+      S.prot.push(a);
+      S.msg = { tipo:'ok', texto:`<b>${c}</b> → ${AA[a][1]} (${AA[a][0]}).${S.cod === 1 ? ' AUG es el codón de <b>inicio</b>: por eso casi todas las proteínas empiezan con metionina.' : ''}` };
+    }
+  } else {
+    errores++;
+    S.marcas = { ...S.marcas, [c]:'mal' }; S.luz = [actual[0], actual[1]];
+    S.msg = { tipo:'pista', texto:`Ese es <b>${c}</b>, y el ribosoma está leyendo <b>${actual}</b>. Te marqué la fila de la ${actual[0]} y la columna de la ${actual[1]}: ahí adentro, buscá el que termina en ${actual[2]}.` };
+  }
+  dibujar();
+}
+function responderTraduccion(j){
+  const o = S.pregunta.ops[j];
+  if(o.ok){ S.hecho = true; S.msg = { tipo:'ok', texto:'¡Exacto! Con tres letras hay 4 × 4 × 4 = 64 codones: alcanzan para los 20 aminoácidos y sobran. Por eso varios codones dan el mismo aminoácido, como viste en la tabla.' }; }
+  else { S.pregunta.mal.add(j); errores++; S.msg = { tipo:'pista', texto:'Pensalo como combinaciones: si cada letra puede ser A, U, C o G, ¿cuántos pares distintos se pueden formar?' }; }
+  dibujar();
+}
+
+// --- Nivel 3: mutaciones ----------------------------------------------------
+const genActual = () => S.mut ? S.gen.slice(0, S.mut.pos) + S.mut.b + S.gen.slice(S.mut.pos + 1) : S.gen;
+function proteinaComparada(orig, nueva){
+  const n = Math.max(orig.length, nueva.length);
+  return `<div class="proteina">${Array.from({length:n}, (_, i) => i < nueva.length ? aaHTML(nueva[i], nueva[i] !== orig[i] ? 'distinto' : '') : aaHTML(null)).join('')}</div>`;
+}
+function mutarHTML(){
+  const g = genActual(), arn = RNA(g), mp = S.mut ? S.mut.pos : -1;
+  let h = `<ol class="desafios">${DESAFIOS.map((d, j) => `<li class="${S.logrados.has(j) ? 'hecho' : j === S.desafio ? 'actual' : ''}">${d.texto}</li>`).join('')}</ol>`;
+  if(!S.hecho) h += NIVELES[nivel].pasos;
+  h += moleculasHTML({ adn:{ arriba:g, clases:p => p === mp ? 'cambiada' : '' }, arn:{ letras:arn.split(''), clases:p => p === mp ? 'cambiada' : '' },
+    click:S.esperando || S.hecho ? null : 'data-pos', numeros:true, colClase:p => p === S.sel ? 'elegida' : '', bloque:k => mp >= 0 && Math.floor(mp / 3) === k ? 'mutado' : '' });
+  if(S.sel != null && !S.esperando && !S.hecho){
+    const b0 = S.gen[S.sel];
+    h += `<div class="selector"><span>Cambiar la base ${S.sel + 1} de la hebra de arriba (${b0}) por:<br><small style="color:var(--muted)">La hebra molde cambia sola, para seguir apareada.</small></span><div class="teclado">${'ACGT'.split('').filter(b => b !== b0).map(b =>
+      `<button data-nueva="${b}" style="background:${BASE[b][0]};color:${BASE[b][1]}" aria-label="${b}">${b}</button>`).join('')}</div></div>`;
+  } else if(!S.esperando && !S.hecho) h += `<p class="leyenda">Hacé clic en una base del ADN para elegir cuál cambiar.</p>`;
+  const orig = proteinaDe(RNA(S.gen)).aas, nueva = proteinaDe(arn);
+  h += `<p class="flecha"><b>↓</b> el ribosoma lee el ARN (traducción)</p><p class="etiq-prot" style="margin-top:0">Proteína original</p><div class="proteina">${orig.map(a => aaHTML(a)).join('')}</div>`;
+  if(S.mut){
+    h += `<p class="etiq-prot">Proteína con la mutación</p>${nueva ? proteinaComparada(orig, nueva.aas) + (nueva.termina ? '' : '<p class="leyenda">…y sigue: ya no hay un codón de Fin en su lugar.</p>') : '<p class="leyenda" style="font-weight:700">No se fabrica: no hay codón de inicio.</p>'}`;
+    if(S.mut.efecto) h += `<p class="resultado-mut">${nombreEfecto(S.mut.efecto)}</p>`;
+  }
+  h += leyendaAA();
+  if(S.mut && !S.hecho) h += `<div class="acciones">${S.esperando ? `<button class="primario" id="sigDesafio">Siguiente desafío &rarr;</button>` : ''}<button id="deshacer">Volver al gen original</button></div>`;
+  // Tabla del código genético, con el codón tocado resaltado (el original y el mutado)
+  const pk = S.mut ? Math.floor(S.mut.pos / 3) : S.sel != null ? Math.floor(S.sel / 3) : -1, marcas = {};
+  if(pk >= 0){
+    marcas[codones(RNA(S.gen))[pk]] = 'orig';
+    if(S.mut) marcas[codones(arn)[pk]] = 'nuevo';
+  }
+  S.tabla = `<div class="acciones"><button id="verTabla" aria-expanded="${!!S.verTabla}">${S.verTabla ? 'Ocultar' : 'Ver'} la tabla del código genético</button></div>`;
+  if(S.verTabla) S.tabla += tablaHTML({ marcas }) + `<p class="leyenda">${pk < 0 ? 'Cuando elijas una base, acá se va a marcar su codón.'
+    : `<span class="marca-orig"></span>codón ${pk + 1} original${S.mut ? ` &nbsp; <span class="marca-nuevo"></span>codón ${pk + 1} con la mutación` : ''}`}</p>`;
+  return h;
+}
+function nombreEfecto(e){
+  return { silenciosa:'Mutación silenciosa: la proteína no cambia', cambio:'Mutación de sentido erróneo: cambia un aminoácido',
+    'sin-sentido':'Mutación sin sentido: la proteína se corta', inicio:'Se perdió el codón de inicio', sigue:'Se perdió el codón de Fin' }[e];
+}
+function aplicarMutacion(b){
+  const pos = S.sel, k = Math.floor(pos / 3);
+  const e = efectoDe(S.gen, pos, b);
+  S.mut = { pos, b, efecto:e }; S.sel = null;
+  const viejo = codones(RNA(S.gen))[k], nuevo = codones(RNA(genActual()))[k];
+  const cambio = `El codón ${k + 1} pasó de <b>${viejo}</b> (${AA[traducir(viejo)][1]}) a <b>${nuevo}</b> (${AA[traducir(nuevo)][1]}).`;
+  const D = DESAFIOS[S.desafio];
+  if(e === D.tipo){
+    S.logrados.add(S.desafio);
+    const textos = {
+      silenciosa:'Varios codones dan el mismo aminoácido (el código es <b>redundante</b>), y muchas veces el cambio está en la tercera letra.',
+      cambio:'La proteína tiene el mismo largo, pero con una pieza distinta. Según qué aminoácido sea y dónde esté, puede no notarse o cambiar mucho cómo funciona.',
+      'sin-sentido':'Apareció un codón de Fin antes de tiempo: el ribosoma se suelta ahí y la proteína queda cortada. Casi siempre deja de funcionar.'
+    };
+    S.msg = { tipo:'ok', texto:`¡Lo lograste! ${cambio} Es una <b>${D.nombre}</b>. ${textos[e]}` };
+    if(S.logrados.size === DESAFIOS.length) S.hecho = true; else S.esperando = true;
+  } else {
+    const otras = {
+      silenciosa:'La proteína quedó igual: es una mutación silenciosa.',
+      cambio:'Cambió un aminoácido, pero la proteína no se cortó.',
+      'sin-sentido':'¡Se cortó la proteína! Es una mutación sin sentido.',
+      inicio:'Cambiaste el codón de inicio: sin AUG, el ribosoma no empieza a leer este gen.',
+      sigue:'Cambiaste el codón de Fin: el ribosoma sigue leyendo más allá y la proteína sale más larga.'
+    };
+    const pistas = {
+      silenciosa:'Probá cambiar la <b>tercera</b> base de algún codón y fijate en la tabla del código genético si el aminoácido es el mismo.',
+      cambio:'Probá cambiar la <b>primera o la segunda</b> base de un codón del medio.',
+      'sin-sentido':'Buscá en el ARN un codón que, cambiando una sola base, pueda convertirse en UAA, UAG o UGA (los codones de Fin de la tabla).'
+    };
+    S.msg = { tipo:'info', texto:`${cambio} ${otras[e]} Ese no es el desafío de ahora. ${pistas[D.tipo]}` };
+  }
+  dibujar();
+}
+
+// --- Nivel 4: caso real -----------------------------------------------------
+function realHTML(){
+  const difPos = [...HBB].findIndex((b, i) => b !== HBB_S[i]);
+  const mostrar = S.fase !== 'buscar';
+  const p1 = proteinaDe(RNA(HBB)).aas, p2 = proteinaDe(RNA(HBB_S)).aas;
+  const persona = (num, nombre, sec, o) => {
+    let h = `<div class="persona p${num}"><p class="persona-tit"><span class="chapa">Persona ${num}</span>${nombre}</p>
+      <p class="mol-nota">ADN del comienzo de su gen de la β-globina${num === 2 && !mostrar ? ' · hacé clic en la base que es distinta' : ''}</p><div class="mol-sec">`;
+    for(let k = 0; k * 3 < sec.length; k++){
+      h += `<div class="bloque ${mostrar && k === 6 ? 'mutado' : ''}"><div style="display:flex;flex-direction:column;gap:2px"><div style="display:flex;gap:3px">`;
+      for(let p = k * 3; p < k * 3 + 3; p++){
+        const b = baseHTML(sec[p], o.clases ? o.clases(p) : '');
+        h += o.click ? `<button class="col" data-real="${p}" aria-label="Base ${p + 1} de la persona 2: ${sec[p]}">${b}</button>` : `<div class="col">${b}</div>`;
+      }
+      h += `</div><span class="num-codon">codón ${k + 1}</span></div></div>`;
+    }
+    h += '</div>';
+    if(mostrar) h += `<p class="sub">Su proteína</p>${o.prot}`;
+    return h + '</div>';
+  };
+  let h = persona(1, 'sin anemia falciforme', HBB, { prot:`<div class="proteina">${p1.map(a => aaHTML(a)).join('')}</div>` });
+  h += persona(2, 'con anemia falciforme', HBB_S, { click:!mostrar,
+    clases:p => mostrar && p === difPos ? 'cambiada' : S.toques.has(p) ? 'tenue' : '', prot:proteinaComparada(p1, p2) });
+  if(mostrar){
+    h += `${leyendaAA()}<p class="leyenda">El codón 7 cambió de GAG a <b>GTG</b> en el ADN (GAG a <b>GUG</b> en el ARN).</p>`;
+    h += `<p style="margin-top:1rem"><b>¿Qué tipo de mutación es?</b></p><div class="opciones">${S.opciones.map(o =>
+      `<button data-tipo="${o}" class="${S.hecho && o === 'cambio' ? 'ok' : S.elegidas.has(o) ? 'mal' : ''}" ${S.hecho || S.elegidas.has(o) ? 'disabled' : ''}>${
+        { silenciosa:'Silenciosa: la proteína no cambia', cambio:'De sentido erróneo: cambia un aminoácido', 'sin-sentido':'Sin sentido: la proteína se corta' }[o]}</button>`).join('')}</div>`;
+  }
+  return h;
+}
+function tocarReal(p){
+  const dif = [...HBB].findIndex((b, i) => b !== HBB_S[i]);
+  if(p === dif){
+    S.fase = 'clasificar';
+    S.msg = { tipo:'ok', texto:'¡Ahí está! Una sola base distinta: en el codón 7, una <b>A</b> cambió por una <b>T</b>. Mirá la proteína de cada persona.' };
+  } else {
+    errores++; S.toques.add(p);
+    S.msg = { tipo:'pista', texto:`En la base ${p + 1} las dos personas tienen ${HBB_S[p]}. Recorré los codones de a uno, comparando con el mismo codón de la persona 1.` };
+  }
+  dibujar();
+}
+function clasificarReal(o){
+  if(o === 'cambio'){
+    S.hecho = true;
+    S.msg = { tipo:'ok', texto:'¡Exacto! El ácido glutámico (Glu), que tiene carga, se reemplaza por valina (Val), que es hidrofóbica. Ese único cambio hace que las moléculas de hemoglobina se peguen entre sí cuando hay poco oxígeno y deformen el glóbulo rojo, que toma forma de hoz. Una letra entre miles alcanza para causar una enfermedad.' };
+  } else {
+    S.elegidas.add(o); errores++;
+    S.msg = { tipo:'pista', texto:'Mirá las dos proteínas: ¿tienen el mismo largo? ¿Cuántos aminoácidos son distintos?' };
+  }
+  dibujar();
+}
+
+// ---------------------------------------------------------------------------
+function conectar(){
+  tablero.querySelectorAll('[data-letra]').forEach(b => b.onclick = () => ponerLetra(b.dataset.letra));
+  tablero.querySelectorAll('[data-op]').forEach(b => b.onclick = () => responderTranscripcion(+b.dataset.op));
+  tablero.querySelectorAll('[data-op2]').forEach(b => b.onclick = () => responderTraduccion(+b.dataset.op2));
+  tablero.querySelectorAll('[data-cod]').forEach(b => b.onclick = () => { if(NIVELES[nivel].tipo === 'traducir') elegirCodon(b.dataset.cod); });
+  tablero.querySelectorAll('[data-pos]').forEach(b => b.onclick = () => { S.sel = +b.dataset.pos; S.msg = null; dibujar(); });
+  tablero.querySelectorAll('[data-nueva]').forEach(b => b.onclick = () => aplicarMutacion(b.dataset.nueva));
+  tablero.querySelectorAll('[data-real]').forEach(b => b.onclick = () => tocarReal(+b.dataset.real));
+  tablero.querySelectorAll('[data-tipo]').forEach(b => b.onclick = () => clasificarReal(b.dataset.tipo));
+  if(el('separar')) el('separar').onclick = () => { S.abierto = true; S.animar = true; dibujar(); tablero.querySelector('.teclado button')?.focus({ preventScroll:true }); };
+  if(el('verTabla')) el('verTabla').onclick = () => { S.verTabla = !S.verTabla; dibujar(); if(S.verTabla) tablero.querySelector('.tabla-wrap')?.scrollIntoView({ behavior:'smooth', block:'start' }); };
+  if(el('deshacer')) el('deshacer').onclick = () => { S.mut = null; S.sel = null; S.msg = null; S.esperando = false; dibujar(); };
+  if(el('sigDesafio')) el('sigDesafio').onclick = () => {
+    S.esperando = false; S.mut = null; S.msg = null;
+    S.desafio = DESAFIOS.findIndex((_, j) => !S.logrados.has(j));
+    dibujar();
+  };
+  if(el('sig')) el('sig').onclick = () => {
+    const N = NIVELES[nivel];
+    if(N.rondas && S.ronda + 1 < N.rondas.length) return empezar(nivel, S.ronda + 1);
+    contarNivel(nivel + 1, 'el nivel ' + (nivel + 1));
+    nivel + 1 < NIVELES.length ? empezar(nivel + 1) : final();
+  };
+}
+document.addEventListener('keydown', e => {
+  if(!S || NIVELES[nivel].tipo !== 'transcribir' || S.completo || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key.toUpperCase();
+  if('AUCGT'.includes(k) && k.length === 1){ e.preventDefault(); ponerLetra(k); }
+});
+
+function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path:'fin/arma-tu-proteina', title:'Completó Armá tu proteína', event:true });
+  }
+  marcador.textContent = 'Resultado';
+  el('barra').style.width = '100%';
+  tablero.innerHTML = `<div class="final">
+    <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">¡Armaste proteínas como una célula!</h2>
+    <p>${errores === 0 ? 'Completaste los cuatro niveles sin ningún error.' : `Completaste los cuatro niveles con ${errores} ${errores === 1 ? 'error' : 'errores'}.`}</p>
+    <p style="max-width:34em;margin:0 auto;line-height:1.55;">Del ADN al ARN, y del ARN a la proteína: en tu cuerpo esto pasa millones de veces por segundo. Y viste que una sola letra puede no cambiar nada, cambiar una pieza o cortar la proteína entera.</p>
+    <div class="acciones"><button class="primario" id="otra">Jugar de nuevo (con otros genes)</button></div></div>`;
+  el('otra').onclick = () => { errores = 0; empezar(0); };
+}
+
+empezar(0);
+</script>
+<script>
+// "Nivel superado" en GoatCounter: una vez por etapa y por visita. La etapa es
+// lo que este juego llama nivel, ronda, caso, etc.; la ruta es siempre
+// nivel/<juego>/<etapa>, para poder comparar dónde se deja de jugar.
+const etapasContadas = new Set();
+function contarNivel(etapa, nombre){
+  if(etapasContadas.has(etapa)) return;
+  etapasContadas.add(etapa);
+  window.goatcounter?.count({ path:'nivel/arma-tu-proteina/' + etapa, title:'Armá tu proteína · superó ' + nombre, event:true });
+}
+</script>
+
+<!-- Compartir este juego: menú nativo del celular; en la compu copia el link. -->
+<div class="compartir">
+  <button type="button" id="btnCompartir" data-juego="arma-tu-proteina" data-nombre="Armá tu proteína">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+    Compartir este juego
+  </button>
+  <p id="compartirAviso" role="status" aria-live="polite"></p>
+</div>
+<style>
+  .compartir{ align-self:center; text-align:center; margin:0.4rem auto 1.6rem; }
+  .compartir button{ display:inline-flex; align-items:center; gap:0.5em; font:inherit; font-size:0.95rem; font-weight:600;
+    color:var(--ink); background:var(--card); border:1px solid #CBD3D1; border-radius:999px; padding:0.6em 1.2em;
+    cursor:pointer; box-shadow:none; width:auto; min-width:0; margin:0; }
+  .compartir button:hover{ border-color:var(--ink); }
+  .compartir button:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .compartir p{ margin:0.5rem 0 0; min-height:1.3em; font-size:0.85rem; color:var(--muted); }
+</style>
+<script>
+(function(){
+  const btn = document.getElementById('btnCompartir');
+  const aviso = document.getElementById('compartirAviso');
+  const og = document.querySelector('meta[property="og:url"]');
+  const url = og ? og.content : location.href.split(/[?#]/)[0];
+  const nombre = btn.dataset.nombre;
+  const texto = 'Probá «' + nombre + '», un juego de Genética a las Aulas';
+  function avisar(msg){ aviso.textContent = msg; clearTimeout(avisar.t); avisar.t = setTimeout(() => aviso.textContent = '', 4000); }
+  async function copiar(){
+    try { await navigator.clipboard.writeText(url); avisar('Link copiado. Pegalo donde quieras compartirlo.'); }
+    catch(e){ window.prompt('Copiá este link para compartir el juego:', url); }
+  }
+  btn.addEventListener('click', async () => {
+    window.goatcounter?.count({ path:'compartir/' + btn.dataset.juego, title:'Compartió ' + nombre, event:true });
+    if (navigator.share) {
+      try { await navigator.share({ title: nombre, text: texto, url }); }
+      catch(e){ if (e.name !== 'AbortError') copiar(); }
+    } else copiar();
+  });
+})();
+</script>
+
+<footer class="creditos">
+  <img src="../assets/logo-gaa.png" srcset="../assets/logo-gaa@2x.png 2x" alt="" width="52" height="52">
+  <p><a href="../">Genética a las Aulas</a> · Unidad Académica de Genética, Facultad de Medicina, Universidad de la República (UdelaR)<br>Licencia CC BY-NC 4.0 · <a href="../acerca/">Acerca de estos juegos</a></p>
+</footer>
+
+<script data-goatcounter="https://gaa-juegos-k7m3.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

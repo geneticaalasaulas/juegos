@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grupos sanguíneos ABO y Rh · Genética a las Aulas</title>
+<link rel="icon" href="../assets/favicon.ico" sizes="any">
+<link rel="icon" href="../assets/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<meta name="description" content="Tipificá muestras de sangre con anti-A, anti-B y anti-D, elegí qué bolsas se le pueden transfundir a cada paciente, armá cuadros de Punnett con codominancia y resolvé el caso de dos bebés cambiados en una maternidad.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Genética a las Aulas">
+<meta property="og:locale" content="es_UY">
+<meta property="og:title" content="Grupos sanguíneos ABO y Rh · Genética a las Aulas">
+<meta property="og:description" content="Tipificá muestras de sangre con anti-A, anti-B y anti-D, elegí qué bolsas se le pueden transfundir a cada paciente, armá cuadros de Punnett con codominancia y resolvé el caso de dos bebés cambiados en una maternidad.">
+<meta property="og:url" content="https://geneticaalasaulas.github.io/juegos/grupos-sanguineos/">
+<meta property="og:image" content="https://geneticaalasaulas.github.io/juegos/capas/grupos-sanguineos.jpg">
+<meta property="og:image:width" content="900">
+<meta property="og:image:height" content="600">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
+    --juego:#BC0440;          /* magenta del logo — ver capas/grupos-sanguineos.jpg */
+    --juego-texto:#BC0440;
+    --juego-tinte:#F8E6EC;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
+    --sangre:#A3122A;
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--juego-texto); }
+  h1{ font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem); letter-spacing:-0.01em; line-height:1.2; margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem; }
+  .bajada{ max-width:34em; margin:0 auto 1rem; font-size:0.95rem; line-height:1.55; color:var(--muted); text-align:center; padding:0 1rem; }
+  .marcador{ color:var(--muted); font-size:0.95rem; margin:0 0 1rem; text-align:center; }
+  .progreso{ width:min(860px,94vw); height:5px; margin:0 0 1.1rem; background:var(--pista); border-radius:999px; overflow:hidden; }
+  .progreso > i{ display:block; height:100%; width:0; border-radius:999px; background:var(--juego-texto); transition:width .3s ease; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.5rem; width:min(860px,94vw); margin-bottom:1.2rem; }
+  @media (max-width:520px){ .tablero{ padding:1rem 0.8rem; } }
+
+  button{ min-height:44px; padding:0.55rem 0.9rem; border-radius:6px; font-size:0.97rem; cursor:pointer; font-family:inherit;
+    border:1.5px solid var(--juego); background:#fff; color:var(--ink); transition:background-color .15s ease; }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+
+  .historia{ background:var(--juego-tinte); border-left:4px solid var(--juego); padding:0.8rem 1rem; border-radius:0 6px 6px 0; line-height:1.55; margin:0 0 0.9rem; }
+  .consigna{ font-size:1.05rem; line-height:1.5; margin:0 0 1rem; font-weight:600; }
+  .regla{ font-size:0.93rem; line-height:1.5; color:var(--muted); margin:-0.4rem 0 1rem; }
+  sup{ font-size:0.7em; }
+
+  /* Tarjeta de tipificación */
+  .tarjeta{ display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap; margin:0.6rem 0; }
+  .pocillo{ display:flex; flex-direction:column; align-items:center; gap:0.35rem; width:132px; }
+  .pocillo button{ padding:0; border-radius:50%; width:112px; height:112px; border:3px solid #D5DCDA; background:#fff; overflow:hidden; display:block; }
+  .pocillo button:hover{ background:#fff; border-color:var(--juego); }
+  .pocillo button:disabled{ opacity:1; cursor:default; }
+  .pocillo svg{ display:block; width:100%; height:100%; }
+  .pocillo .reactivo{ font-weight:700; font-size:0.95rem; }
+  .pocillo .estado{ font-size:0.82rem; color:var(--muted); text-align:center; min-height:2.4em; line-height:1.3; }
+  .grupos{ display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:0.45rem; max-width:420px; margin:0.6rem auto 0; }
+  .grupos button{ font-weight:700; font-size:1.05rem; }
+  .grupos button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; opacity:1; }
+  .grupos button.mal{ border-color:var(--mal); color:var(--mal); }
+
+  /* Tabla de referencia */
+  .ref{ border-collapse:collapse; margin:0 auto 1rem; font-size:0.9rem; }
+  .ref th, .ref td{ padding:0.3rem 0.6rem; border-bottom:1px solid #E6E9E8; text-align:center; }
+  .ref th{ color:var(--muted); font-weight:600; font-size:0.82rem; }
+  .ref td:first-child{ font-weight:700; }
+  .historia ul.alelos{ margin:0.4rem 0 0.5rem; padding-left:1.3rem; }
+  .historia ul.alelos li{ margin:0.15rem 0; }
+
+  /* Banco de sangre */
+  .paciente{ text-align:center; font-size:1.05rem; margin:0 0 0.6rem; }
+  .paciente b{ font-size:1.3rem; color:var(--juego-texto); }
+  .banco{ display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:0.6rem; max-width:520px; margin:0 auto; }
+  .bolsa{ display:flex; flex-direction:column; align-items:center; gap:0.15rem; padding:0.4rem 0.2rem 0.5rem; border-radius:10px; min-height:0; }
+  .bolsa svg{ width:46px; height:60px; display:block; }
+  .bolsa span{ font-weight:700; font-size:1.05rem; }
+  .bolsa[aria-pressed="true"]{ background:var(--juego-tinte); box-shadow:0 0 0 2px var(--juego); }
+  .bolsa.bien{ background:#E2F3EA; border-color:var(--ok); box-shadow:0 0 0 2px var(--ok); opacity:1; }
+  .bolsa.mal{ background:#FDECEC; border-color:var(--mal); box-shadow:0 0 0 2px var(--mal); }
+  .bolsa.falto{ border-style:dashed; border-color:var(--ok); }
+
+  /* Punnett */
+  .punnett{ display:grid; grid-template-columns:auto repeat(2, minmax(0, 170px)); gap:6px; justify-content:center; margin:0.6rem auto; }
+  .punnett .cab{ display:flex; align-items:center; justify-content:center; font-size:1.15rem; font-weight:700; padding:0.3rem 0.6rem; background:#F4F7F6; border-radius:6px; }
+  .punnett .cab.vacia{ background:none; font-size:0.72rem; font-weight:400; color:var(--muted); line-height:1.2; text-align:center; }
+  .sueltos{ display:grid; grid-template-columns:repeat(4, minmax(0, 150px)); gap:6px; justify-content:center; margin:0.6rem auto; }
+  @media (max-width:560px){ .sueltos{ grid-template-columns:repeat(2, minmax(0, 170px)); } }
+  .celda{ border:1.5px solid #D5DCDA; border-radius:8px; padding:0.45rem; text-align:center; }
+  .celda .gt{ font-size:1.2rem; font-weight:700; margin-bottom:0.3rem; }
+  .celda .ops{ display:flex; gap:3px; justify-content:center; flex-wrap:wrap; }
+  .celda .ops button{ min-height:34px; padding:0.15rem 0.45rem; font-size:0.9rem; font-weight:600; min-width:38px; }
+  .celda .ops button.mal{ border-color:var(--mal); color:var(--mal); }
+  .celda.bien{ border-color:var(--ok); background:#E2F3EA; }
+  .celda .fen{ font-size:1.25rem; font-weight:800; color:var(--ok); }
+
+  /* Familias */
+  .familias{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:0.8rem; }
+  @media (max-width:560px){ .familias{ grid-template-columns:1fr; } }
+  .familia{ border:1.5px solid #E1E7E5; border-radius:10px; padding:0.7rem; text-align:center; }
+  .familia h3{ margin:0 0 0.4rem; font-size:1rem; }
+  .familia .padres{ display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; }
+  .chip{ display:inline-flex; flex-direction:column; align-items:center; padding:0.35rem 0.7rem; border-radius:8px; background:#F4F7F6; font-size:0.8rem; color:var(--muted); }
+  .chip b{ font-size:1.15rem; color:var(--ink); }
+  .familia .cuna{ margin-top:0.6rem; min-height:58px; display:flex; align-items:center; justify-content:center; border:2px dashed #D5DCDA; border-radius:8px; }
+  .familia.bien{ border-color:var(--ok); background:#F1FAF5; }
+  .bebes{ display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin:0.8rem 0 0.4rem; }
+  .bebe{ display:inline-flex; flex-direction:column; align-items:center; padding:0.35rem 0.9rem; border-radius:10px; }
+  .bebe b{ font-size:1.15rem; }
+  .bebe[aria-pressed="true"]{ background:var(--juego-tinte); box-shadow:0 0 0 2px var(--juego); }
+
+  .caso{ border:1.5px solid #E1E7E5; border-radius:10px; padding:0.7rem 0.9rem; margin:0.6rem 0; }
+  .caso p{ margin:0 0 0.5rem; line-height:1.5; }
+  .caso .sino{ display:flex; gap:0.5rem; }
+  .caso .sino button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; opacity:1; }
+  .caso .sino button.mal{ border-color:var(--mal); color:var(--mal); }
+  .caso .exp{ font-size:0.93rem; color:var(--muted); margin:0.5rem 0 0; }
+
+  .leyenda{ font-size:0.85rem; color:var(--muted); text-align:center; margin:0.8rem 0 0; line-height:1.5; }
+  .fb{ font-size:1rem; line-height:1.5; margin:1rem 0 0; padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; }
+  .fb:empty{ display:none; }
+  .fb.pista{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .fb.ok{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .acciones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1rem; justify-content:center; }
+  .opciones{ display:grid; gap:0.5rem; margin-top:0.5rem; }
+  .opciones button{ text-align:left; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.ok:disabled{ opacity:1; }
+  .opciones button.ok::before{ content:"\2713\00a0"; font-weight:700; }
+  .opciones button.mal{ border-color:var(--mal); color:var(--mal); }
+  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
+  .separador{ border:none; border-top:1px dashed #D5DCDA; margin:1rem 0; }
+  .final{ text-align:center; }
+
+  details.docente{ max-width:38em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  @media (prefers-reduced-motion:reduce){ .progreso > i{ transition:none; } }
+  footer.creditos{ align-self:stretch; margin-top:auto; border-top:1px solid #E6E9E8; padding:1.2rem 1rem;
+    display:flex; align-items:center; justify-content:center; gap:0.8rem; font-size:0.85rem; color:var(--muted); line-height:1.45; }
+  footer.creditos img{ width:52px; height:52px; border-radius:50%; flex:none; display:block; }
+  footer.creditos p{ margin:0; max-width:40em; }
+  footer.creditos a{ color:var(--ink); font-weight:600; text-decoration:none; }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>Grupos sanguíneos ABO y Rh</h1>
+<p class="bajada">¿Sos A+, O−, AB+? Tu grupo sanguíneo depende de unas marcas, los <b>antígenos</b>, que llevan tus glóbulos rojos en la superficie. Se miran dos sistemas: el <b>ABO</b>, que da la letra (A, B, AB u O), y el <b>Rh</b>, que da el signo (+ o −). En este juego vas a tipificar sangre como en un laboratorio, elegir qué sangre puede recibir un paciente y descubrir cómo se heredan los grupos de padres a hijos.</p>
+<p class="marcador" id="marcador"></p>
+<div class="progreso" aria-hidden="true"><i id="barra"></i></div>
+<div class="tablero" id="tablero"></div>
+
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Secundaria (de 14 a 18 años, aproximadamente). Los niveles 1 y 2 también sirven desde 8.º grado.</p>
+  <p><b>Programa de ANEP:</b> Biología, 1.º de Educación Media Superior (programa DGES, revisión 2026), bloque «Diversidad y variabilidad»: dominancia completa, dominancia incompleta y codominancia, deducción de genotipos y herencia humana. Los niveles de tipificación y transfusión se pueden usar en 8.º grado, en el sistema cardiovascular (corazón, sangre y vasos sanguíneos).</p>
+  <p><b>Conceptos que trabaja:</b> antígenos A, B y D en la superficie del glóbulo rojo y anticuerpos en el plasma; tipificación por aglutinación con anti-A, anti-B y anti-D; compatibilidad de glóbulos rojos en una transfusión (dador universal O−, receptor universal AB+); herencia del sistema ABO con tres alelos, I<sup>A</sup> e I<sup>B</sup> codominantes entre sí y ambos dominantes sobre i; herencia del Rh como dominante; deducir qué hijos son posibles y cuáles no.</p>
+  <p><b>Cómo avanza:</b> nivel 1, tipificar tres muestras; nivel 2, elegir las bolsas compatibles para tres pacientes; nivel 3, un calentamiento en el que se clasifican cuatro genotipos sueltos y después dos cuadros de Punnett del sistema ABO; nivel 4, dos bebés cambiados en una maternidad y tres casos de "¿puede ser?". Las muestras, los pacientes y los casos se sortean en cada partida.</p>
+  <p><b>Algunas simplificaciones que hacemos en este juego:</b> los anticuerpos anti-A y anti-B aparecen en los primeros meses de vida sin necesidad de contacto con sangre ajena; el anti-D, en cambio, solo se forma si una persona Rh− recibe glóbulos rojos Rh+ (por una transfusión o, en el embarazo, por el pasaje de sangre de un feto Rh+). Por eso a una persona Rh− se le dan glóbulos rojos Rh−; en una emergencia sin sangre Rh− disponible, a veces se usa Rh+ en varones. El juego habla solo de glóbulos rojos: para el plasma la compatibilidad se invierte, y el dador universal de plasma es AB. En el banco de sangre, además, se hacen pruebas cruzadas, porque hay muchos otros sistemas de grupos (Kell, Duffy, Kidd…). El Rh se trata como un gen con dos alelos: en la mayoría de las personas Rh−, el alelo "d" es la ausencia del gen <i>RHD</i>.</p>
+  <p><b>Por qué A y B son codominantes:</b> el gen <i>ABO</i> codifica una enzima que agrega un azúcar a una molécula de la superficie del glóbulo rojo. La versión A agrega un azúcar y la B otro; quien tiene las dos versiones fabrica las dos enzimas y tiene ambos antígenos. El alelo O tiene una deleción de una base que desplaza el marco de lectura y no produce enzima funcional: por eso es recesivo.</p>
+  <p><b>Una excepción para discutir:</b> en el fenotipo Bombay, muy poco frecuente, la persona no fabrica la molécula base sobre la que actúan las enzimas A y B (es homocigota para un alelo inactivo de otro gen, <i>FUT1</i>). Se tipifica como O aunque tenga alelos A o B, y puede tener hijos AB con una pareja O. Es un buen ejemplo de interacción entre genes y de por qué un análisis de grupo sanguíneo no alcanza para excluir una paternidad.</p>
+  <p><b>Para discutir después de jugar:</b> ¿por qué una persona O− puede donar glóbulos rojos a cualquiera, pero solo puede recibir de O−? ¿Por qué a una embarazada Rh− se le indica inmunoglobulina anti-D? Si tus padres son A y B, ¿qué grupos podés tener vos? ¿Qué grupo es el más frecuente entre tus compañeros?</p>
+</details>
+
+<script>
+// ---------------------------------------------------------------------------
+// Grupos: ABO (A, B, AB, O) y Rh (+/−). Antígenos y anticuerpos naturales.
+// ---------------------------------------------------------------------------
+const ABO = ['A','B','AB','O'];
+const GRUPOS = ['O−','O+','A−','A+','B−','B+','AB−','AB+'];
+const abo = g => g.replace(/[+−]/, ''), rh = g => g.endsWith('+');
+const antigenos = g => ({ A:abo(g).includes('A'), B:abo(g).includes('B'), D:rh(g) });
+const anticuerpos = a => ({ A:!a.includes('A'), B:!a.includes('B') });   // anti-A y anti-B del plasma
+// Glóbulos rojos: el donante no puede tener un antígeno contra el que el receptor tenga (o pueda fabricar) anticuerpos.
+function compatible(donante, receptor){
+  const ag = antigenos(donante), ac = anticuerpos(abo(receptor));
+  if(ag.A && ac.A) return false;
+  if(ag.B && ac.B) return false;
+  if(ag.D && !rh(receptor)) return false;
+  return true;
+}
+function motivo(donante, receptor){
+  const ag = antigenos(donante), ac = anticuerpos(abo(receptor));
+  if(ag.A && ac.A) return `${donante}: tiene antígeno A, y el plasma de una persona ${abo(receptor)} tiene anti-A`;
+  if(ag.B && ac.B) return `${donante}: tiene antígeno B, y el plasma de una persona ${abo(receptor)} tiene anti-B`;
+  return `${donante}: es Rh+, y una persona Rh− fabricaría anticuerpos anti-D`;
+}
+
+// Alelos: 'A' = I^A, 'B' = I^B, 'O' = i.
+const alelo = a => a === 'O' ? '<i>i</i>' : `<i>I</i><sup>${a}</sup>`;
+const genotipoHTML = g => alelo(g[0]) + alelo(g[1]);
+function fenotipo(g){ const s = new Set(g); return s.has('A') && s.has('B') ? 'AB' : s.has('A') ? 'A' : s.has('B') ? 'B' : 'O'; }
+
+const azar = a => a[Math.floor(Math.random() * a.length)];
+function mezclar(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+// ---------------------------------------------------------------------------
+// Dibujos
+// ---------------------------------------------------------------------------
+const REACTIVO = { A:['anti-A','#7FB2E5'], B:['anti-B','#F2D16B'], D:['anti-D (Rh)','#E9EEEC'] };
+// Grumos fijos para cada pocillo (para que no "salten" al redibujar).
+const GRUMOS = Array.from({length:3}, (_, k) => Array.from({length:14}, (_, i) => {
+  const ang = (i * 137.5 + k * 40) * Math.PI / 180, r = 8 + ((i * 53 + k * 17) % 34);
+  return [50 + r * Math.cos(ang), 50 + r * Math.sin(ang), 3 + ((i * 7 + k) % 5)];
+}));
+function pocilloSVG(k, color, sangre, aglutina){
+  let s = `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="48" fill="${color}"/>`;
+  if(sangre && !aglutina) s += `<circle cx="50" cy="50" r="40" fill="var(--sangre)" opacity="0.92"/><circle cx="38" cy="36" r="9" fill="#fff" opacity="0.15"/>`;
+  if(sangre && aglutina){
+    s += `<circle cx="50" cy="50" r="40" fill="#F3D9DD" opacity="0.85"/>`;
+    GRUMOS[k].forEach(([x, y, r]) => { s += `<circle cx="${x}" cy="${y}" r="${r}" fill="var(--sangre)"/><circle cx="${x + r * 0.9}" cy="${y + 1}" r="${r * 0.6}" fill="var(--sangre)"/>`; });
+  }
+  if(!sangre) s += `<text x="50" y="56" text-anchor="middle" font-size="13" fill="#3F4B49" font-family="system-ui">+ gota</text>`;
+  return s + `</svg>`;
+}
+function bolsaSVG(){ return `<svg viewBox="0 0 46 60" aria-hidden="true"><rect x="19" y="1" width="8" height="8" rx="2" fill="#C9D2D0"/><rect x="5" y="8" width="36" height="48" rx="8" fill="#F4F7F6" stroke="#9AA8A5" stroke-width="1.5"/><rect x="8" y="22" width="30" height="31" rx="6" fill="var(--sangre)"/><rect x="11" y="13" width="24" height="6" rx="2" fill="#fff" stroke="#C9D2D0"/></svg>`; }
+const tablaRef = () => `<table class="ref"><thead><tr><th>Grupo</th><th>Antígenos en el glóbulo rojo</th><th>Anticuerpos en el plasma</th></tr></thead><tbody>
+  <tr><td>A</td><td>A</td><td>anti-B</td></tr><tr><td>B</td><td>B</td><td>anti-A</td></tr><tr><td>AB</td><td>A y B</td><td>ninguno</td></tr><tr><td>O</td><td>ninguno</td><td>anti-A y anti-B</td></tr>
+  <tr><td>Rh+</td><td>D</td><td>ninguno</td></tr><tr><td>Rh−</td><td>—</td><td>ninguno al nacer; fabrica anti-D si recibe sangre Rh+</td></tr></tbody></table>`;
+
+// ---------------------------------------------------------------------------
+// Niveles
+// ---------------------------------------------------------------------------
+const NIVELES = [
+  { tipo:'tipificar', titulo:'Tipificá la sangre', rondas:3,
+    historia:'Para saber el grupo de una persona se mezcla una gota de su sangre con tres reactivos. Cada uno tiene anticuerpos contra un antígeno: <b>anti-A</b> y <b>anti-B</b> detectan las marcas del sistema ABO, y <b>anti-D</b> detecta el Rh. Si el glóbulo rojo tiene ese antígeno, los anticuerpos lo enganchan y la sangre forma grumos: se <b>aglutina</b>.<br><br><b>¿Qué es el Rh?</b> Es otra marca, independiente de A y B: una proteína llamada <b>D</b>. Si tus glóbulos rojos la tienen, sos <b>Rh+</b>; si no, sos <b>Rh−</b>. Por eso el reactivo se llama anti-D. El nombre Rh viene del mono <i>rhesus</i>, que se usó en los experimentos con los que se descubrió.',
+    consigna:'Agregá una gota de sangre en cada pocillo y decidí el grupo.' },
+  { tipo:'transfundir', titulo:'Elegí las bolsas', rondas:3,
+    historia:'En una transfusión de glóbulos rojos, lo importante es que el paciente no tenga anticuerpos contra los antígenos de la sangre que recibe: si los tiene, destruye esos glóbulos rojos y la reacción puede ser grave. Con el Rh hay una diferencia: una persona Rh− no nace con anti-D, pero si recibe sangre Rh+ empieza a fabricarlo, y en una próxima transfusión reaccionaría. Por eso a una persona Rh− se le da sangre Rh−.',
+    consigna:'Marcá <b>todas</b> las bolsas de glóbulos rojos que se le pueden dar a este paciente.' },
+  { tipo:'punnett', titulo:'Herencia: codominancia', rondas:2,
+    historia:'El grupo ABO depende de un gen, el gen <i>ABO</i>, que tiene tres versiones o <b>alelos</b>: <ul class="alelos"><li><b><i>I</i><sup>A</sup></b> fabrica el antígeno A.</li><li><b><i>I</i><sup>B</sup></b> fabrica el antígeno B.</li><li><b><i>i</i></b> no fabrica ningún antígeno (es el alelo del grupo O).</li></ul>Cada persona tiene <b>dos copias</b> del gen, una que recibió de la mamá y otra del papá. Esas dos copias pueden ser iguales o distintas. Si hay un <i>I</i><sup>A</sup> o un <i>I</i><sup>B</sup> junto a un <i>i</i>, se ve el antígeno del primero: <i>I</i><sup>A</sup> e <i>I</i><sup>B</sup> son <b>dominantes</b> sobre <i>i</i>. Si están <i>I</i><sup>A</sup> e <i>I</i><sup>B</sup> juntos, se fabrican los dos antígenos y el grupo es AB: son <b>codominantes</b>.',
+    consigna:'Cada óvulo y cada espermatozoide lleva <b>uno solo</b> de los dos alelos de cada progenitor. En cada casillero se juntan un óvulo y un espermatozoide: mirá los dos alelos del hijo o hija y elegí su grupo sanguíneo. Si dudás, usá la tabla.' },
+  { tipo:'familias', titulo:'Bebés cambiados',
+    historia:'En una maternidad se confundieron las tarjetas de dos bebés que nacieron la misma noche. Antes de cualquier otro análisis, el equipo miró los grupos sanguíneos de los padres y de los bebés.',
+    consigna:'Hacé clic en un bebé y después en la familia a la que pertenece.' }
+];
+const CRUZAS = [ { m:['A','O'], p:['B','O'] }, { m:['A','B'], p:['O','O'] }, { m:['A','O'], p:['A','B'] }, { m:['B','O'], p:['O','O'] } ];
+const ESCENARIOS = [
+  { f:[['O','O'], ['AB','O']], bebes:['O', 'A'] },
+  { f:[['O','O'], ['AB','O']], bebes:['O', 'B'] },
+  { f:[['AB','AB'], ['O','O']], bebes:['AB', 'O'] },
+  { f:[['AB','O'], ['A','A']], bebes:['B', 'O'] }
+];
+const CASOS = [
+  { m:'A', p:'A', h:'O', si:true, exp:'Sí: si los dos son <i>I</i><sup>A</sup><i>i</i>, cada uno puede pasar <i>i</i>, y el hijo es <i>ii</i>.' },
+  { m:'AB', p:'O', h:'O', si:false, exp:'No: la mamá AB pasa siempre <i>I</i><sup>A</sup> o <i>I</i><sup>B</sup>, así que el hijo no puede ser O.' },
+  { m:'AB', p:'O', h:'AB', si:false, exp:'No: el papá O solo puede pasar <i>i</i>, así que el hijo es A o B, nunca AB.' },
+  { m:'O−', p:'A+', h:'O+', si:true, exp:'Sí: el papá puede ser <i>I</i><sup>A</sup><i>i</i> y Dd, y pasarle <i>i</i> y D.' },
+  { m:'O−', p:'O−', h:'O+', si:false, exp:'No: los dos son dd (Rh−) y solo pueden pasar d. El hijo tendría que ser Rh−.' },
+  { m:'A+', p:'B+', h:'O−', si:true, exp:'Sí: si la mamá es <i>I</i><sup>A</sup><i>i</i> Dd y el papá <i>I</i><sup>B</sup><i>i</i> Dd, puede tocar <i>ii</i> dd.' },
+  { m:'B', p:'B', h:'AB', si:false, exp:'No: ninguno de los dos tiene <i>I</i><sup>A</sup> para pasar.' },
+  { m:'A', p:'B', h:'AB', si:true, exp:'Sí: la mamá pasa <i>I</i><sup>A</sup> y el papá <i>I</i><sup>B</sup>: los dos se expresan (codominancia).' }
+];
+
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+const el = id => document.getElementById(id);
+let nivel = 0, S = null, errores = 0, finContado = false, sorteo = null;
+
+function empezar(i, ronda = 0){
+  nivel = i;
+  const N = NIVELES[i];
+  S = { ronda, msg:null, hecho:false, mal:new Set() };
+  if(N.tipo === 'tipificar'){
+    if(ronda === 0) do { sorteo = mezclar(GRUPOS).slice(0, 3); } while(sorteo.every(rh) || !sorteo.some(g => abo(g) === 'AB' || abo(g) === 'O'));
+    S.grupo = sorteo[ronda]; S.gotas = [false, false, false];
+  } else if(N.tipo === 'transfundir'){
+    if(ronda === 0) do { sorteo = mezclar(GRUPOS).slice(0, 3); } while(sorteo.every(rh) || !sorteo.some(g => abo(g) === 'O'));
+    S.paciente = sorteo[ronda]; S.sel = new Set(); S.revision = null;
+  } else if(N.tipo === 'punnett'){
+    if(ronda === 0) sorteo = [CRUZAS[0], azar(CRUZAS.slice(1))];
+    S.cruza = sorteo[ronda];
+    S.celdas = [0, 1].map(f => [0, 1].map(c => ({ g:[S.cruza.m[c], S.cruza.p[f]], ok:false })));
+    // Calentamiento (solo la primera vez): clasificar genotipos sueltos antes del cuadro.
+    if(ronda === 0){
+      S.fase = 'calentar';
+      S.sueltos = mezclar([['A','B'], ['O','O'], azar([['A','A'], ['A','O'], ['A','O']]), azar([['B','B'], ['B','O'], ['B','O']])]).map(g => ({ g, ok:false }));
+    } else S.fase = 'cuadro';
+  } else {
+    const E = azar(ESCENARIOS);
+    S.familias = mezclar(E.f.map((par, j) => ({ par, j }))).map((f, k) => ({ ...f, nombre:`Familia ${k === 0 ? 'Silva' : 'Rodríguez'}` }));
+    S.bebes = mezclar(E.bebes.map((g, j) => ({ g, fam:j, nombre:j === 0 ? 'Bebé 1' : 'Bebé 2' })));
+    S.bebes.forEach((b, k) => b.nombre = 'Bebé ' + (k + 1));
+    S.selBebe = null; S.ubicados = new Map();
+    S.casos = mezclar(CASOS).slice(0, 3).map(c => ({ ...c, resp:null, mal:null }));
+    S.fase = 'bebes';
+  }
+  const extra = N.rondas ? ` · ${ronda + 1} de ${N.rondas}` : '';
+  marcador.textContent = `Nivel ${i + 1} de ${NIVELES.length} · ${N.titulo}${extra}`;
+  el('barra').style.width = ((i + (N.rondas ? ronda / N.rondas : 0)) / NIVELES.length * 100) + '%';
+  dibujar();
+  window.scrollTo({ top:0 });
+}
+
+function dibujar(){
+  const N = NIVELES[nivel];
+  const consigna = N.tipo === 'punnett' && S.fase === 'calentar' ? CONSIGNA_CALENTAR : N.consigna;
+  let h = `<div class="historia">${N.historia}</div><p class="consigna">${consigna}</p>`;
+  if(N.tipo === 'tipificar') h += tipificarHTML();
+  else if(N.tipo === 'transfundir') h += transfundirHTML();
+  else if(N.tipo === 'punnett') h += punnettHTML();
+  else h += familiasHTML();
+  h += `<p class="fb ${S.msg ? S.msg.tipo : ''}" aria-live="polite">${S.msg ? S.msg.texto : ''}</p>`;
+  if(S.hecho){
+    const ult = !N.rondas || S.ronda + 1 >= N.rondas;
+    h += `<div class="acciones"><button class="primario" id="sig">${!ult ? 'Siguiente' : nivel + 1 < NIVELES.length ? 'Siguiente nivel' : 'Ver el resultado'} &rarr;</button></div>`;
+  }
+  tablero.innerHTML = h;
+  conectar();
+}
+
+// --- Nivel 1 ----------------------------------------------------------------
+function tipificarHTML(){
+  const ag = antigenos(S.grupo);
+  let h = `<p class="paciente">Muestra ${S.ronda + 1}</p><div class="tarjeta">${['A','B','D'].map((r, k) => {
+    const [nom, col] = REACTIVO[r], puso = S.gotas[k], agl = ag[r];
+    return `<div class="pocillo"><span class="reactivo">${nom}</span>
+      <button data-gota="${k}" ${puso ? 'disabled' : ''} aria-label="${puso ? (agl ? 'Aglutinó' : 'No aglutinó') : 'Agregar una gota de sangre al pocillo ' + nom}">${pocilloSVG(k, col, puso, agl)}</button>
+      <span class="estado">${puso ? (agl ? '<b>Aglutinó</b>: hay grumos' : 'No aglutinó: color parejo') : 'Hacé clic para agregar la sangre'}</span></div>`;
+  }).join('')}</div>`;
+  if(S.gotas.every(Boolean)){
+    h += `<p style="text-align:center;margin:0.8rem 0 0"><b>¿De qué grupo es la muestra?</b></p><div class="grupos">${GRUPOS.map(g =>
+      `<button data-grupo="${g}" class="${S.hecho && g === S.grupo ? 'ok' : S.mal.has(g) ? 'mal' : ''}" ${S.hecho || S.mal.has(g) ? 'disabled' : ''}>${g}</button>`).join('')}</div>`;
+  }
+  return h;
+}
+function elegirGrupo(g){
+  if(g === S.grupo){
+    S.hecho = true;
+    const ag = antigenos(g), tiene = [ag.A && 'A', ag.B && 'B', ag.D && 'D'].filter(Boolean);
+    S.msg = { tipo:'ok', texto:`¡Sí, es <b>${g}</b>! ${tiene.length ? `Sus glóbulos rojos tienen ${tiene.length === 1 ? 'el antígeno' : 'los antígenos'} ${tiene.join(' y ')}: por eso aglutinó con ${tiene.map(t => 'anti-' + t).join(' y ')}.` : 'Sus glóbulos rojos no tienen ni A, ni B, ni D: no aglutinó en ningún pocillo.'}` };
+  } else {
+    errores++; S.mal.add(g);
+    const ag = antigenos(S.grupo);
+    const errAbo = abo(g) !== abo(S.grupo), errRh = rh(g) !== rh(S.grupo);
+    S.msg = { tipo:'pista', texto: errAbo
+      ? `Mirá anti-A y anti-B: ${ag.A ? 'anti-A aglutinó' : 'anti-A no aglutinó'} y ${ag.B ? 'anti-B aglutinó' : 'anti-B no aglutinó'}. Si aglutina con anti-A, tiene antígeno A; si aglutina con anti-B, tiene B; con los dos, es AB; con ninguno, es O.`
+      : errRh ? `El grupo ABO está bien. Revisá el pocillo de anti-D: si aglutina, la sangre es Rh+; si no, Rh−.` : '' };
+  }
+  dibujar();
+}
+
+// --- Nivel 2 ----------------------------------------------------------------
+function transfundirHTML(){
+  const R = S.revision;
+  let h = tablaRef() + `<p class="paciente">Paciente: grupo <b>${S.paciente}</b></p><div class="banco">${GRUPOS.map(g => {
+    const cls = R ? (S.sel.has(g) ? (compatible(g, S.paciente) ? 'bien' : 'mal') : (S.hecho && compatible(g, S.paciente) ? 'bien' : R.faltan && compatible(g, S.paciente) && S.hecho ? 'falto' : '')) : '';
+    return `<button class="bolsa ${cls}" data-bolsa="${g}" aria-pressed="${S.sel.has(g)}" ${S.hecho ? 'disabled' : ''}>${bolsaSVG()}<span>${g}</span></button>`;
+  }).join('')}</div>`;
+  if(!S.hecho) h += `<div class="acciones"><button class="primario" id="enviar" ${S.sel.size ? '' : 'disabled'}>Enviar estas bolsas</button></div>`;
+  return h;
+}
+function enviarBolsas(){
+  const buenas = GRUPOS.filter(g => compatible(g, S.paciente));
+  const malas = [...S.sel].filter(g => !compatible(g, S.paciente));
+  const faltan = buenas.filter(g => !S.sel.has(g));
+  S.revision = { faltan:faltan.length };
+  if(!malas.length && !faltan.length){
+    S.hecho = true;
+    const ac = anticuerpos(abo(S.paciente)), lista = [ac.A && 'anti-A', ac.B && 'anti-B'].filter(Boolean);
+    let extra = '';
+    if(S.paciente === 'O−') extra = ' Una persona O− solo puede recibir O−. Pero su sangre le sirve a cualquiera: por eso O− es el <b>dador universal</b> de glóbulos rojos.';
+    else if(S.paciente === 'AB+') extra = ' AB+ puede recibir de todos los grupos: es el <b>receptor universal</b> de glóbulos rojos.';
+    S.msg = { tipo:'ok', texto:`¡Correcto! ${buenas.length === 1 ? 'Solo sirve' : `Sirven las ${buenas.length}`}: ${buenas.join(', ')}. ${lista.length ? `El plasma de una persona ${abo(S.paciente)} tiene ${lista.join(' y ')}.` : 'Una persona AB no tiene anti-A ni anti-B.'}${rh(S.paciente) ? '' : ' Y como es Rh−, recibe solo Rh−.'}${extra}` };
+  } else {
+    errores++;
+    let t = '';
+    if(malas.length) t += `${malas.length === 1 ? 'Esta bolsa no sirve' : 'Estas bolsas no sirven'}: ${malas.map(g => motivo(g, S.paciente)).join('; ')}. `;
+    if(faltan.length) t += `${malas.length ? 'Además, h' : 'H'}ay ${faltan.length === 1 ? 'otra bolsa que también sirve' : faltan.length + ' bolsas más que también sirven'} y no marcaste.`;
+    S.msg = { tipo:'pista', texto:t + ' Usá la tabla: el paciente no puede recibir antígenos contra los que tiene anticuerpos.' };
+    malas.forEach(g => S.sel.delete(g));
+    S.revision = null;
+  }
+  dibujar();
+}
+
+// --- Nivel 3 ----------------------------------------------------------------
+const CONSIGNA_CALENTAR = 'Antes del cuadro, un calentamiento: cada tarjeta muestra los dos alelos de una persona. Elegí su grupo sanguíneo.';
+function calentarHTML(){
+  let h = `<div class="sueltos">${S.sueltos.map((z, k) => `<div class="celda ${z.ok ? 'bien' : ''}"><div class="gt">${genotipoHTML(ordenar(z.g))}</div>${z.ok ? `<div class="fen">${fenotipo(z.g)}</div>` : `<div class="ops">${ABO.map(x =>
+    `<button data-suelto="${k}-${x}" class="${S.mal.has(`s${k}-${x}`) ? 'mal' : ''}" ${S.mal.has(`s${k}-${x}`) ? 'disabled' : ''} aria-label="Grupo ${x}">${x}</button>`).join('')}</div>`}</div>`).join('')}</div>`;
+  if(S.sueltos.every(z => z.ok)) h += `<div class="acciones"><button class="primario" id="alCuadro">Ahora, al cuadro de Punnett &rarr;</button></div>`;
+  return h;
+}
+function elegirSuelto(k, x){
+  const z = S.sueltos[k];
+  if(fenotipo(z.g) === x){
+    z.ok = true;
+    S.msg = S.sueltos.every(w => w.ok) ? { tipo:'ok', texto:'¡Muy bien! Fijate que dos genotipos distintos pueden dar el mismo grupo: una persona A puede ser <i>I</i><sup>A</sup><i>I</i><sup>A</sup> o <i>I</i><sup>A</sup><i>i</i>. Eso va a importar en el cuadro.' } : null;
+  } else { errores++; S.mal.add(`s${k}-${x}`); S.msg = { tipo:'pista', texto:pistaGenotipo(z.g) }; }
+  dibujar();
+}
+function pistaGenotipo(g){
+  const s = new Set(g);
+  return s.has('A') && s.has('B') ? 'Con <i>I</i><sup>A</sup> e <i>I</i><sup>B</sup> juntos se fabrican los dos antígenos: son codominantes.'
+    : s.size === 1 && s.has('O') ? 'Con dos <i>i</i> no se fabrica ningún antígeno.'
+    : s.has('A') ? 'Hay un <i>I</i><sup>A</sup>, que fabrica el antígeno A. El otro alelo es <i>I</i><sup>A</sup> o <i>i</i>, que no agrega ningún antígeno.'
+    : 'Hay un <i>I</i><sup>B</sup>, que fabrica el antígeno B. El otro alelo es <i>I</i><sup>B</sup> o <i>i</i>, que no agrega ningún antígeno.';
+}
+function punnettHTML(){
+  if(S.fase === 'calentar') return calentarHTML();
+  const C = S.cruza;
+  let h = `<p class="paciente">Mamá ${genotipoHTML(C.m)} (grupo <b>${fenotipo(C.m)}</b>) &nbsp;×&nbsp; Papá ${genotipoHTML(C.p)} (grupo <b>${fenotipo(C.p)}</b>)</p>
+    <div class="punnett"><div class="cab vacia">óvulos →<br>espermatozoides ↓</div>${C.m.map(a => `<div class="cab">${alelo(a)}</div>`).join('')}`;
+  [0, 1].forEach(f => {
+    h += `<div class="cab">${alelo(C.p[f])}</div>`;
+    [0, 1].forEach(c => {
+      const ce = S.celdas[f][c];
+      h += `<div class="celda ${ce.ok ? 'bien' : ''}"><div class="gt">${genotipoHTML(ordenar(ce.g))}</div>${ce.ok ? `<div class="fen">${fenotipo(ce.g)}</div>` : `<div class="ops">${ABO.map(x =>
+        `<button data-celda="${f}-${c}-${x}" class="${S.mal.has(`${f}-${c}-${x}`) ? 'mal' : ''}" ${S.mal.has(`${f}-${c}-${x}`) ? 'disabled' : ''} aria-label="Grupo ${x}">${x}</button>`).join('')}</div>`}</div>`;
+    });
+  });
+  h += `</div>`;
+  if(!S.pregunta && !S.hecho) h += tablaAlelos();
+  if(S.pregunta){
+    h += `<hr class="separador"><p><b>${S.pregunta.texto}</b></p><div class="opciones">${S.pregunta.ops.map((o, j) =>
+      `<button data-op="${j}" class="${S.hecho && o.ok ? 'ok' : S.pregunta.mal.has(j) ? 'mal' : ''}" ${S.hecho || S.pregunta.mal.has(j) ? 'disabled' : ''}>${o.t}</button>`).join('')}</div>`;
+  }
+  return h;
+}
+const tablaAlelos = () => `<table class="ref"><thead><tr><th>Alelos (genotipo)</th><th>Antígenos que fabrica</th><th>Grupo</th></tr></thead><tbody>
+  <tr><td><i>I</i><sup>A</sup><i>I</i><sup>A</sup> o <i>I</i><sup>A</sup><i>i</i></td><td>A</td><td>A</td></tr>
+  <tr><td><i>I</i><sup>B</sup><i>I</i><sup>B</sup> o <i>I</i><sup>B</sup><i>i</i></td><td>B</td><td>B</td></tr>
+  <tr><td><i>I</i><sup>A</sup><i>I</i><sup>B</sup></td><td>A y B</td><td>AB</td></tr>
+  <tr><td><i>i</i><i>i</i></td><td>ninguno</td><td>O</td></tr></tbody></table>`;
+const ordenar = g => { const o = { A:0, B:1, O:2 }; return o[g[0]] <= o[g[1]] ? g : [g[1], g[0]]; };
+function elegirCelda(f, c, x){
+  const ce = S.celdas[f][c];
+  if(fenotipo(ce.g) === x){
+    ce.ok = true; S.msg = null;
+    if(S.celdas.flat().every(z => z.ok)){
+      const cuenta = {}; S.celdas.flat().forEach(z => { const p = fenotipo(z.g); cuenta[p] = (cuenta[p] || 0) + 1; });
+      const res = Object.entries(cuenta).map(([p, n]) => `${p}: ${n} de 4`).join(' · ');
+      if(S.ronda === 0){
+        S.pregunta = { texto:'¿Por qué el grupo AB es un ejemplo de codominancia?', mal:new Set(), ops:mezclar([
+          { t:'Porque con los alelos <i>I</i><sup>A</sup> e <i>I</i><sup>B</sup> juntos se fabrican los dos antígenos, A y B', ok:true },
+          { t:'Porque es una mezcla intermedia entre A y B, como un color rosado entre rojo y blanco' },
+          { t:'Porque <i>I</i><sup>A</sup> domina sobre <i>I</i><sup>B</sup>' }]) };
+        S.msg = { tipo:'ok', texto:`¡Cuadro completo! ${res}. Con estos padres, A y B pueden tener hijos de los cuatro grupos. Una pregunta antes de seguir.` };
+      } else {
+        S.hecho = true;
+        S.msg = { tipo:'ok', texto:`¡Cuadro completo! ${res}. Cada casillero es una probabilidad de 1 en 4 para cada hijo: no quiere decir que una familia con cuatro hijos los vaya a tener exactamente así.` };
+      }
+    }
+  } else {
+    errores++; S.mal.add(`${f}-${c}-${x}`);
+    S.msg = { tipo:'pista', texto:pistaGenotipo(ce.g) };
+  }
+  dibujar();
+}
+function responderPregunta(j){
+  const o = S.pregunta.ops[j];
+  if(o.ok){ S.hecho = true; S.msg = { tipo:'ok', texto:'¡Exacto! En la codominancia se ven los dos rasgos completos a la vez, no una mezcla: el glóbulo rojo AB tiene antígenos A y antígenos B. La mezcla intermedia (como flores rosadas de una cruza de rojas y blancas) es la dominancia incompleta.' }; }
+  else { S.pregunta.mal.add(j); errores++; S.msg = { tipo:'pista', texto:'Pensá qué antígenos tiene un glóbulo rojo AB: ¿uno intermedio, o los dos?' }; }
+  dibujar();
+}
+
+// --- Nivel 4 ----------------------------------------------------------------
+function familiasHTML(){
+  let h = `<div class="familias">${S.familias.map((F, k) => {
+    const bebe = [...S.ubicados.entries()].find(([, fk]) => fk === k);
+    return `<div class="familia ${bebe ? 'bien' : ''}"><h3>${F.nombre}</h3><div class="padres"><span class="chip">mamá<b>${F.par[0]}</b></span><span class="chip">papá<b>${F.par[1]}</b></span></div>
+      <div class="cuna">${bebe ? `<span class="chip">${S.bebes[bebe[0]].nombre}<b>${S.bebes[bebe[0]].g}</b></span>` : S.fase === 'bebes' ? `<button data-fam="${k}" ${S.selBebe == null ? 'disabled' : ''}>Es de esta familia</button>` : ''}</div></div>`;
+  }).join('')}</div>`;
+  if(S.fase === 'bebes'){
+    h += `<div class="bebes">${S.bebes.map((b, j) => S.ubicados.has(j) ? '' : `<button class="bebe" data-bebe="${j}" aria-pressed="${S.selBebe === j}"><span>${b.nombre}</span><b>${b.g}</b></button>`).join('')}</div>`;
+  } else {
+    h += `<hr class="separador"><p class="consigna">Ahora, tres casos más. ¿Puede ser?</p>${S.casos.map((c, j) => `<div class="caso">
+      <p>Mamá <b>${c.m}</b>, papá <b>${c.p}</b>, hijo o hija <b>${c.h}</b>.</p>
+      <div class="sino">${[true, false].map(v => `<button data-caso="${j}-${v ? 1 : 0}" class="${c.resp != null && v === c.si ? 'ok' : c.mal === v ? 'mal' : ''}" ${c.resp != null || c.mal === v ? 'disabled' : ''}>${v ? 'Puede ser' : 'No puede ser'}</button>`).join('')}</div>
+      ${c.resp != null ? `<p class="exp">${c.exp}</p>` : ''}</div>`).join('')}`;
+  }
+  return h;
+}
+function ubicar(k){
+  const b = S.bebes[S.selBebe], F = S.familias[k];
+  if(b.fam === F.j){
+    S.ubicados.set(S.selBebe, k); S.selBebe = null;
+    if(S.ubicados.size === 2){
+      S.fase = 'casos';
+      S.msg = { tipo:'ok', texto:'¡Resuelto! Cada bebé está con la única familia que podía tenerlo. Ojo: los grupos sanguíneos pueden <b>descartar</b> una familia, pero no prueban que sea la correcta (muchas parejas podrían tener un bebé de ese grupo). Para confirmarlo, hoy se usa un análisis de ADN.' };
+    } else S.msg = { tipo:'ok', texto:`Sí: ${b.nombre} (grupo ${b.g}) puede ser hijo o hija de una mamá ${F.par[0]} y un papá ${F.par[1]}.` };
+  } else {
+    errores++;
+    const sel = b.nombre; S.selBebe = null;
+    S.msg = { tipo:'pista', texto:`${sel} es ${b.g}, y una mamá ${F.par[0]} con un papá ${F.par[1]} no pueden tener un bebé ${b.g}. Pensá qué alelos puede pasar cada uno de los padres.` };
+  }
+  dibujar();
+}
+function responderCaso(j, v){
+  const c = S.casos[j];
+  if(v === c.si){
+    c.resp = v;
+    if(S.casos.every(x => x.resp != null)){ S.hecho = true; S.msg = { tipo:'ok', texto:'¡Muy bien! Con los grupos de los padres se puede saber qué grupos son posibles en los hijos, y cuáles no.' }; }
+    else S.msg = null;
+  } else {
+    c.mal = v; errores++;
+    S.msg = { tipo:'pista', texto:'Escribí los genotipos posibles de la mamá y del papá, y fijate qué alelo puede pasar cada uno.' };
+  }
+  dibujar();
+}
+
+// ---------------------------------------------------------------------------
+function conectar(){
+  tablero.querySelectorAll('[data-gota]').forEach(b => b.onclick = () => { S.gotas[+b.dataset.gota] = true; S.msg = null; dibujar(); });
+  tablero.querySelectorAll('[data-grupo]').forEach(b => b.onclick = () => elegirGrupo(b.dataset.grupo));
+  tablero.querySelectorAll('[data-bolsa]').forEach(b => b.onclick = () => { const g = b.dataset.bolsa; S.sel.has(g) ? S.sel.delete(g) : S.sel.add(g); S.revision = null; dibujar(); });
+  if(el('enviar')) el('enviar').onclick = enviarBolsas;
+  tablero.querySelectorAll('[data-celda]').forEach(b => b.onclick = () => { const [f, c, x] = b.dataset.celda.split('-'); elegirCelda(+f, +c, x); });
+  tablero.querySelectorAll('[data-suelto]').forEach(b => b.onclick = () => { const [k, x] = b.dataset.suelto.split('-'); elegirSuelto(+k, x); });
+  const alCuadro = el('alCuadro'); if(alCuadro) alCuadro.onclick = () => { S.fase = 'cuadro'; S.msg = null; dibujar(); window.scrollTo({ top:0 }); };
+  tablero.querySelectorAll('[data-op]').forEach(b => b.onclick = () => responderPregunta(+b.dataset.op));
+  tablero.querySelectorAll('[data-bebe]').forEach(b => b.onclick = () => { S.selBebe = +b.dataset.bebe; S.msg = null; dibujar(); });
+  tablero.querySelectorAll('[data-fam]').forEach(b => b.onclick = () => ubicar(+b.dataset.fam));
+  tablero.querySelectorAll('[data-caso]').forEach(b => b.onclick = () => { const [j, v] = b.dataset.caso.split('-').map(Number); responderCaso(j, v === 1); });
+  if(el('sig')) el('sig').onclick = () => {
+    const N = NIVELES[nivel];
+    if(N.rondas && S.ronda + 1 < N.rondas) return empezar(nivel, S.ronda + 1);
+    contarNivel(nivel + 1, 'el nivel ' + (nivel + 1));
+    nivel + 1 < NIVELES.length ? empezar(nivel + 1) : final();
+  };
+}
+
+function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path:'fin/grupos-sanguineos', title:'Completó Grupos sanguíneos ABO y Rh', event:true });
+  }
+  marcador.textContent = 'Resultado';
+  el('barra').style.width = '100%';
+  tablero.innerHTML = `<div class="final">
+    <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">¡Todos los casos resueltos!</h2>
+    <p>${errores === 0 ? 'Completaste los cuatro niveles sin ningún error.' : `Completaste los cuatro niveles con ${errores} ${errores === 1 ? 'error' : 'errores'}.`}</p>
+    <p style="max-width:34em;margin:0 auto;line-height:1.55;">Dos marcas en la superficie del glóbulo rojo deciden a quién podés donar y de quién podés recibir. Y como se heredan, también dicen algo sobre tu familia. ¿Sabés de qué grupo sos? Si tenés 18 años o más y buena salud, podés donar sangre.</p>
+    <div class="acciones"><button class="primario" id="otra">Jugar de nuevo (con otros casos)</button></div></div>`;
+  el('otra').onclick = () => { errores = 0; empezar(0); };
+}
+
+empezar(0);
+</script>
+<script>
+// "Nivel superado" en GoatCounter: una vez por etapa y por visita. La etapa es
+// lo que este juego llama nivel, ronda, caso, etc.; la ruta es siempre
+// nivel/<juego>/<etapa>, para poder comparar dónde se deja de jugar.
+const etapasContadas = new Set();
+function contarNivel(etapa, nombre){
+  if(etapasContadas.has(etapa)) return;
+  etapasContadas.add(etapa);
+  window.goatcounter?.count({ path:'nivel/grupos-sanguineos/' + etapa, title:'Grupos sanguíneos · superó ' + nombre, event:true });
+}
+</script>
+
+<!-- Compartir este juego: menú nativo del celular; en la compu copia el link. -->
+<div class="compartir">
+  <button type="button" id="btnCompartir" data-juego="grupos-sanguineos" data-nombre="Grupos sanguíneos ABO y Rh">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+    Compartir este juego
+  </button>
+  <p id="compartirAviso" role="status" aria-live="polite"></p>
+</div>
+<style>
+  .compartir{ align-self:center; text-align:center; margin:0.4rem auto 1.6rem; }
+  .compartir button{ display:inline-flex; align-items:center; gap:0.5em; font:inherit; font-size:0.95rem; font-weight:600;
+    color:var(--ink); background:var(--card); border:1px solid #CBD3D1; border-radius:999px; padding:0.6em 1.2em;
+    cursor:pointer; box-shadow:none; width:auto; min-width:0; margin:0; }
+  .compartir button:hover{ border-color:var(--ink); }
+  .compartir button:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .compartir p{ margin:0.5rem 0 0; min-height:1.3em; font-size:0.85rem; color:var(--muted); }
+</style>
+<script>
+(function(){
+  const btn = document.getElementById('btnCompartir');
+  const aviso = document.getElementById('compartirAviso');
+  const og = document.querySelector('meta[property="og:url"]');
+  const url = og ? og.content : location.href.split(/[?#]/)[0];
+  const nombre = btn.dataset.nombre;
+  const texto = 'Probá «' + nombre + '», un juego de Genética a las Aulas';
+  function avisar(msg){ aviso.textContent = msg; clearTimeout(avisar.t); avisar.t = setTimeout(() => aviso.textContent = '', 4000); }
+  async function copiar(){
+    try { await navigator.clipboard.writeText(url); avisar('Link copiado. Pegalo donde quieras compartirlo.'); }
+    catch(e){ window.prompt('Copiá este link para compartir el juego:', url); }
+  }
+  btn.addEventListener('click', async () => {
+    window.goatcounter?.count({ path:'compartir/' + btn.dataset.juego, title:'Compartió ' + nombre, event:true });
+    if (navigator.share) {
+      try { await navigator.share({ title: nombre, text: texto, url }); }
+      catch(e){ if (e.name !== 'AbortError') copiar(); }
+    } else copiar();
+  });
+})();
+</script>
+
+<footer class="creditos">
+  <img src="../assets/logo-gaa.png" srcset="../assets/logo-gaa@2x.png 2x" alt="" width="52" height="52">
+  <p><a href="../">Genética a las Aulas</a> · Unidad Académica de Genética, Facultad de Medicina, Universidad de la República (UdelaR)<br>Licencia CC BY-NC 4.0 · <a href="../acerca/">Acerca de estos juegos</a></p>
+</footer>
+
+<script data-goatcounter="https://gaa-juegos-k7m3.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Detective de ADN · Genética a las Aulas</title>
+<link rel="icon" href="../assets/favicon.ico" sizes="any">
+<link rel="icon" href="../assets/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<meta name="description" content="Corré un gel de electroforesis con marcadores STR y resolvé casos: leé un perfil genético, encontrá al padre de una niña, identificá a quién pertenece una mancha en la escena del crimen y decidí si una sola diferencia alcanza para excluir.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Genética a las Aulas">
+<meta property="og:locale" content="es_UY">
+<meta property="og:title" content="Detective de ADN · Genética a las Aulas">
+<meta property="og:description" content="Corré un gel de electroforesis con marcadores STR y resolvé casos: leé un perfil genético, encontrá al padre de una niña, identificá a quién pertenece una mancha en la escena del crimen y decidí si una sola diferencia alcanza para excluir.">
+<meta property="og:url" content="https://geneticaalasaulas.github.io/juegos/detective-adn/">
+<meta property="og:image" content="https://geneticaalasaulas.github.io/juegos/capas/detective-adn.jpg">
+<meta property="og:image:width" content="900">
+<meta property="og:image:height" content="600">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root{ --bg:#F4F7F6; --card:#FFFFFF; --ink:#16211F; --muted:#5B6E6B; --accent:#F2A406; --ok:#0A874E; --mal:#EB101B;
+    --juego:#5E0478;          /* violeta del logo — ver capas/detective-adn.jpg */
+    --juego-texto:#5E0478;
+    --juego-tinte:#EFE6F2;
+    --pista:#E2E8E6;
+    --foco:#16211F;           /* anillo de foco, igual en todo el sitio */
+    --gel:#16263A; --banda:#8FF3E4;
+    --fuente:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--fuente); display:flex; flex-direction:column; align-items:center; }
+  a.volver{ align-self:flex-start; margin:1.2rem 0 0 1.2rem; color:var(--muted); font-size:0.9rem; text-decoration:none; }
+  a.volver:hover{ color:var(--juego-texto); }
+  h1{ font-weight:300; font-size:clamp(1.5rem,4.6vw,1.95rem); letter-spacing:-0.01em; line-height:1.2; margin:0.6rem 0 0.2rem; text-align:center; padding:0 1rem; }
+  .bajada{ max-width:34em; margin:0 auto 1rem; font-size:0.95rem; line-height:1.55; color:var(--muted); text-align:center; padding:0 1rem; }
+  .marcador{ color:var(--muted); font-size:0.95rem; margin:0 0 1rem; text-align:center; }
+  .progreso{ width:min(860px,94vw); height:5px; margin:0 0 1.1rem; background:var(--pista); border-radius:999px; overflow:hidden; }
+  .progreso > i{ display:block; height:100%; width:0; border-radius:999px; background:var(--juego-texto); transition:width .3s ease; }
+  .tablero{ background:var(--card); color:var(--ink); border-radius:8px; border:1px solid #E1E7E5;
+    box-shadow:0 1px 3px rgba(22,33,31,0.06), 0 8px 24px rgba(22,33,31,0.05); padding:1.5rem; width:min(860px,94vw); margin-bottom:1.2rem; }
+  @media (max-width:520px){ .tablero{ padding:1rem 0.8rem; } }
+
+  button{ min-height:44px; padding:0.55rem 0.9rem; border-radius:6px; font-size:0.97rem; cursor:pointer; font-family:inherit;
+    border:1.5px solid var(--juego); background:#fff; color:var(--ink); transition:background-color .15s ease; }
+  button:hover{ background:var(--juego-tinte); }
+  button.primario{ background:var(--accent); border-color:var(--accent); color:#2C1D02; font-weight:600; }
+  button.primario:hover{ background:#D89B2C; }
+  button:disabled{ opacity:0.45; cursor:default; }
+  button:focus-visible, a.volver:focus-visible, summary:focus-visible, select:focus-visible, [role="button"]:focus-visible{ outline:3px solid var(--foco); outline-offset:2px; }
+
+  .historia{ background:var(--juego-tinte); border-left:4px solid var(--juego); padding:0.8rem 1rem; border-radius:0 6px 6px 0; line-height:1.55; margin:0 0 0.9rem; }
+  .consigna{ font-size:1.05rem; line-height:1.5; margin:0 0 1rem; font-weight:600; }
+  .regla{ font-size:0.93rem; line-height:1.5; color:var(--muted); margin:-0.4rem 0 1rem; }
+
+  /* Cromosomas con repeticiones */
+  .crom{ margin:0.6rem 0; }
+  .crom .tit{ font-size:0.85rem; color:var(--muted); margin:0 0 0.25rem; }
+  .crom .tira{ display:flex; flex-wrap:wrap; gap:2px; align-items:center; }
+  .crom .flanco{ height:30px; width:38px; background:#C9D2D0; border-radius:4px; }
+  .crom .rep{ height:30px; padding:0 4px; display:inline-flex; align-items:center; font-family:var(--mono); font-size:0.8rem; font-weight:700;
+    background:var(--juego); color:#fff; border-radius:4px; }
+  .crom .rep:nth-child(odd){ background:#8A3FA0; }
+  .elegir-num{ display:flex; flex-wrap:wrap; gap:0.35rem; align-items:center; margin-top:0.35rem; font-size:0.92rem; }
+  .elegir-num button{ min-width:44px; padding:0.3rem 0.5rem; }
+  .elegir-num button.sel{ background:var(--juego); color:#fff; }
+  .elegir-num button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .elegir-num button.ok:disabled{ opacity:1; }
+
+  /* Gel */
+  .geles{ display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:10px; margin:0.4rem 0; }
+  @media (max-width:760px){ .geles{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+  @media (max-width:520px){ .geles{ grid-template-columns:minmax(0, 300px); justify-content:center; } }
+  .geles.uno{ grid-template-columns:minmax(0, 150px); justify-content:center; }
+  .gel h4{ margin:0 0 0.2rem; font-size:0.85rem; text-align:center; font-family:var(--mono); }
+  .gel svg{ width:100%; height:auto; display:block; border-radius:6px; }
+  .gel .banda{ fill:var(--banda); }
+  .gel .banda.escalera{ fill:#C9D2D0; opacity:0.75; }
+  .gel .banda.marcada{ fill:var(--accent); }
+  .gel .banda.mal{ fill:#FF6B6B; }
+  .gel g[role="button"]{ cursor:pointer; }
+  .gel g[role="button"]:hover .banda{ filter:brightness(1.25); }
+  .gel g[role="button"] .blanco{ fill:transparent; }
+  .gel g.corre{ animation:correr 1.6s cubic-bezier(.2,.7,.3,1) both; }
+  @keyframes correr{ from{ transform:translateY(var(--d)); } }
+  @media (prefers-reduced-motion:reduce){ .gel g.corre{ animation:none; } .progreso > i{ transition:none; } }
+  .carriles{ font-size:0.82rem; color:var(--muted); text-align:center; margin:0.3rem 0 0; line-height:1.5; }
+  .carriles b{ color:var(--ink); }
+
+  .perfil{ border-collapse:collapse; margin:0.8rem auto 0; font-size:0.95rem; }
+  .perfil th, .perfil td{ padding:0.35rem 0.6rem; border-bottom:1px solid #E6E9E8; text-align:center; }
+  .perfil th{ font-weight:600; color:var(--muted); font-size:0.85rem; }
+  .perfil td.loc{ font-family:var(--mono); font-weight:700; text-align:left; }
+  .perfil select{ font:inherit; min-height:40px; padding:0.2rem 0.4rem; border-radius:6px; border:1.5px solid var(--juego); background:#fff; }
+  .perfil td.bien{ background:#E2F3EA; }
+  .perfil td.mal{ background:#FDECEC; }
+  .perfil .num{ font-variant-numeric:tabular-nums; }
+
+  .candidatos{ display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin-top:0.8rem; }
+  .candidatos button.descartado{ opacity:0.45; text-decoration:line-through; }
+  .candidatos button.correcto{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .candidatos button.correcto:disabled{ opacity:1; }
+
+  .leyenda{ font-size:0.85rem; color:var(--muted); text-align:center; margin:0.8rem 0 0; line-height:1.5; }
+  .fb{ font-size:1rem; line-height:1.5; margin:1rem 0 0; padding:0.6rem 0.8rem; border-radius:0 6px 6px 0; }
+  .fb:empty{ display:none; }
+  .fb.pista{ background:#FFF4DC; border-left:3px solid var(--accent); }
+  .fb.ok{ background:#E2F3EA; border-left:3px solid var(--ok); }
+  .acciones{ display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1rem; justify-content:center; }
+  .opciones{ display:grid; gap:0.5rem; margin-top:0.5rem; }
+  .opciones button{ text-align:left; }
+  .opciones button.ok{ background:var(--ok); border-color:var(--ok); color:#fff; }
+  .opciones button.ok:disabled{ opacity:1; }
+  .opciones button.ok::before{ content:"\2713\00a0"; font-weight:700; }
+  .opciones button.mal{ border-color:var(--mal); color:var(--mal); }
+  .opciones button.mal::before{ content:"\2717\00a0"; font-weight:700; }
+  .separador{ border:none; border-top:1px dashed #D5DCDA; margin:1rem 0; }
+  .final{ text-align:center; }
+
+  details.docente{ max-width:38em; margin:2.6rem auto 1.2rem; border-top:1px solid #E6E9E8; padding:1rem 1rem 0; font-size:0.9rem; color:var(--muted); line-height:1.55; text-align:left; }
+  details.docente summary{ cursor:pointer; font-weight:700; color:var(--ink); font-size:0.95rem; }
+  details.docente p{ margin:0.6rem 0 0; }
+  footer.creditos{ align-self:stretch; margin-top:auto; border-top:1px solid #E6E9E8; padding:1.2rem 1rem;
+    display:flex; align-items:center; justify-content:center; gap:0.8rem; font-size:0.85rem; color:var(--muted); line-height:1.45; }
+  footer.creditos img{ width:52px; height:52px; border-radius:50%; flex:none; display:block; }
+  footer.creditos p{ margin:0; max-width:40em; }
+  footer.creditos a{ color:var(--ink); font-weight:600; text-decoration:none; }
+</style>
+</head>
+<body>
+<a class="volver" href="../">&larr; Volver al catálogo</a>
+<h1>Detective de ADN</h1>
+<p class="bajada">En algunos lugares del ADN, un fragmento corto se repite una y otra vez, y la cantidad de repeticiones cambia de una persona a otra. Separando esos fragmentos en un gel, se puede saber de quién es una muestra o quién es el padre de alguien.</p>
+<p class="marcador" id="marcador"></p>
+<div class="progreso" aria-hidden="true"><i id="barra"></i></div>
+<div class="tablero" id="tablero"></div>
+
+<details class="docente">
+  <summary>Para el/la docente</summary>
+  <p><b>Nivel sugerido:</b> Secundaria (de 14 a 18 años, aproximadamente).</p>
+  <p><b>Programa de ANEP:</b> Biología, 2.º de Educación Media Superior (programa DGES, revisión 2026): en la orientación Ciencia y Tecnología, aplicaciones forenses (huella génica) del bloque «Biología aplicada por sector» y PCR del bloque «Técnicas de Biología Molecular»; en la orientación Ciencias Sociales y Humanidades, estudios de ADN en la identificación de personas (bloque «Antropología aplicada»). En 1.º de EMS sirve para trabajar herencia humana y deducción de genotipos (bloque «Diversidad y variabilidad»).</p>
+  <p><b>Conceptos que trabaja:</b> qué es un marcador STR (repeticiones cortas en tándem) y por qué varía tanto entre personas; cada persona tiene dos variantes por marcador, una de cada progenitor; homocigota (una banda) y heterocigota (dos bandas); tamaño de un fragmento en pares de bases (repeticiones × largo de la repetición); electroforesis: los fragmentos más cortos avanzan más; escalera alélica como regla para leer el gel; pruebas de filiación (la variante que no vino de la madre tiene que estar en el padre); identificación forense; probabilidad de coincidencia al azar y la "falacia del fiscal"; mutaciones de los STR y por qué una sola diferencia no alcanza para excluir.</p>
+  <p><b>Cómo avanza:</b> nivel 1, contar repeticiones, correr el gel y leer un perfil completo; nivel 2, un caso de paternidad; nivel 3, una mancha en una escena del crimen y el cálculo de cuán raro es ese perfil; nivel 4, un caso en el que el posible padre difiere en un solo marcador. Los perfiles se sortean en cada partida.</p>
+  <p><b>Algunas simplificaciones que hacemos en este juego:</b> antes de la electroforesis, cada región STR se copia millones de veces con PCR. Los laboratorios forenses no usan geles de agarosa como el del juego sino electroforesis capilar con marcadores fluorescentes, y el resultado es un gráfico de picos (electroferograma); la lógica de lectura es la misma. En el nivel 1, el tamaño de cada fragmento se calcula solo con las repeticiones (repeticiones × 4 pb); en un caso real, el fragmento que se copia con PCR incluye también parte del ADN vecino, así que mide bastante más, y la escalera de los laboratorios se rotula directamente con el número de repeticiones. Se analizan 20 marcadores o más (no cuatro), y existen variantes intermedias (como 9.3) que el juego no incluye. Las frecuencias de las variantes son ilustrativas: en un caso real se usan las de la población de referencia. El nombre de cada marcador es real (TH01, D8S1179, vWA, FGA…), pero los rangos de variantes están acotados.</p>
+  <p><b>Sobre la probabilidad:</b> en el nivel 3, la frecuencia de cada genotipo se calcula como p² (homocigota) o 2pq (heterocigota), y se multiplican las de todos los marcadores porque se heredan de forma independiente. El resultado dice cuán frecuente es el perfil en la población, no la probabilidad de que el sospechoso sea inocente: confundir las dos cosas es la "falacia del fiscal", un error que aparece incluso en juicios reales.</p>
+  <p><b>Sobre las mutaciones:</b> los STR mutan más que el resto del ADN, del orden de una vez cada mil transmisiones por marcador, casi siempre ganando o perdiendo una repetición. Por eso, en una prueba de paternidad, una sola incompatibilidad se evalúa como posible mutación, y para excluir se suele exigir que no coincidan varios marcadores.</p>
+  <p><b>Para discutir después de jugar:</b> ¿por qué se usan regiones del ADN que varían mucho y no genes que son casi iguales en todos? ¿Qué pasa con los gemelos idénticos? ¿Quién debería poder guardar perfiles genéticos y para qué? ¿Qué información sobre una persona da (y no da) un perfil de STR?</p>
+</details>
+
+<script>
+// ---------------------------------------------------------------------------
+// Marcadores STR. Rango acotado de variantes (número de repeticiones) y
+// frecuencias ilustrativas con forma de campana.
+// ---------------------------------------------------------------------------
+const LOCI = [
+  { n:'TH01',    min:5,  max:10, rep:'AATG' },
+  { n:'D8S1179', min:9,  max:16, rep:'TCTA' },
+  { n:'vWA',     min:13, max:20, rep:'TCTA' },
+  { n:'FGA',     min:19, max:26, rep:'CTTT' }
+];
+const LOCI_EXTRA = [
+  { n:'D18S51',  min:12, max:20, rep:'AGAA' },
+  { n:'D5S818',  min:9,  max:13, rep:'AGAT' },
+  { n:'D13S317', min:8,  max:14, rep:'TATC' },
+  { n:'CSF1PO',  min:9,  max:13, rep:'AGAT' }
+];
+[...LOCI, ...LOCI_EXTRA].forEach(L => {
+  const mid = (L.min + L.max) / 2, s = (L.max - L.min + 1) / 3.2;
+  const w = []; for(let a = L.min; a <= L.max; a++) w.push(Math.exp(-(((a - mid) / s) ** 2)));
+  const tot = w.reduce((x, y) => x + y, 0);
+  // Redondeadas a dos decimales, como en una tabla de frecuencias.
+  L.f = {}; w.forEach((x, i) => L.f[L.min + i] = Math.max(0.01, Math.round(x / tot * 100) / 100));
+});
+
+const azar = a => a[Math.floor(Math.random() * a.length)];
+function mezclar(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function variante(L){ let r = Math.random() * Object.values(L.f).reduce((x, y) => x + y, 0), acc = 0; for(const a in L.f){ acc += L.f[a]; if(r < acc) return +a; } return L.max; }
+const ord = p => p[0] <= p[1] ? p : [p[1], p[0]];
+const persona = (loci = LOCI) => loci.map(L => ord([variante(L), variante(L)]));
+const hijoDe = (m, p) => m.map((_, k) => ord([azar(m[k]), azar(p[k])]));
+// ¿La variante paterna del hijo se puede explicar con este posible padre?
+const filaTrio = (c, m, p, k) => (m[k].includes(c[k][0]) && p[k].includes(c[k][1])) || (m[k].includes(c[k][1]) && p[k].includes(c[k][0]));
+const fallasTrio = (c, m, p) => c.reduce((n, _, k) => n + (filaTrio(c, m, p, k) ? 0 : 1), 0);
+// Variante que vino del padre, o null si es ambigua.
+function paterna(c, m, k){
+  const [a, b] = c[k];
+  if(a === b) return m[k].includes(a) ? a : null;
+  const ia = m[k].includes(a), ib = m[k].includes(b);
+  return ia && !ib ? b : ib && !ia ? a : null;
+}
+const iguales = (x, y) => x.every((p, k) => p[0] === y[k][0] && p[1] === y[k][1]);
+function impostor(prueba, minimo = 2){ for(let t = 0; t < 800; t++){ const x = persona(); if(prueba(x) >= minimo) return x; } return persona(); }
+
+// ---------------------------------------------------------------------------
+// Gel: un panel por marcador. carriles: [{id, etiqueta, gen}] (gen = par de
+// variantes en este marcador; la escalera va sola). o.marcas(carril, a) → clase;
+// o.click: id del carril clicable.
+// ---------------------------------------------------------------------------
+const GEO = { izq:24, ancho:28, sep:6, top:20, paso:20, pozo:8 };
+function gelHTML(L, k, carriles, o = {}){
+  const nA = L.max - L.min + 1, alto = GEO.top + nA * GEO.paso + 10;
+  const W = GEO.izq + carriles.length * (GEO.ancho + GEO.sep);
+  const y = a => GEO.top + (L.max - a) * GEO.paso + GEO.paso / 2;
+  let s = `<svg viewBox="0 0 ${W} ${alto}" role="img" aria-label="Gel del marcador ${L.n}">
+    <rect width="${W}" height="${alto}" fill="var(--gel)"/>`;
+  carriles.forEach((c, j) => {
+    const x = GEO.izq + j * (GEO.ancho + GEO.sep) + GEO.sep / 2;
+    s += `<rect x="${x}" y="3" width="${GEO.ancho}" height="${GEO.pozo}" rx="1.5" fill="#0B1522" stroke="#3C5068" stroke-width="0.8"/>
+      <text x="${x + GEO.ancho / 2}" y="${GEO.top - 1}" fill="#D3DDE7" font-size="9" text-anchor="middle" font-family="system-ui">${c.etiqueta}</text>`;
+    if(!o.corrido) return;
+    const vars = c.escalera ? Array.from({length:nA}, (_, i) => L.min + i) : [...new Set(c.gen)];
+    vars.forEach(a => {
+      const homo = !c.escalera && c.gen[0] === c.gen[1];
+      const h = homo ? 6 : 4.2, yy = y(a) - h / 2, d = -(yy - 4);
+      const cls = c.escalera ? 'escalera' : (o.marcas ? o.marcas(c.id, a, k) : '');
+      const clic = o.click === c.id && !c.escalera;
+      s += `<g class="${o.animar ? 'corre' : ''}" style="--d:${d}px" ${clic ? `role="button" tabindex="0" data-banda="${k}-${a}" aria-label="Banda de ${o.pb ? a * o.pb + ' pares de bases' : a + ' repeticiones'} del marcador ${L.n}"` : ''}>
+        ${clic ? `<rect class="blanco" x="${x - 2}" y="${y(a) - 9}" width="${GEO.ancho + 4}" height="18"/>` : ''}
+        <rect class="banda ${cls}" x="${x + 2}" y="${yy}" width="${GEO.ancho - 4}" height="${h}" rx="1.5"/></g>`;
+    });
+  });
+  const rot = a => o.pb ? a * o.pb : a;   // o.pb: rotular por tamaño (pares de bases por repetición)
+  if(o.corrido){
+    for(let a = L.min; a <= L.max; a++) s += `<text x="${GEO.izq - 4}" y="${y(a) + 2.6}" fill="#D3DDE7" font-size="9" text-anchor="end" font-family="system-ui">${rot(a)}</text>`;
+    if(o.pb) s += `<text x="${GEO.izq - 4}" y="${GEO.top - 1}" fill="#D3DDE7" font-size="8" text-anchor="end" font-family="system-ui">pb</text>`;
+  }
+  return `<div class="gel"><h4>${L.n}</h4>${s}</svg></div>`;
+}
+function gelesHTML(loci, carriles, o = {}){
+  return `<div class="geles">${loci.map((L, k) => gelHTML(L, k, carriles.map(c => c.escalera ? c : { ...c, gen:c.perfil[k] }), o)).join('')}</div>`;
+}
+const ESCALERA = { id:'E', etiqueta:'E', escalera:true };
+
+// ---------------------------------------------------------------------------
+// Niveles
+// ---------------------------------------------------------------------------
+const NIVELES = [
+  { tipo:'leer', titulo:'Leé un perfil genético',
+    historia:'Un <b>STR</b> es un lugar del ADN donde un fragmento de cuatro letras se repite muchas veces seguidas. Cada persona tiene dos copias de cada cromosoma (una de la mamá y otra del papá), y en cada copia el número de repeticiones puede ser distinto.' },
+  { tipo:'paternidad', titulo:'¿Quién es el padre?',
+    historia:'Los marcadores STR son tan variables que es muy difícil que dos personas tengan las mismas variantes en todos. Por eso son muy útiles para identificar personas y para las <b>pruebas de paternidad</b>: como cada hijo o hija recibe una variante de cada marcador de su mamá y otra de su papá, su perfil tiene que poder armarse con las variantes de sus padres biológicos.<br><br><b>El caso:</b> una niña y su mamá vienen al laboratorio. Hay tres hombres que podrían ser el padre. El laboratorio analizó cuatro marcadores STR de las cinco personas.',
+    consigna:'Corré el gel. Después, en el carril de la niña (H), hacé clic en cada marcador sobre la banda que heredó del padre.',
+    regla:'La niña recibió una variante de la mamá y otra del papá. La que <b>no</b> está en la mamá tuvo que venir del papá.' },
+  { tipo:'forense', titulo:'La escena del crimen',
+    historia:'Analizando suficientes marcadores, es casi imposible que dos personas tengan el mismo perfil de STR (salvo los gemelos idénticos). Por eso se usan en la <b>identificación forense</b>: el ADN que queda en una escena (sangre, saliva, pelos) se compara con el de las personas sospechosas. Si los perfiles difieren en algún marcador, la muestra no es de esa persona. Si coinciden en todos, es muy probable que sí lo sea.<br><br><b>El caso:</b> en una escena del crimen se encontró una mancha de sangre que no es de la víctima. El laboratorio la analizó con los mismos cuatro marcadores, junto con muestras de la víctima y de tres sospechosos.',
+    consigna:'Corré el gel y compará la mancha (X) con cada sospechoso, marcador por marcador. ¿De quién es la mancha?' },
+  { tipo:'mutacion', titulo:'¿Una diferencia alcanza?',
+    historia:'En el caso de la niña, si un hombre no tenía la variante paterna en algún marcador, quedaba descartado. Pero el ADN no siempre se copia perfecto al pasar de padres a hijos: a veces cambia un poco, y eso es una <b>mutación</b>. Entonces, ¿alcanza con una sola diferencia para descartar a un posible padre?<br><br><b>El caso:</b> otra prueba de paternidad, con un niño, su mamá y un hombre que podría ser el padre. El laboratorio analizó los mismos cuatro marcadores STR.',
+    consigna:'Corré el gel. En cada marcador vas a ver en naranja la variante que el niño no heredó de su mamá, y la misma variante en el posible padre. Si el posible padre no la tiene, la banda del niño aparece en rojo.' }
+];
+const NOMBRES = { M:'Mamá', H:'Hija', H2:'Hijo', P1:'Posible padre 1', P2:'Posible padre 2', P3:'Posible padre 3', X:'Mancha', V:'Víctima', S1:'Sospechoso 1', S2:'Sospechoso 2', S3:'Sospechoso 3', P:'Posible padre' };
+
+const tablero = document.getElementById('tablero');
+const marcador = document.getElementById('marcador');
+const el = id => document.getElementById(id);
+let nivel = 0, S = null, errores = 0, finContado = false;
+
+function empezar(i){
+  nivel = i;
+  const N = NIVELES[i];
+  S = { msg:null, hecho:false, corrido:false, animar:false, mal:new Set() };
+  if(N.tipo === 'leer'){
+    S.fase = 'contar';
+    const L = LOCI[0];
+    do { S.cuenta = [variante(L), variante(L)]; } while(S.cuenta[0] === S.cuenta[1]);
+    S.elegido = [null, null]; S.okCuenta = [false, false];
+    S.elegidoTam = [null, null]; S.okTam = [false, false];
+    S.opsTam = S.cuenta.map(n => [...new Set([n + 4, n * 4 - 4, n * 4, n * 4 + 4])].sort((x, y) => x - y));
+    // Perfil para leer: al menos un marcador homocigota.
+    do { S.perfil = persona(); } while(!S.perfil.some(p => p[0] === p[1]) || S.perfil.every(p => p[0] === p[1]));
+    S.lectura = LOCI.map(() => ['', '']); S.revisado = null;
+  } else if(N.tipo === 'paternidad'){
+    let m, p, c;
+    do { m = persona(); p = persona(); c = hijoDe(m, p); } while(LOCI.some((_, k) => paterna(c, m, k) == null));
+    S.m = m; S.c = c; S.p = p;
+    const otros = [impostor(x => fallasTrio(c, m, x)), impostor(x => fallasTrio(c, m, x))];
+    S.cands = mezclar([{ perfil:p, real:true }, ...otros.map(x => ({ perfil:x }))]).map((x, j) => ({ ...x, id:'P' + (j + 1) }));
+    S.marcadas = new Set(); S.fase = 'marcar';
+  } else if(N.tipo === 'forense'){
+    const v = persona(), culpable = persona();
+    S.v = v; S.x = culpable;
+    const otros = [0, 1].map(() => impostor(x => x.reduce((n, par, k) => n + (par[0] === culpable[k][0] && par[1] === culpable[k][1] ? 0 : 1), 0), 3));
+    S.cands = mezclar([{ perfil:culpable, real:true }, ...otros.map(x => ({ perfil:x }))]).map((x, j) => ({ ...x, id:'S' + (j + 1) }));
+    S.fase = 'elegir';
+    S.opciones = mezclar(PREG_FISCAL.ops.map((o, j) => ({ ...o, j })));
+  } else {
+    // Padre verdadero con una sola diferencia (mutación de un paso) en un marcador.
+    let m, p, c, km;
+    for(;;){
+      m = persona(); p = persona(); c = hijoDe(m, p);
+      km = Math.floor(Math.random() * LOCI.length);
+      const L = LOCI[km], pat = paterna(c, m, km);
+      if(pat == null || LOCI.some((_, k) => paterna(c, m, k) == null)) continue;
+      const mut = pat + (Math.random() < 0.5 ? -1 : 1);
+      if(mut < L.min || mut > L.max || p[km].includes(mut) || m[km].includes(mut)) continue;
+      const mat = c[km][0] === pat ? c[km][1] : c[km][0];
+      c[km] = ord([mat, mut]);
+      if(paterna(c, m, km) !== mut) continue;
+      break;
+    }
+    S.m = m; S.c = c; S.p = p; S.km = km;
+    // Los marcadores extra: el hijo hereda normalmente.
+    do { S.mE = persona(LOCI_EXTRA); S.pE = persona(LOCI_EXTRA); S.cE = hijoDe(S.mE, S.pE); } while(LOCI_EXTRA.some((_, k) => paterna(S.cE, S.mE, k) == null));
+    S.fase = 'decidir'; S.opciones = mezclar(PREG_MUT.ops.map((o, j) => ({ ...o, j }))); S.extra = false;
+  }
+  marcador.textContent = `Nivel ${i + 1} de ${NIVELES.length} · ${N.titulo}`;
+  el('barra').style.width = (i / NIVELES.length * 100) + '%';
+  dibujar();
+  window.scrollTo({ top:0 });
+}
+
+const PREG_GEL = {
+  texto:() => `¿Por qué la banda de ${Math.min(...S.cuenta) * 4} pb quedó más abajo, más lejos del pocillo, que la de ${Math.max(...S.cuenta) * 4} pb?`,
+  ops:[{ t:'Porque es un fragmento más corto, y los fragmentos cortos se mueven más rápido a través del gel', ok:true },
+       { t:'Porque pesa más y cae más rápido' },
+       { t:'Porque tiene más carga eléctrica que la otra' }]
+};
+const PREG_FISCAL = {
+  texto:'El perfil de la mancha aparece, en promedio, en 1 de cada N personas. ¿Qué significa eso?',
+  ops:[{ t:'Que, por azar, más o menos una de cada N personas tendría este mismo perfil', ok:true },
+       { t:'Que la probabilidad de que el sospechoso sea inocente es 1 en N', fiscal:true },
+       { t:'Que el laboratorio se equivoca una vez cada N análisis' }]
+};
+const PREG_MUT = {
+  texto:'En un marcador, ninguna de las variantes del hombre explica la variante paterna del niño. ¿Qué concluís?',
+  ops:[{ t:'Con una sola diferencia no alcanza: puede ser una mutación. Hay que analizar más marcadores', ok:true },
+       { t:'Queda excluido: si fuera el padre, coincidiría en todos los marcadores' },
+       { t:'Es el padre seguro, porque coincide en la mayoría' }]
+};
+
+function dibujar(){
+  const N = NIVELES[nivel];
+  let h = `<p class="historia">${N.historia}</p>`;
+  if(N.tipo === 'leer') h += leerHTML();
+  else if(N.tipo === 'paternidad') h += paternidadHTML();
+  else if(N.tipo === 'forense') h += forenseHTML();
+  else h += mutacionHTML();
+  h += `<p class="fb ${S.msg ? S.msg.tipo : ''}" aria-live="polite">${S.msg ? S.msg.texto : ''}</p>`;
+  if(S.hecho) h += `<div class="acciones"><button class="primario" id="sig">${nivel + 1 < NIVELES.length ? 'Siguiente caso' : 'Ver el resultado'} &rarr;</button></div>`;
+  tablero.innerHTML = h;
+  S.animar = false;
+  conectar();
+}
+const correrBtn = () => S.corrido ? '' : `<div class="acciones"><button class="primario" id="correr">Correr el gel</button></div>`;
+function opcionesHTML(ops, attr, resuelto){
+  return `<div class="opciones">${ops.map(o => `<button ${attr}="${o.j}" class="${resuelto && o.ok ? 'ok' : S.mal.has(attr + o.j) ? 'mal' : ''}" ${resuelto || S.mal.has(attr + o.j) ? 'disabled' : ''}>${o.t}</button>`).join('')}</div>`;
+}
+
+// --- Nivel 1 ----------------------------------------------------------------
+function cromHTML(n, titulo){
+  const L = LOCI[0];
+  return `<div class="crom"><p class="tit">${titulo}</p><div class="tira"><span class="flanco"></span>${Array.from({length:n}, () => `<span class="rep">${L.rep}</span>`).join('')}<span class="flanco"></span></div></div>`;
+}
+function leerHTML(){
+  const L = LOCI[0];
+  let h = '';
+  if(S.fase === 'contar' || S.fase === 'tamano' || S.fase === 'pregunta'){
+    h += `<p class="consigna">Este es el marcador ${L.n} en los dos cromosomas de una persona. Contá cuántas veces se repite ${L.rep} en cada uno, y hacé clic en el número correcto.</p>`;
+    [0, 1].forEach(j => {
+      h += cromHTML(S.cuenta[j], j === 0 ? 'Cromosoma que vino de la mamá' : 'Cromosoma que vino del papá');
+      h += `<div class="elegir-num" role="group" aria-label="Repeticiones">Repeticiones: ${Array.from({length:L.max - L.min + 3}, (_, i) => L.min - 1 + i).map(n =>
+        `<button data-cuenta="${j}-${n}" class="${S.okCuenta[j] && n === S.cuenta[j] ? 'ok' : S.elegido[j] === n ? 'sel' : ''}" ${S.okCuenta[j] ? 'disabled' : ''}>${n}</button>`).join('')}</div>`;
+    });
+    if(S.okCuenta[0] && S.okCuenta[1]){
+      h += `<hr class="separador"><p class="consigna">Ahora calculá el <b>tamaño</b> de cada fragmento. El tamaño del ADN se mide en <b>pares de bases (pb)</b>, es decir, cuántas letras tiene. Cada repetición de ${L.rep} tiene 4 pb. ¿Cuánto mide cada fragmento? Hacé clic en el resultado correcto.</p>
+        <p class="regla">Para simplificar, no contamos los extremos grises: solo las repeticiones.</p>`;
+      [0, 1].forEach(j => {
+        const n = S.cuenta[j];
+        h += `<div class="elegir-num" role="group" aria-label="Tamaño del fragmento ${j + 1}"><span>${j === 0 ? 'De la mamá' : 'Del papá'}: ${n} repeticiones × 4 pb =</span> ${S.opsTam[j].map(t =>
+          `<button data-tam="${j}-${t}" class="${S.okTam[j] && t === n * 4 ? 'ok' : S.elegidoTam[j] === t ? 'sel' : ''}" ${S.okTam[j] ? 'disabled' : ''}>${t} pb</button>`).join('')}</div>`;
+      });
+    }
+    if(S.okTam[0] && S.okTam[1]){
+      h += `<hr class="separador"><p class="consigna">Ahora vamos a usar una técnica que separa los fragmentos de ADN según su tamaño: la <b>electroforesis en gel</b>. Las muestras se colocan en el pocillo, que es la posición de salida, y se aplica corriente eléctrica. Como el ADN tiene carga negativa, los fragmentos avanzan hacia abajo a través del gel. A esto se le llama «correr el gel». La escalera (E) tiene fragmentos de todos los tamaños y la usamos como referencia, para comparar.</p>`;
+      h += `<div class="geles uno">${gelHTML(L, 0, [ESCALERA, { id:'Y', etiqueta:'P', gen:ord(S.cuenta.slice()) }], { corrido:S.corrido, animar:S.animar, pb:4 })}</div><p class="carriles"><b>E</b> escalera · <b>P</b> la persona · los números son el tamaño en pb</p>${correrBtn()}`;
+      if(S.corrido) h += `<p><b>${PREG_GEL.texto()}</b></p>${opcionesHTML(S.opsGel, 'data-pg', S.fase === 'perfil')}`;
+    }
+  }
+  if(S.fase === 'perfil'){
+    if(S.okGel) h += `<p class="fb ok" style="margin:0 0 1rem">${S.okGel}</p>`;   // fijo arriba de los geles del perfil
+    h += `<p class="consigna">Ahora leé un perfil completo, con cuatro marcadores. Usá la escalera (E) para saber el número de cada banda.</p>
+      <p class="regla">Si en un marcador hay <b>una sola banda</b> (más gruesa), la persona tiene el mismo número en los dos cromosomas: anotalo dos veces.</p>`;
+    h += gelesHTML(LOCI, [ESCALERA, { id:'Y', etiqueta:'P', perfil:S.perfil }], { corrido:true }) + `<p class="carriles"><b>E</b> escalera · <b>P</b> la persona</p>`;
+    h += `<table class="perfil"><thead><tr><th>Marcador</th><th>Variante 1</th><th>Variante 2</th></tr></thead><tbody>${LOCI.map((L, k) => {
+      const ok = S.revisado ? S.revisado[k] : null;
+      return `<tr><td class="loc">${L.n}</td>${[0, 1].map(j => `<td class="${ok === true ? 'bien' : ok === false ? 'mal' : ''}"><select data-lec="${k}-${j}" aria-label="${L.n}, variante ${j + 1}" ${S.hecho ? 'disabled' : ''}>
+        <option value="">–</option>${Array.from({length:L.max - L.min + 1}, (_, i) => L.min + i).map(a => `<option ${String(a) === String(S.lectura[k][j]) ? 'selected' : ''}>${a}</option>`).join('')}</select></td>`).join('')}</tr>`;
+    }).join('')}</tbody></table>`;
+    if(!S.hecho) h += `<div class="acciones"><button class="primario" id="revisar" ${S.lectura.every(p => p[0] !== '' && p[1] !== '') ? '' : 'disabled'}>Revisar el perfil</button></div>`;
+  }
+  return h;
+}
+function elegirCuenta(j, n){
+  S.elegido[j] = n;
+  if(n === S.cuenta[j]){
+    S.okCuenta[j] = true;
+    S.msg = { tipo:'ok', texto:`¡Sí, ${n} repeticiones!${S.okCuenta[0] && S.okCuenta[1] ? ` En este marcador, la persona es <b>${Math.min(...S.cuenta)},${Math.max(...S.cuenta)}</b>: así se anota, con los dos números.` : ''}` };
+    if(S.okCuenta[0] && S.okCuenta[1]) S.fase = 'tamano';
+  } else {
+    errores++;
+    S.msg = { tipo:'pista', texto:`No son ${n}. Contá los bloques violetas de ${LOCI[0].rep}, sin los grises de los costados.` };
+  }
+  dibujar();
+}
+function elegirTam(j, t){
+  const n = S.cuenta[j];
+  S.elegidoTam[j] = t;
+  if(t === n * 4){
+    S.okTam[j] = true;
+    S.msg = { tipo:'ok', texto:`¡Sí! ${n} × 4 = <b>${t} pb</b>.${S.okTam[0] && S.okTam[1] ? ' Ya sabés cuánto mide cada fragmento: ahora vas a ver dónde queda cada uno en el gel.' : ''}` };
+    if(S.okTam[0] && S.okTam[1]){ S.fase = 'pregunta'; S.opsGel = mezclar(PREG_GEL.ops.map((o, j) => ({ ...o, j }))); }
+  } else {
+    errores++;
+    S.msg = { tipo:'pista', texto: t === n + 4
+      ? `Ojo: no hay que sumar. Son ${n} repeticiones de 4 pb cada una, así que hay que <b>multiplicar</b>: ${n} × 4.`
+      : `Casi: calculá ${n} × 4. Podés pensarlo como ${n} bloques de ${LOCI[0].rep}, y cada bloque tiene 4 letras.` };
+  }
+  dibujar();
+}
+function responderGel(j){
+  const o = PREG_GEL.ops[j];
+  if(o.ok){
+    S.fase = 'perfil';
+    const n = Math.max(...S.cuenta);
+    S.msg = null;
+    S.okGel = `<b>¡Exacto!</b> El gel es como una malla: los fragmentos cortos pasan más fácil y llegan más lejos. Por eso cada banda queda a la altura que corresponde a su tamaño. Y como cada repetición mide 4 pb, el tamaño también dice cuántas repeticiones hay: ${n * 4} pb ÷ 4 = ${n}. Por eso, de acá en adelante, la escalera viene rotulada directamente con el <b>número de repeticiones</b>, como hacen los laboratorios.`;
+  } else {
+    S.mal.add('data-pg' + j); errores++;
+    S.msg = { tipo:'pista', texto:`Todos los fragmentos de ADN tienen la misma carga por cada letra, y en el gel no hay "caída". ¿Qué diferencia hay entre un fragmento de ${Math.min(...S.cuenta) * 4} pb y uno de ${Math.max(...S.cuenta) * 4} pb?` };
+  }
+  dibujar();
+}
+function revisarPerfil(){
+  S.revisado = LOCI.map((_, k) => { const x = ord(S.lectura[k].map(Number)); return x[0] === S.perfil[k][0] && x[1] === S.perfil[k][1]; });
+  if(S.revisado.every(Boolean)){
+    S.hecho = true;
+    const hom = LOCI.filter((_, k) => S.perfil[k][0] === S.perfil[k][1]).map(L => L.n);
+    S.msg = { tipo:'ok', texto:`¡Perfil correcto! Esta persona es <b>${LOCI.map((L, k) => `${L.n} ${S.perfil[k].join(',')}`).join(' · ')}</b>. En ${hom.join(' y ')} es homocigota: heredó el mismo número de su mamá y de su papá.` };
+  } else {
+    errores++;
+    const malos = LOCI.filter((_, k) => !S.revisado[k]).map(L => L.n);
+    S.msg = { tipo:'pista', texto:`Revisá ${malos.join(', ')}: compará la altura de cada banda con la escalera de su mismo panel. ¿Hay una banda o dos?` };
+  }
+  dibujar();
+}
+
+// --- Nivel 2 ----------------------------------------------------------------
+function paternidadHTML(){
+  const N = NIVELES[nivel];
+  let h = `<p class="consigna">${N.consigna}</p><p class="regla">${N.regla}</p>`;
+  const carr = [ESCALERA, { id:'M', etiqueta:'M', perfil:S.m }, { id:'H', etiqueta:'H', perfil:S.c }, ...S.cands.map((c, j) => ({ id:c.id, etiqueta:String(j + 1), perfil:c.perfil }))];
+  h += gelesHTML(LOCI, carr, { corrido:S.corrido, animar:S.animar, click:S.corrido && S.fase === 'marcar' ? 'H' : null,
+    marcas:(id, a, k) => {
+      const pat = paterna(S.c, S.m, k);
+      if(id === 'H' && S.marcadas.has(k + '-' + a)) return 'marcada';
+      if(id === 'H' && S.mal.has(k + '-' + a)) return 'mal';
+      if(S.fase !== 'marcar' && id.startsWith('P') && a === pat && S.vistos && S.vistos.has(id)) return 'marcada';
+      return '';
+    } });
+  h += `<p class="carriles"><b>E</b> escalera · <b>M</b> mamá · <b>H</b> hija · <b>1, 2, 3</b> posibles padres</p>${correrBtn()}`;
+  if(S.corrido && S.fase === 'elegir' || S.hecho){
+    h += `<hr class="separador"><p class="consigna">Las variantes paternas quedaron marcadas en naranja. ¿Quién tiene, en los cuatro marcadores, la variante que la niña heredó del padre?</p>
+      <div class="candidatos">${S.cands.map((c, j) => `<button data-padre="${j}" class="${S.hecho && c.real ? 'correcto' : S.mal.has('p' + j) ? 'descartado' : ''}" ${S.hecho || S.mal.has('p' + j) ? 'disabled' : ''}>Posible padre ${j + 1}</button>`).join('')}</div>`;
+  }
+  return h;
+}
+function marcarBanda(k, a){
+  const pat = paterna(S.c, S.m, k);
+  if(S.marcadas.has(k + '-' + a)) return;
+  if(a === pat){
+    S.marcadas.add(k + '-' + a);
+    S.msg = { tipo:'ok', texto:`Bien: en ${LOCI[k].n}, la ${a} no está en la mamá, así que vino del padre.` };
+    if(S.marcadas.size === LOCI.length){ S.fase = 'elegir'; S.vistos = new Set(); S.msg = { tipo:'ok', texto:'Ya tenés las cuatro variantes paternas. Ahora compará con los tres hombres.' }; }
+  } else {
+    errores++; S.mal.add(k + '-' + a);
+    S.msg = { tipo:'pista', texto:`En ${LOCI[k].n}, la mamá tiene ${S.m[k].join(' y ')}. La ${a} pudo venir de ella: buscá la otra.` };
+  }
+  dibujar();
+}
+function elegirPadre(j){
+  const c = S.cands[j];
+  if(c.real){
+    S.hecho = true;
+    S.vistos = new Set(S.cands.map(x => x.id));
+    S.msg = { tipo:'ok', texto:`¡Sí! El posible padre ${j + 1} tiene la variante paterna en los cuatro marcadores. Los otros dos fallan en ${S.cands.filter(x => !x.real).map(x => fallasTrio(S.c, S.m, x.perfil)).join(' y ')} marcadores. Con cuatro marcadores no alcanza para un informe real: se usan veinte o más y el resultado se da como una probabilidad, que suele superar el 99,99 %.` };
+  } else {
+    errores++; S.mal.add('p' + j);
+    const f = LOCI.filter((_, k) => !filaTrio(S.c, S.m, c.perfil, k)).map(L => L.n);
+    S.msg = { tipo:'pista', texto:`El posible padre ${j + 1} queda excluido: en ${f.join(', ')} no tiene la variante que la niña heredó del padre.` };
+  }
+  dibujar();
+}
+
+// --- Nivel 3 ----------------------------------------------------------------
+function frecGenotipo(L, par){ const p = L.f[par[0]], q = L.f[par[1]]; return par[0] === par[1] ? p * p : 2 * p * q; }
+const coma = x => x.toFixed(2).replace('.', ',');
+const unoEn = x => { const n = Math.round(1 / x); return n.toLocaleString('es-UY'); };
+function forenseHTML(){
+  const N = NIVELES[nivel];
+  let h = `<p class="consigna">${N.consigna}</p>`;
+  const carr = [ESCALERA, { id:'X', etiqueta:'X', perfil:S.x }, { id:'V', etiqueta:'V', perfil:S.v }, ...S.cands.map((c, j) => ({ id:c.id, etiqueta:'S' + (j + 1), perfil:c.perfil }))];
+  h += gelesHTML(LOCI, carr, { corrido:S.corrido, animar:S.animar });
+  h += `<p class="carriles"><b>E</b> escalera · <b>X</b> mancha de la escena · <b>V</b> víctima · <b>S1, S2, S3</b> sospechosos</p>${correrBtn()}`;
+  if(S.corrido){
+    h += `<div class="candidatos">${S.cands.map((c, j) => `<button data-sosp="${j}" class="${S.fase !== 'elegir' && c.real ? 'correcto' : S.mal.has('s' + j) ? 'descartado' : ''}" ${S.fase !== 'elegir' || S.mal.has('s' + j) ? 'disabled' : ''}>Sospechoso ${j + 1}</button>`).join('')}</div>`;
+  }
+  if(S.fase !== 'elegir'){
+    h += `<p class="fb ok">${S.okSosp}</p>`;   // queda fijo entre los botones y el cálculo
+    let total = 1;
+    const filas = LOCI.map((L, k) => { const par = S.x[k], g = frecGenotipo(L, par); total *= g;
+      return `<tr><td class="loc">${L.n}</td><td class="num">${par.join(', ')}</td><td class="num">${par[0] === par[1] ? `${coma(L.f[par[0]])}²` : `2 × ${coma(L.f[par[0]])} × ${coma(L.f[par[1]])}`}</td><td class="num">${g.toFixed(4).replace('.', ',')}</td></tr>`; }).join('');
+    S.total = total;
+    h += `<hr class="separador"><p class="consigna">¿Cuán raro es ese perfil?</p>
+      <p class="regla">Para cada marcador se usa la frecuencia de cada variante en la población: p² si la persona tiene dos iguales, 2pq si son distintas. Como los marcadores se heredan por separado, las frecuencias se multiplican.</p>
+      <table class="perfil"><thead><tr><th>Marcador</th><th>Mancha</th><th>Cálculo</th><th>Frecuencia</th></tr></thead><tbody>${filas}
+      <tr><td class="loc" colspan="3" style="text-align:right">Las cuatro juntas</td><td class="num"><b>1 en ${unoEn(total)}</b></td></tr></tbody></table>`;
+    h += `<p style="margin-top:1rem"><b>${PREG_FISCAL.texto.replace('N personas', unoEn(total) + ' personas')}</b></p>${opcionesHTML(S.opciones.map(o => ({ ...o, t:o.t.replace(/ N /, ` ${unoEn(total)} `).replace(/1 en N/, '1 en ' + unoEn(total)).replace(/cada N /, `cada ${unoEn(total)} `) })), 'data-fis', S.hecho)}`;
+  }
+  return h;
+}
+function elegirSospechoso(j){
+  const c = S.cands[j];
+  if(c.real){
+    S.fase = 'calcular'; S.msg = null;
+    S.okSosp = `<b>¡Correcto!</b> El perfil del sospechoso ${j + 1} coincide con el de la mancha en los cuatro marcadores. Pero una coincidencia, ¿qué tan fuerte es?`;
+  } else {
+    errores++; S.mal.add('s' + j);
+    const f = LOCI.filter((_, k) => !(c.perfil[k][0] === S.x[k][0] && c.perfil[k][1] === S.x[k][1])).map(L => L.n);
+    S.msg = { tipo:'pista', texto:`El sospechoso ${j + 1} no coincide con la mancha en ${f.join(', ')}. Para que la mancha sea suya, tiene que coincidir en <b>todos</b> los marcadores. Y fijate que la mancha tampoco es de la víctima (V).` };
+  }
+  dibujar();
+}
+function responderFiscal(j){
+  const o = PREG_FISCAL.ops[j];
+  if(o.ok){
+    S.hecho = true;
+    S.msg = { tipo:'ok', texto:`¡Exacto! Dice cuán común es el perfil. En una ciudad de un millón y medio de personas, ${Math.round(1.5e6 * S.total) >= 1 ? `podría haber unas ${Math.round(1.5e6 * S.total).toLocaleString('es-UY')} personas` : 'podría no haber ninguna otra persona'} con este mismo perfil de cuatro marcadores, pero en el mundo habría muchas. Por eso se usan veinte o más: con tantos, la probabilidad baja a menos de una en miles de millones. Y aun así, el ADN dice de quién es la mancha, no cómo llegó ahí.` };
+  } else {
+    S.mal.add('data-fis' + j); errores++;
+    S.msg = { tipo:'pista', texto: o.fiscal
+      ? 'Ese es un error clásico, tan común que tiene nombre: la <b>falacia del fiscal</b>. El número dice cuántas personas tendrían el perfil, no si el sospechoso es culpable o inocente.'
+      : 'No se trata de errores del laboratorio: el número sale de las frecuencias de las variantes en la población.' };
+  }
+  dibujar();
+}
+
+// --- Nivel 4 ----------------------------------------------------------------
+function mutacionHTML(){
+  const N = NIVELES[nivel];
+  let h = `<p class="consigna">${N.consigna}</p>`;
+  const carr = [ESCALERA, { id:'M', etiqueta:'M', perfil:S.m }, { id:'H', etiqueta:'H', perfil:S.c }, { id:'P', etiqueta:'P', perfil:S.p }];
+  const marcas = (id, a, k) => {
+    const pat = paterna(S.c, S.m, k);
+    if(!S.corrido) return '';
+    if(id === 'H' && a === pat) return k === S.km ? 'mal' : 'marcada';
+    if(id === 'P' && a === pat) return 'marcada';
+    return '';
+  };
+  h += gelesHTML(LOCI, carr, { corrido:S.corrido, animar:S.animar && !S.extra, marcas });
+  h += `<p class="carriles"><b>E</b> escalera · <b>M</b> mamá · <b>H</b> hijo · <b>P</b> posible padre · en naranja, la variante paterna del hijo y dónde aparece en el padre · en rojo, la que no aparece</p>${correrBtn()}`;
+  if(S.corrido){
+    const L = LOCI[S.km], pat = paterna(S.c, S.m, S.km);
+    h += `<hr class="separador"><p>En <b>${L.n}</b>, el hijo tiene un <b>${pat}</b> que no vino de la mamá, y el posible padre tiene ${S.p[S.km].join(' y ')}. En los otros tres marcadores, todo coincide.</p>
+      <p><b>${PREG_MUT.texto}</b></p>${opcionesHTML(S.opciones, 'data-mut', S.fase !== 'decidir')}`;
+    if(S.okMut) h += `<p class="fb ok">${S.okMut}</p>`;
+  }
+  if(S.extra){
+    const carrE = [ESCALERA, { id:'M', etiqueta:'M', perfil:S.mE }, { id:'H', etiqueta:'H', perfil:S.cE }, { id:'P', etiqueta:'P', perfil:S.pE }];
+    const marcasE = (id, a, k) => { const pat = paterna(S.cE, S.mE, k); return (id === 'H' || id === 'P') && a === pat ? 'marcada' : ''; };
+    h += `<hr class="separador"><p class="consigna">Para salir de la duda: cuatro marcadores más</p>
+      <p class="regla">Cuando aparece una sola diferencia, el laboratorio no decide con eso: analiza más marcadores en las tres personas. Si el hombre no es el padre, lo esperable es que aparezcan más diferencias. Si es el padre, en todos los marcadores nuevos debería tener la variante que el niño no heredó de su mamá.</p>` + gelesHTML(LOCI_EXTRA, carrE, { corrido:true, animar:S.animarExtra, marcas:marcasE });
+    S.animarExtra = false;
+  }
+  return h;
+}
+function responderMut(j){
+  const o = PREG_MUT.ops[j];
+  if(o.ok){
+    S.fase = 'extra'; S.extra = true; S.animarExtra = true; S.hecho = true;
+    const L = LOCI[S.km], pat = paterna(S.c, S.m, S.km), cerca = S.p[S.km].reduce((x, y) => Math.abs(y - pat) < Math.abs(x - pat) ? y : x);
+    S.okMut = `<b>¡Bien pensado!</b> Los STR mutan más que el resto del ADN (del orden de una vez cada mil transmisiones por marcador), y casi siempre ganan o pierden <b>una</b> repetición: el ${cerca} del padre pudo convertirse en ${pat} al pasar al hijo.`;
+    S.msg = { tipo:'ok', texto:`En los cuatro marcadores nuevos, el hombre tiene la variante que el niño no heredó de su mamá. Con tantas coincidencias, lo más probable es que sea el padre y que en ${L.n} haya habido una mutación.` };
+  } else {
+    S.mal.add('data-mut' + j); errores++;
+    S.msg = { tipo:'pista', texto: j === 1
+      ? 'Ojo: el ADN puede cambiar un poquito al pasar de padres a hijos. Fijate cuánto difiere la variante del niño de las del hombre: ¿por muchas repeticiones o por una?'
+      : 'Coincidir en tres de cuatro no da seguridad: con tan pocos marcadores, muchos hombres podrían coincidir por azar. ¿Qué harías para estar más seguro?' };
+  }
+  dibujar();
+}
+
+// ---------------------------------------------------------------------------
+function conectar(){
+  if(el('correr')) el('correr').onclick = () => { S.corrido = true; S.animar = true; S.msg = null; dibujar(); };
+  tablero.querySelectorAll('[data-cuenta]').forEach(b => b.onclick = () => { const [j, n] = b.dataset.cuenta.split('-').map(Number); elegirCuenta(j, n); });
+  tablero.querySelectorAll('[data-tam]').forEach(b => b.onclick = () => { const [j, t] = b.dataset.tam.split('-').map(Number); elegirTam(j, t); });
+  tablero.querySelectorAll('[data-pg]').forEach(b => b.onclick = () => responderGel(+b.dataset.pg));
+  tablero.querySelectorAll('[data-lec]').forEach(s => s.onchange = () => {
+    const [k, j] = s.dataset.lec.split('-').map(Number); S.lectura[k][j] = s.value; S.revisado = null;
+    const r = el('revisar'); if(r) r.disabled = !S.lectura.every(p => p[0] !== '' && p[1] !== '');
+  });
+  if(el('revisar')) el('revisar').onclick = revisarPerfil;
+  tablero.querySelectorAll('[data-banda]').forEach(g => {
+    const f = () => { const [k, a] = g.dataset.banda.split('-').map(Number); marcarBanda(k, a); };
+    g.addEventListener('click', f);
+    g.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); f(); } });
+  });
+  tablero.querySelectorAll('[data-padre]').forEach(b => b.onclick = () => elegirPadre(+b.dataset.padre));
+  tablero.querySelectorAll('[data-sosp]').forEach(b => b.onclick = () => elegirSospechoso(+b.dataset.sosp));
+  tablero.querySelectorAll('[data-fis]').forEach(b => b.onclick = () => responderFiscal(+b.dataset.fis));
+  tablero.querySelectorAll('[data-mut]').forEach(b => b.onclick = () => responderMut(+b.dataset.mut));
+  if(el('sig')) el('sig').onclick = () => { contarNivel(nivel + 1, 'el caso ' + (nivel + 1)); nivel + 1 < NIVELES.length ? empezar(nivel + 1) : final(); };
+}
+
+function final(){
+  if(!finContado){
+    finContado = true;
+    window.goatcounter?.count({ path:'fin/detective-adn', title:'Completó Detective de ADN', event:true });
+  }
+  marcador.textContent = 'Resultado';
+  el('barra').style.width = '100%';
+  tablero.innerHTML = `<div class="final">
+    <h2 style="font-weight:300;letter-spacing:-0.01em;margin-top:0;">¡Casos resueltos!</h2>
+    <p>${errores === 0 ? 'Resolviste los cuatro casos sin ningún error.' : `Resolviste los cuatro casos con ${errores} ${errores === 1 ? 'error' : 'errores'}.`}</p>
+    <p style="max-width:34em;margin:0 auto;line-height:1.55;">Con unas pocas regiones del ADN que varían mucho se puede reconocer a una persona, reunir familias o resolver un crimen. Pero un buen detective sabe también qué <b>no</b> dice el ADN: cuán común es una coincidencia, y que una sola diferencia puede ser una mutación.</p>
+    <div class="acciones"><button class="primario" id="otra">Jugar de nuevo (con otros casos)</button></div></div>`;
+  el('otra').onclick = () => { errores = 0; empezar(0); };
+}
+
+empezar(0);
+</script>
+<script>
+// "Nivel superado" en GoatCounter: una vez por etapa y por visita. La etapa es
+// lo que este juego llama nivel, ronda, caso, etc.; la ruta es siempre
+// nivel/<juego>/<etapa>, para poder comparar dónde se deja de jugar.
+const etapasContadas = new Set();
+function contarNivel(etapa, nombre){
+  if(etapasContadas.has(etapa)) return;
+  etapasContadas.add(etapa);
+  window.goatcounter?.count({ path:'nivel/detective-adn/' + etapa, title:'Detective de ADN · superó ' + nombre, event:true });
+}
+</script>
+
+<!-- Compartir este juego: menú nativo del celular; en la compu copia el link. -->
+<div class="compartir">
+  <button type="button" id="btnCompartir" data-juego="detective-adn" data-nombre="Detective de ADN">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+    Compartir este juego
+  </button>
+  <p id="compartirAviso" role="status" aria-live="polite"></p>
+</div>
+<style>
+  .compartir{ align-self:center; text-align:center; margin:0.4rem auto 1.6rem; }
+  .compartir button{ display:inline-flex; align-items:center; gap:0.5em; font:inherit; font-size:0.95rem; font-weight:600;
+    color:var(--ink); background:var(--card); border:1px solid #CBD3D1; border-radius:999px; padding:0.6em 1.2em;
+    cursor:pointer; box-shadow:none; width:auto; min-width:0; margin:0; }
+  .compartir button:hover{ border-color:var(--ink); }
+  .compartir button:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .compartir p{ margin:0.5rem 0 0; min-height:1.3em; font-size:0.85rem; color:var(--muted); }
+</style>
+<script>
+(function(){
+  const btn = document.getElementById('btnCompartir');
+  const aviso = document.getElementById('compartirAviso');
+  const og = document.querySelector('meta[property="og:url"]');
+  const url = og ? og.content : location.href.split(/[?#]/)[0];
+  const nombre = btn.dataset.nombre;
+  const texto = 'Probá «' + nombre + '», un juego de Genética a las Aulas';
+  function avisar(msg){ aviso.textContent = msg; clearTimeout(avisar.t); avisar.t = setTimeout(() => aviso.textContent = '', 4000); }
+  async function copiar(){
+    try { await navigator.clipboard.writeText(url); avisar('Link copiado. Pegalo donde quieras compartirlo.'); }
+    catch(e){ window.prompt('Copiá este link para compartir el juego:', url); }
+  }
+  btn.addEventListener('click', async () => {
+    window.goatcounter?.count({ path:'compartir/' + btn.dataset.juego, title:'Compartió ' + nombre, event:true });
+    if (navigator.share) {
+      try { await navigator.share({ title: nombre, text: texto, url }); }
+      catch(e){ if (e.name !== 'AbortError') copiar(); }
+    } else copiar();
+  });
+})();
+</script>
+
+<footer class="creditos">
+  <img src="../assets/logo-gaa.png" srcset="../assets/logo-gaa@2x.png 2x" alt="" width="52" height="52">
+  <p><a href="../">Genética a las Aulas</a> · Unidad Académica de Genética, Facultad de Medicina, Universidad de la República (UdelaR)<br>Licencia CC BY-NC 4.0 · <a href="../acerca/">Acerca de estos juegos</a></p>
+</footer>
+
+<script data-goatcounter="https://gaa-juegos-k7m3.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

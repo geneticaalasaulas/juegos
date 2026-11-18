@@ -122,6 +122,26 @@ const juegos = [
     }
   },
   {
+    id: "arma-tu-proteina",
+    url: "arma-tu-proteina/",
+    capa: "capas/arma-tu-proteina.jpg",
+    // color del logo asignado a este juego (ver capas/arma-tu-proteina.jpg)
+    acento: "#0B9053",
+    acentoTexto: "#0A874E",
+    publicado: "2026-11",
+    // De 11 a 14 años: 6.º de primaria y ciclo básico.
+    nivel: "primaria",
+    duracion: 15,
+    temas: ["herencia", "salud"],
+    autores: ["Genética a las Aulas"],
+    es: {
+      nombre: "Armá tu proteína",
+      subtitulo: "Del gen al ARN y del ARN a la proteína",
+      resumen: "Copiá un gen en ARN, leelo de a tres letras con la tabla del código genético y armá la proteína. Después cambiá una sola letra del ADN y mirá qué le pasa a la proteína: a veces nada, a veces cambia un aminoácido y a veces se corta.",
+      aprende: ["Transcripción: del ADN al ARN", "Traducción con la tabla del código genético", "Mutaciones silenciosas, de sentido erróneo y sin sentido", "La anemia falciforme, una letra que cambia"]
+    }
+  },
+  {
     id: "arbol-genealogico",
     url: "arbol-genealogico/",
     capa: "capas/arbol-genealogico.jpg",
@@ -157,6 +177,44 @@ const juegos = [
       subtitulo: "Armá la cruza, predecí y simulá",
       resumen: "Separá los alelos en gametos, llená el cuadro de Punnett y marcá qué descendientes muestran el rasgo. Después simulá la descendencia para comparar lo esperado con lo observado. Incluye un modo contrarreloj para repasar.",
       aprende: ["Segregación de alelos en los gametos", "Cuadros de Punnett", "Proporciones genotípicas y fenotípicas", "Probabilidad y azar en muestras chicas"]
+    }
+  },
+  {
+    id: "grupos-sanguineos",
+    url: "grupos-sanguineos/",
+    capa: "capas/grupos-sanguineos.jpg",
+    // color del logo asignado a este juego (ver capas/grupos-sanguineos.jpg)
+    acento: "#BC0440",
+    acentoTexto: "#BC0440",
+    publicado: "2026-11",
+    nivel: "secundaria",
+    duracion: 15,
+    temas: ["herencia", "salud"],
+    autores: ["Genética a las Aulas"],
+    es: {
+      nombre: "Grupos sanguíneos ABO y Rh",
+      subtitulo: "Tipificá, transfundí y heredá",
+      resumen: "Tipificá muestras de sangre con anti-A, anti-B y anti-D, elegí qué bolsas se le pueden transfundir a cada paciente, armá cuadros de Punnett con codominancia y resolvé el caso de dos bebés cambiados en una maternidad.",
+      aprende: ["Antígenos y anticuerpos de los grupos ABO y Rh", "Compatibilidad en las transfusiones", "Codominancia y alelos múltiples", "Qué hijos son posibles según los padres"]
+    }
+  },
+  {
+    id: "detective-adn",
+    url: "detective-adn/",
+    capa: "capas/detective-adn.jpg",
+    // color del logo asignado a este juego (ver capas/detective-adn.jpg)
+    acento: "#5E0478",
+    acentoTexto: "#5E0478",
+    publicado: "2026-11",
+    nivel: "secundaria",
+    duracion: 15,
+    temas: ["herencia"],
+    autores: ["Genética a las Aulas"],
+    es: {
+      nombre: "Detective de ADN",
+      subtitulo: "Electroforesis de STR: paternidad y escena del crimen",
+      resumen: "Corré un gel de electroforesis con marcadores STR y resolvé casos: leé un perfil genético, encontrá al padre de una niña, identificá a quién pertenece una mancha en la escena del crimen y decidí si una sola diferencia alcanza para excluir.",
+      aprende: ["Marcadores STR y perfiles genéticos", "Electroforesis y escalera alélica", "Pruebas de paternidad e identificación forense", "Probabilidad de coincidencia y la falacia del fiscal"]
     }
   },
   {
